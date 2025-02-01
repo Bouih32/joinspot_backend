@@ -12,3 +12,101 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  userId     String    @id @default(auto()) @map("_id") @db.ObjectId
+  userName   String
+  fullName   String
+  email      String    @unique
+  city       String
+  role       String
+  password   String
+  bio        String?
+  phone      String?
+  sex        String?
+  avatar     String?
+  idFrontPic String?
+  idBackPic  String?
+  createdAt  DateTime  @default(now())
+  editedAt   DateTime  @updatedAt
+  deletedAt  DateTime?
+}
+
+model Socials {
+  socialId String @id @default(auto()) @map("_id") @db.ObjectId
+  link     String
+  platform String
+}
+
+model Degree {
+  degreeId         String  @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  school           String
+  year             Int
+  prontPic         String
+  backPic          String
+  verified         Boolean
+  justification    String?
+  justificationPic String?
+}
+
+model Bank {
+  bankId     String @id @default(auto()) @map("_id") @db.ObjectId
+  fullName   String
+  cardNumber String @unique
+  expDate    String
+  cvv        String
+}
+
+model Category {
+  categoryId String @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  icon       String
+}
+
+model Tag {
+  tagId String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String
+  icon  String
+  color String
+}
+
+model Activity {
+  activityId  String    @id @default(auto()) @map("_id") @db.ObjectId
+  coverPic    String
+  title       String
+  description String
+  startTime   String
+  endTime     String
+  local       String
+  startDay    String
+  endDay      String
+  seat        Int
+  price       Float
+  score       Float
+  createdAt   DateTime  @default(now())
+  editedAt    DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Post {
+  postId      String    @id @default(auto()) @map("_id") @db.ObjectId
+  bannerPic   String?
+  description String
+  likes       Int?
+  createdAt   DateTime  @default(now())
+  editedAt    DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+model Background {
+  bgId String @id @default(auto()) @map("_id") @db.ObjectId
+  link String
+  type String
+}
+
+model Reset {
+  resetId   String   @id @default(auto()) @map("_id") @db.ObjectId
+  token     String
+  expiresAt DateTime
+}
