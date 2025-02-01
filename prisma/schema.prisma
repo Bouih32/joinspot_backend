@@ -13,29 +13,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  USER
+  ORGANISER
+}
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+enum SocialPlatform {
+  FACEBOOK
+  TWITTER
+  INSTAGRAM
+  SNAPCHAT
+  WEBSITE
+}
+
 model User {
   userId     String    @id @default(auto()) @map("_id") @db.ObjectId
   userName   String
   fullName   String
   email      String    @unique
   city       String
-  role       String
+  role       Role      @default(USER)
   password   String
   bio        String?
   phone      String?
-  sex        String?
+  sex        Sex?
   avatar     String?
   idFrontPic String?
   idBackPic  String?
   createdAt  DateTime  @default(now())
-  editedAt   DateTime  @updatedAt
+  updatedAt  DateTime  @updatedAt
   deletedAt  DateTime?
+
+  @@index([userName])
 }
 
 model Socials {
-  socialId String @id @default(auto()) @map("_id") @db.ObjectId
+  socialId String         @id @default(auto()) @map("_id") @db.ObjectId
   link     String
-  platform String
+  platform SocialPlatform
 }
 
 model Degree {
@@ -43,7 +64,7 @@ model Degree {
   name             String
   school           String
   year             Int
-  prontPic         String
+  frontPic         String
   backPic          String
   verified         Boolean
   justification    String?
@@ -51,11 +72,11 @@ model Degree {
 }
 
 model Bank {
-  bankId     String @id @default(auto()) @map("_id") @db.ObjectId
-  fullName   String
-  cardNumber String @unique
-  expDate    String
-  cvv        String
+  bankId         String @id @default(auto()) @map("_id") @db.ObjectId
+  fullName       String
+  cardNumber     String @unique
+  expDate        String
+  cvvlast4Digits String
 }
 
 model Category {
@@ -78,14 +99,14 @@ model Activity {
   description String
   startTime   String
   endTime     String
-  local       String
+  location    String
   startDay    String
   endDay      String
   seat        Int
   price       Float
   score       Float
   createdAt   DateTime  @default(now())
-  editedAt    DateTime  @updatedAt
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 }
 
@@ -95,7 +116,7 @@ model Post {
   description String
   likes       Int?
   createdAt   DateTime  @default(now())
-  editedAt    DateTime  @updatedAt
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 }
 
