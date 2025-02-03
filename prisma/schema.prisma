@@ -32,34 +32,60 @@ enum SocialPlatform {
   WEBSITE
 }
 
-model User {
-  userId     String    @id @default(auto()) @map("_id") @db.ObjectId
-  userName   String
-  fullName   String
-  email      String    @unique
-  city       String
-  role       Role      @default(USER)
-  password   String
-  bio        String?
-  phone      String?
-  sex        Sex?
-  avatar     String?
-  idFrontPic String?
-  idBackPic  String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  deletedAt  DateTime?
+model user {
+  userId            String         @id @default(auto()) @map("_id") @db.ObjectId
+  userName          String
+  fullName          String
+  email             String         @unique
+  city              String
+  role              Role           @default(USER)
+  password          String
+  bio               String?
+  phone             String?
+  sex               Sex?
+  avatar            String?
+  idFrontPic        String?
+  idBackPic         String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  deletedAt         DateTime?
+  categoryId        String         @db.ObjectId
+  category          category       @relation(fields: [categoryId], references: [categoryId])
+  degree            degree[]
+  bank              bank[]
+  userTags          userTags[]
+  ticket            ticket[]
+  activity          activity[]
+  saveAct           saveAct[]
+  review            review[]
+  repportAct        repportAct[]
+  post              post[]
+  likes             likes[]
+  savePost          savePost[]
+  comment           comment[]
+  followers         follow[]       @relation("followers")
+  following         follow[]       @relation("following")
+  message_from      message[]      @relation("message_from")
+  message_to        message[]      @relation("message_to")
+  notification_from notification[] @relation("notification_from")
+  notification_to   notification[] @relation("notification_to")
+  repportPost       repportPost[]
+  repport_from      repportUser[]  @relation("repport_from")
+  repport_to        repportUser[]  @relation("repport_to")
+  userBg            userBg[]
+  reset             reset[]
+  share             share[]
 
   @@index([userName])
 }
 
-model Socials {
+model socials {
   socialId String         @id @default(auto()) @map("_id") @db.ObjectId
   link     String
   platform SocialPlatform
 }
 
-model Degree {
+model degree {
   degreeId         String  @id @default(auto()) @map("_id") @db.ObjectId
   name             String
   school           String
@@ -69,67 +95,250 @@ model Degree {
   verified         Boolean
   justification    String?
   justificationPic String?
+  userId           String  @db.ObjectId
+  user             user    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
-model Bank {
+model bank {
   bankId         String @id @default(auto()) @map("_id") @db.ObjectId
   fullName       String
   cardNumber     String @unique
   expDate        String
   cvvlast4Digits String
+  userId         String @db.ObjectId
+  user           user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
-model Category {
-  categoryId String @id @default(auto()) @map("_id") @db.ObjectId
+model category {
+  categoryId String     @id @default(auto()) @map("_id") @db.ObjectId
   name       String
   icon       String
+  user       user[]
+  tag        tag[]
+  activity   activity[]
+  post       post[]
 }
 
-model Tag {
-  tagId String @id @default(auto()) @map("_id") @db.ObjectId
-  name  String
-  icon  String
-  color String
+model tag {
+  tagId        String         @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  icon         String
+  color        String
+  categoryId   String         @db.ObjectId
+  category     category       @relation(fields: [categoryId], references: [categoryId])
+  userTags     userTags[]
+  activityTags activityTags[]
+  postTags     postTags[]
 }
 
-model Activity {
-  activityId  String    @id @default(auto()) @map("_id") @db.ObjectId
-  coverPic    String
-  title       String
-  description String
-  startTime   String
-  endTime     String
-  location    String
-  startDay    String
-  endDay      String
-  seat        Int
-  price       Float
-  score       Float
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+model activity {
+  activityId   String         @id @default(auto()) @map("_id") @db.ObjectId
+  coverPic     String
+  title        String
+  description  String
+  startTime    String
+  endTime      String
+  location     String
+  startDay     String
+  endDay       String
+  seat         Int
+  price        Float
+  score        Float
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+  userId       String         @db.ObjectId
+  user         user           @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  categoryId   String         @db.ObjectId
+  category     category       @relation(fields: [categoryId], references: [categoryId])
+  ticket       ticket[]
+  saveAct      saveAct[]
+  review       review[]
+  repportAct   repportAct[]
+  activityTags activityTags[]
+  share        share[]
 }
 
-model Post {
-  postId      String    @id @default(auto()) @map("_id") @db.ObjectId
+model post {
+  postId      String        @id @default(auto()) @map("_id") @db.ObjectId
   bannerPic   String?
   description String
-  likes       Int?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  likesCount  Int?          @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   deletedAt   DateTime?
+  userId      String        @db.ObjectId
+  user        user          @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  categoryId  String        @db.ObjectId
+  category    category      @relation(fields: [categoryId], references: [categoryId])
+  likes       likes[]
+  savePost    savePost[]
+  comment     comment[]
+  postTags    postTags[]
+  repportPost repportPost[]
+  share       share[]
 }
 
-model Background {
-  bgId String @id @default(auto()) @map("_id") @db.ObjectId
-  link String
-  type String
+model background {
+  bgId   String   @id @default(auto()) @map("_id") @db.ObjectId
+  link   String
+  type   String
+  userBg userBg[]
 }
 
-model Reset {
+model reset {
   resetId   String   @id @default(auto()) @map("_id") @db.ObjectId
   token     String
   expiresAt DateTime
+  userId    String   @db.ObjectId
+  user      user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
-//removed younes commit
+model userTags {
+  userTagsId String @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String @db.ObjectId
+  tagId      String @db.ObjectId
+  user       user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  tag        tag    @relation(fields: [tagId], references: [tagId], onDelete: Cascade)
+}
+
+model ticket {
+  ticketId   String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  activityId String   @db.ObjectId
+  code       String
+  quantity   Int
+  user       user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  activity   activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model saveAct {
+  saveActId  String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  activityId String   @db.ObjectId
+  user       user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  activity   activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
+}
+
+model review {
+  reviewId   String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  activityId String   @db.ObjectId
+  stars      Int
+  comment    String
+  user       user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  activity   activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
+}
+
+model repportAct {
+  repportActId String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  activityId   String   @db.ObjectId
+  description  String
+  status       String
+  user         user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  activity     activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
+}
+
+model likes {
+  likesId String @id @default(auto()) @map("_id") @db.ObjectId
+  userId  String @db.ObjectId
+  postId  String @db.ObjectId
+  user    user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  post    post   @relation(fields: [postId], references: [postId], onDelete: Cascade)
+}
+
+model savePost {
+  savePostId String @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String @db.ObjectId
+  postId     String @db.ObjectId
+  user       user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  post       post   @relation(fields: [postId], references: [postId], onDelete: Cascade)
+}
+
+model comment {
+  commentId String @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String @db.ObjectId
+  postId    String @db.ObjectId
+  user      user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  post      post   @relation(fields: [postId], references: [postId], onDelete: Cascade)
+}
+
+model activityTags {
+  activityTagsId String   @id @default(auto()) @map("_id") @db.ObjectId
+  tagId          String   @db.ObjectId
+  activityId     String   @db.ObjectId
+  tag            tag      @relation(fields: [tagId], references: [tagId], onDelete: Cascade)
+  activity       activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
+}
+
+model postTags {
+  postTagId String @id @default(auto()) @map("_id") @db.ObjectId
+  tagId     String @db.ObjectId
+  postId    String @db.ObjectId
+  tag       tag    @relation(fields: [tagId], references: [tagId], onDelete: Cascade)
+  post      post   @relation(fields: [postId], references: [postId], onDelete: Cascade)
+}
+
+model follow {
+  followId    String @id @default(auto()) @map("_id") @db.ObjectId
+  followerId  String @db.ObjectId
+  followingId String @db.ObjectId
+  follower    user   @relation("followers", fields: [followerId], references: [userId], onDelete: Cascade)
+  following   user   @relation("following", fields: [followingId], references: [userId], onDelete: Cascade)
+}
+
+model message {
+  messageId    String @id @default(auto()) @map("_id") @db.ObjectId
+  fromId       String @db.ObjectId
+  toId         String @db.ObjectId
+  message_from user   @relation("message_from", fields: [fromId], references: [userId], onDelete: Cascade)
+  message_to   user   @relation("message_to", fields: [toId], references: [userId], onDelete: Cascade)
+}
+
+model notification {
+  notificationId    String @id @default(auto()) @map("_id") @db.ObjectId
+  fromId            String @db.ObjectId
+  toId              String @db.ObjectId
+  notification_from user   @relation("notification_from", fields: [fromId], references: [userId], onDelete: Cascade)
+  notification_to   user   @relation("notification_to", fields: [toId], references: [userId], onDelete: Cascade)
+}
+
+model repportPost {
+  repportPostId String @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String @db.ObjectId
+  postId        String @db.ObjectId
+  description   String
+  status        String
+  user          user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  post          post   @relation(fields: [postId], references: [postId], onDelete: Cascade)
+}
+
+model repportUser {
+  repportUserId String @id @default(auto()) @map("_id") @db.ObjectId
+  repporterId   String @db.ObjectId
+  repportingId  String @db.ObjectId
+  description   String
+  status        String
+  repport_from  user   @relation("repport_from", fields: [repporterId], references: [userId], onDelete: Cascade)
+  repport_to    user   @relation("repport_to", fields: [repportingId], references: [userId], onDelete: Cascade)
+}
+
+model userBg {
+  userBgId   String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String     @db.ObjectId
+  bgId       String     @db.ObjectId
+  user       user       @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  background background @relation(fields: [bgId], references: [bgId], onDelete: Cascade)
+}
+
+model share {
+  shareId    String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  activityId String   @db.ObjectId
+  postId     String   @db.ObjectId
+  user       user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  activity   activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
+  post       post     @relation(fields: [postId], references: [postId], onDelete: Cascade)
+}
