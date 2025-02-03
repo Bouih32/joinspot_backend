@@ -1,6 +1,7 @@
 {
   "name": "joinspot",
   "version": "1.0.0",
+  "description": "",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -22,14 +23,5 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.13.0",
     "prisma": "^6.3.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Bouih32/joinspot_backend.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Bouih32/joinspot_backend/issues"
-  },
-  "homepage": "https://github.com/Bouih32/joinspot_backend#readme",
-  "description": ""
+  }
 }
