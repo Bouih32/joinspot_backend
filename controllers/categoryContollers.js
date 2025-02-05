@@ -77,26 +77,26 @@ const prisma = require("../utils/client");
             res.status(500).json({ message: 'Error', error: error.message });
         }
     }
-const deleteCategory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const category = await prisma.category.findUnique({where: {categoryId: String(id)}});
-        if(!category){
-            res.status(404).json({message: "Category not found"});
+    const deleteCategory = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const category = await prisma.category.findUnique({where: {categoryId: String(id)}});
+            if(!category){
+                res.status(404).json({message: "Category not found"});
+            }
+            await prisma.category.update({
+                where: {
+                    categoryId: String(id),
+                },
+                data: {
+                    deletedAt: new Date(),
+                }
+                });
+            res.status(200).json({message: "Category deleted"});
+        } catch (error) {
+            res.status(500).json({message: "Error", error: error.message});
         }
-        await prisma.category.update({
-            where: {
-                categoryId: String(id),
-              },
-              data: {
-                deletedAt: new Date(),
-              }
-              });
-        res.status(200).json({message: "Category deleted"});
-    } catch (error) {
-        res.status(500).json({message: "Error", error: error.message});
     }
-}
 
     const addTag = async (req, res) => {
         try {
