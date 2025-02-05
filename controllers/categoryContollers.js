@@ -103,20 +103,12 @@ const deleteCategory = async (req, res) => {
     const category = await prisma.category.findUnique({
       where: { 
         categoryId: String(id),
+        deletedAt: {not: null}
       },
     });
     if (!category) {
       res.status(404).json({ message: "Category not found" });
       }
-    const categorydeleted = await prisma.category.findUnique({
-      where: { 
-        categoryId: String(id),
-        deletedAt: {not: null}
-      },
-    });
-    if (categorydeleted) {
-      res.status(200).json({ message: "This Category already deleted" });
-    }
     const tags = await prisma.tag.findMany({
       where: { categoryId: String(id) },
     });
@@ -231,7 +223,7 @@ const getTagById = async (req, res) => {
     const { id } = req.params;
     const tag = await prisma.tag.findUnique({
       where: {
-        tagId: String(id),
+        tagId: id,
       },
     });
     if (!tag) {
