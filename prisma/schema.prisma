@@ -113,6 +113,7 @@ model category {
   categoryId String     @id @default(auto()) @map("_id") @db.ObjectId
   name       String
   icon       String
+  deletedAt  DateTime?
   user       user[]
   tag        tag[]
   activity   activity[]
@@ -122,8 +123,8 @@ model category {
 model tag {
   tagId        String         @id @default(auto()) @map("_id") @db.ObjectId
   name         String
-  icon         String
   color        String
+  deletedAt    DateTime?
   categoryId   String         @db.ObjectId
   category     category       @relation(fields: [categoryId], references: [categoryId])
   userTags     userTags[]
