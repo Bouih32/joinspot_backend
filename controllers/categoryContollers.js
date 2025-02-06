@@ -158,6 +158,12 @@ const restoreCategory = async (req, res) => {
 const addTag = async (req, res) => {
   try {
     const { name, color, categoryId } = req.body;
+    const existedTag = await prisma.tag.findUnique({
+      where: {name: name},
+    });
+    if (existedTag) {
+      res.status(400).json({ message: "Tag already exists" });
+    }
     const tag = await prisma.tag.create({
       data: {
         name,
@@ -165,12 +171,6 @@ const addTag = async (req, res) => {
         categoryId,
       },
     });
-    const existedTag = await prisma.tag.findUnique({
-      where: {name: name},
-    });
-    if (existedTag) {
-      res.status(400).json({ message: "Tag already exists" });
-    }
     res.status(200).json({ message: "Tag added successfully", data: tag });
   } catch (error) {
     res
