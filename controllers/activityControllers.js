@@ -1,1 +1,1 @@
-const prisma = require("../utils/primsaClient");
+const prisma = require("../utils/client");
