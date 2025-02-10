@@ -43,13 +43,13 @@ const getDeletedCategories = async (req, res) => {
       },
     });
 
-    if (!categories) {
+    if (categories.length === 0) {
       return res.status(404).json({ message: "No deleted categories found" });
     }
 
     res.status(200).json({
       message: "Deleted categories retrieved successfully",
-      data: categories,
+      categories,
     });
   } catch (err) {
     console.error("Error retrieving deleted categories:", err);
