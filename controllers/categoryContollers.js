@@ -8,8 +8,8 @@ const getAllCategories = async (req, res) => {
         deletedAt: null,
       },
     });
-    if (categories.length === 0) {
-      return res.status(404).json({ message: "No deleted categories found" });
+    if (!categories) {
+      return res.status(404).json({ message: "No categories found" });
     }
     res.status(200).json({ categories });
   } catch (err) {
@@ -43,7 +43,7 @@ const getDeletedCategories = async (req, res) => {
       },
     });
 
-    if (categories.length === 0) {
+    if (!categories) {
       return res.status(404).json({ message: "No deleted categories found" });
     }
 
