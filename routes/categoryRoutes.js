@@ -27,18 +27,19 @@ router.get("/", getAllCategories);
 router.get("/tags", getTags);
 router.get("/deleted", getDeletedCategories);
 router.get("/tags/deleted", getDeletedTags);
-router.get("/:id/tags", getTagsByCategory);
 router.get("/tags/:id", getTagById);
+router.get("/:id/tags", getTagsByCategory);
 router.get("/:id", getCategoryById);
 
 // Patch
-router.patch("/:id", updateCategory);
 router.patch("/tags/:id", updateTag);
 router.patch("/restore/:id", restoreCategory);
 router.patch("/tags/restore/:id", restoreTag);
+router.patch("/:id", updateCategory);
 
 // Delete
-router.delete("/:id", deleteCategory);
+
 router.delete("/tags/:id", deleteTag);
+router.delete("/:id", deleteCategory);
 
 module.exports = router;
