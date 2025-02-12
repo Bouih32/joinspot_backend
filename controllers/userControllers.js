@@ -4,7 +4,7 @@ const prisma = require("../utils/client");
 const SECRET = process.env.JWT_SECRET;
 
 const registerUser = async (req, res) => {
-  const { fullname, email, password } = req.body;
+  const { userName, fullName, email, password, city, categoryId } = req.body;
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
 
@@ -15,9 +15,12 @@ const registerUser = async (req, res) => {
 
   await prisma.user.create({
     data: {
-      fullname,
+      userName,
+      fullName,
       email,
       password: hashedPassword,
+      city,
+      categoryId,
     },
   });
 
@@ -69,9 +72,26 @@ const logOut = (req, res) => {
   res.status(200).send({ message: "logoed out successful" });
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const { id } = req.user; 
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+    const updates = req.body;
+    await prisma.user.update({ where: { id }, data: updates });
+    const updatedUser = await prisma.user.findUnique({ where: { id } });
+    res.status(200).json({ message: 'User updated successfully', user: updatedUser });
+  } catch (err) {
+    res.status(500).json({ message: 'Erreur serveur',error:err.message });
+  }
+}
+
 module.exports = {
   loginUser,
   registerUser,
   getUserData,
   logOut,
+  updateProfile
 };
