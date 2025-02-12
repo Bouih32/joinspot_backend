@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const prisma = require("../utils/primsaClient");
+const prisma = require("../utils/client");
 const SECRET = process.env.JWT_SECRET;
 
 const registerUser = async (req, res) => {
