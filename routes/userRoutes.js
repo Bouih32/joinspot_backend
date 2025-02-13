@@ -1,20 +1,24 @@
 const express = require("express");
+const {isAuthenticated} = require("../middlewares/Authentication")
 const router = express.Router();
-const { authenticateToken } = require("../middlewares/auth");
 const {
   loginUser,
   registerUser,
   getUserData,
   logOut,
-  updateProfile,
+  updateUserData,
+  changePassword
 } = require("../controllers/userControllers");
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/logout", logOut);
 
-router.get("/profil", authenticateToken, getUserData);
+router.get("/profil",isAuthenticated, getUserData);
 
-router.patch("/edit-profile",authenticateToken, updateProfile);
+router.put("/change-password",isAuthenticated, changePassword);
+
+router.patch("/edit-profil",isAuthenticated, updateUserData);
+
 
 module.exports = router;
