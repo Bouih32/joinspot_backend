@@ -1,5 +1,6 @@
 const express = require("express");
 const { isAuthenticated } = require("../middlewares/Authentication");
+const {checkRole}= require("../middlewares/Autorization")
 const router = express.Router();
 const {
   loginUser,
@@ -23,9 +24,9 @@ router.post("/login",loginValidation,validationandHandlerrors, loginUser);
 router.post("/logout",validationandHandlerrors, logOut);
 
 router.get("/profil", isAuthenticated,validationandHandlerrors, getUserData);
-router.get("/users", isAuthenticated,validationandHandlerrors,getAllUsers)
-router.get("/deleted", isAuthenticated,validationandHandlerrors,getDeletedUsers)
-router.get("/:id", isAuthenticated,validationandHandlerrors,getUserById)
+router.get("/users", isAuthenticated,checkRole("ADMIN"),validationandHandlerrors,getAllUsers)
+router.get("/deleted", isAuthenticated,checkRole("ADMIN"),validationandHandlerrors,getDeletedUsers)
+router.get("/:id", isAuthenticated,checkRole("ADMIN"),validationandHandlerrors,getUserById)
 
 router.put("/change-password", isAuthenticated,validationandHandlerrors, changePassword);
 
