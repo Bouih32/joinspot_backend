@@ -8,6 +8,9 @@ const {
   logOut,
   updateUserData,
   changePassword,
+  getAllUsers,
+  getDeletedUsers,
+  getUserById,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -20,6 +23,9 @@ router.post("/login",loginValidation,validationandHandlerrors, loginUser);
 router.post("/logout",validationandHandlerrors, logOut);
 
 router.get("/profil", isAuthenticated,validationandHandlerrors, getUserData);
+router.get("/users", isAuthenticated,validationandHandlerrors,getAllUsers)
+router.get("/deleted", isAuthenticated,validationandHandlerrors,getDeletedUsers)
+router.get("/:id", isAuthenticated,validationandHandlerrors,getUserById)
 
 router.put("/change-password", isAuthenticated,validationandHandlerrors, changePassword);
 

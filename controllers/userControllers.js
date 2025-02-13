@@ -81,10 +81,14 @@ const updateUserData = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     const updates = req.body;
-    if(updates.role)
-      return res.status(404).json({message: "Vous ne pouvez pas modifier votre role"});
-    if(updates.password)
-      return res.status(404).json({ message: "Vous pouvez changer votre mot de passe dans edit-password" });
+    if (updates.role)
+      return res
+        .status(404)
+        .json({ message: "Vous ne pouvez pas modifier votre role" });
+    if (updates.password)
+      return res.status(404).json({
+        message: "Vous pouvez changer votre mot de passe dans edit-password",
+      });
     await prisma.user.update({
       where: {
         userId: req.user.userId,
@@ -138,6 +142,55 @@ const logOut = async (req, res) => {
   res.send({ message: "logoed out successful" });
 };
 
+// User management
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        deletedAt: null,
+      },
+    });
+    res.status(200).json({ users: users });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching users" });
+  }
+};
+
+const getDeletedUsers = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        deletedAt: {
+          not: null,
+        },
+      },
+    });
+    res.status(200).json({ users });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching users" });
+  }
+};
+
+const getUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: id,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error fetching user", error: error.message });
+  }
+};
+
 module.exports = {
   loginUser,
   registerUser,
@@ -145,4 +198,7 @@ module.exports = {
   logOut,
   updateUserData,
   changePassword,
+  getAllUsers,
+  getDeletedUsers,
+  getUserById,
 };
