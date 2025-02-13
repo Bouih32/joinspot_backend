@@ -35,9 +35,9 @@ enum SocialPlatform {
 model user {
   userId            String         @id @default(auto()) @map("_id") @db.ObjectId
   userName          String
-  fullName          String
+  fullName          String?
   email             String         @unique
-  city              String
+  city              String?
   role              Role           @default(USER)
   password          String
   bio               String?
@@ -49,8 +49,8 @@ model user {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   deletedAt         DateTime?
-  categoryId        String         @db.ObjectId
-  category          category       @relation(fields: [categoryId], references: [categoryId])
+  categoryId        String?         @db.ObjectId
+  category          category?       @relation(fields: [categoryId], references: [categoryId])
   degree            degree[]
   bank              bank[]
   userTags          userTags[]
