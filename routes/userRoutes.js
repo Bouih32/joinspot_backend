@@ -13,7 +13,8 @@ const {
   getDeletedUsers,
   getUserById,
   addTagsToUser,
-  getUserTags
+  getUserTags,
+  deleteUserTagByTagId
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -38,5 +39,7 @@ router.get("/:id", isAuthenticated,checkRole("ADMIN"),validationandHandlerrors,g
 router.put("/change-password", isAuthenticated,validationandHandlerrors, changePassword);
 
 router.patch("/edit-profil", isAuthenticated,validationandHandlerrors, updateUserData);
+
+router.delete("/tags/:id",isAuthenticated,deleteUserTagByTagId)
 
 module.exports = router;

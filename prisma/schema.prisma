@@ -35,7 +35,7 @@ enum SocialPlatform {
 model user {
   userId            String         @id @default(auto()) @map("_id") @db.ObjectId
   userName          String?
-  fullName          String
+  fullName          String?
   email             String         @unique
   city              String?
   role              Role           @default(USER)

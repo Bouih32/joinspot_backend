@@ -221,9 +221,41 @@ const getUserTags = async (req, res) => {
       where: {
         userId: req.user.userId,
       },
+      select: {
+        tag: {
+          select: {
+            name: true, // Fetch only the tag names
+          },
+        },
+      },
     });
-    if('')
-    res.status(200).json({ message: "User tags fetched", userTags });
+    const tagNames = userTags.map((userTag) => userTag.tag.name); // Extract names
+    res.status(200).json({ message: "User tags fetched", tags: tagNames });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const deleteUserTagByTagId = async (req, res) => {
+  try {
+    const userTag = await prisma.userTags.findFirst({
+      where: {
+        userId: req.user.userId,
+        tagId: req.params.id,
+      },
+    });
+    if (!userTag) {
+      return res.status(400).json({ message: "Tag not found" });
+    }
+    await prisma.userTags.delete({
+      where: {
+        userTagsId: userTag.userTagsId,
+      },
+    });
+    res.status(200).json({ message: "User tag deleted successfully" });
   } catch (error) {
     console.error(error);
     res
@@ -243,5 +275,6 @@ module.exports = {
   getDeletedUsers,
   getUserById,
   addTagsToUser,
-  getUserTags
+  getUserTags,
+  deleteUserTagByTagId,
 };
