@@ -12,6 +12,8 @@ const {
   getAllUsers,
   getDeletedUsers,
   getUserById,
+  addTagsToUser,
+  getUserTags
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -19,10 +21,15 @@ const {
   validationandHandlerrors,
 } = require("../utils/validation");
 
+// authentication
 router.post("/register",registerValidation,validationandHandlerrors, registerUser);
 router.post("/login",loginValidation,validationandHandlerrors, loginUser);
 router.post("/logout",validationandHandlerrors, logOut);
+// userTag
+router.post("/tags",isAuthenticated,addTagsToUser)
 
+// user data
+router.get("/tags",isAuthenticated,getUserTags)
 router.get("/profil", isAuthenticated,validationandHandlerrors, getUserData);
 router.get("/users", isAuthenticated,checkRole("ADMIN"),validationandHandlerrors,getAllUsers)
 router.get("/deleted", isAuthenticated,checkRole("ADMIN"),validationandHandlerrors,getDeletedUsers)

@@ -160,7 +160,7 @@ const restoreCategory = async (req, res) => {
 const addTag = async (req, res) => {
   try {
     const { name, color, categoryId } = req.body;
-    const existedTag = await prisma.tag.findUnique({
+    const existedTag = await prisma.tag.findFirst({
       where: { name: name },
     });
     if (existedTag) {
@@ -175,6 +175,7 @@ const addTag = async (req, res) => {
     });
     res.status(200).json({ message: "Tag added successfully", data: tag });
   } catch (error) {
+    console.error(error);
     res
       .status(500)
       .json({ message: "Failed to add tag", error: error.message });
@@ -183,11 +184,7 @@ const addTag = async (req, res) => {
 
 const getTags = async (req, res) => {
   try {
-    const tags = await prisma.tag.findMany({
-      where: {
-        deletedAt: null,
-      },
-    });
+    const tags = await prisma.tag.findMany();
     res
       .status(200)
       .json({ message: "Tags retrieved successfully", data: tags });

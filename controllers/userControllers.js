@@ -145,11 +145,9 @@ const logOut = async (req, res) => {
 // User management
 const getAllUsers = async (req, res) => {
   try {
-    const users = await prisma.user.findMany({
-      where: {
-        deletedAt: null,
-      },
-    });
+    const users = await prisma.user.findMany();
+    if (users.length == 0)
+      return res.status(404).json({ message: "No users found" });
     res.status(200).json({ users: users });
   } catch (error) {
     res.status(500).json({ message: "Error fetching users" });
@@ -165,6 +163,8 @@ const getDeletedUsers = async (req, res) => {
         },
       },
     });
+    if (users.length == 0)
+      return res.status(404).json({ message: "No users found" });
     res.status(200).json({ users });
   } catch (error) {
     res.status(500).json({ message: "Error fetching users" });
@@ -191,6 +191,47 @@ const getUserById = async (req, res) => {
   }
 };
 
+const addTagsToUser = async (req, res) => {
+  try {
+    console.log("Request Body:", req.body);
+    const { tags } = req.body;
+    if (!Array.isArray(tags)) {
+      return res
+        .status(400)
+        .json({ message: "tags must be an array", received: req.body });
+    }
+    const userTags = await prisma.userTags.createMany({
+      data: tags.map((tagId) => ({
+        userId: req.user.userId, // Ensure userId is correctly obtained
+        tagId,
+      })),
+    });
+    res.status(200).json({ message: "Tags added", userTags });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const getUserTags = async (req, res) => {
+  try {
+    const userTags = await prisma.userTags.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+    });
+    if('')
+    res.status(200).json({ message: "User tags fetched", userTags });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 module.exports = {
   loginUser,
   registerUser,
@@ -201,4 +242,6 @@ module.exports = {
   getAllUsers,
   getDeletedUsers,
   getUserById,
+  addTagsToUser,
+  getUserTags
 };
