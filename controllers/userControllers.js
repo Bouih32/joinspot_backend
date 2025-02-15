@@ -268,31 +268,51 @@ const deleteUserTagByTagId = async (req, res) => {
 // UserFollow
 const followUser = async (req, res) => {
   try {
-    const {following} = req.body;
+    const { following } = req.body;
     if (req.user.userId === following) {
-      return res
-        .status(400)
-        .json({ message: "You can't follow yourself." });
+      return res.status(400).json({ message: "You can't follow yourself." });
     }
-    console.log(following, "userid" , req.user.userId);
+    console.log(following, "userid", req.user.userId);
     const existingFollow = await prisma.follow.findFirst({
       where: {
-        followerId: req.user.userId, 
+        followerId: req.user.userId,
         followingId: following,
       },
     });
     if (existingFollow) {
-      return res
-        .status(400)
-        .json({ message: "You already follow this user." });
+      return res.status(400).json({ message: "You already follow this user." });
     }
     const follow = await prisma.follow.create({
       data: {
-        followerId: req.user.userId, 
+        followerId: req.user.userId,
         followingId: following,
       },
     });
     res.status(201).json({ message: "Follow-up successful.", follow });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+const getFollowersAndFollowing = async (req, res) => {
+  try {
+    const followers = await prisma.follow.findMany({
+      where: { followingId: req.user.userId },
+      include: { follower: { select: { userId: true, userName: true } } }, 
+    });
+
+    const following = await prisma.follow.findMany({
+      where: { followerId: req.user.userId },
+      include: { following: { select: { userId: true, userName: true } } }, 
+    });
+    console.log(followers, following);
+    res.status(200).json({
+      followersCount: followers.length,
+      followers: followers.map((f) => f.follower),
+      followingCount: following.length,
+      following: following.map((f) => f.following),
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erreur serveur", error: error.message });
@@ -312,5 +332,6 @@ module.exports = {
   addTagsToUser,
   getUserTags,
   deleteUserTagByTagId,
-  followUser
+  followUser,
+  getFollowersAndFollowing,
 };
