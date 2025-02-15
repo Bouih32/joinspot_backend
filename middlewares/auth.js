@@ -1,6 +1,24 @@
 const jwt = require("jsonwebtoken");
 const SECRET = process.env.JWT_SECRET;
 
+const generateAcessToken = (user) => {
+  const token = jwt.sign(
+    { userId: user.userId, email: user.email, role: user.role },
+    SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
+  return token;
+};
+
+// const generateRefreshToken = (user) => {
+//   const refreshToken = jwt.sign({ id: user.id }, SECRET, {
+//     expiresIn: "7d",
+//   });
+//   return refreshToken;
+// };
+
 const authenticateToken = (req, res, next) => {
   const token = req.cookies.token;
 
@@ -18,4 +36,4 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-module.exports = authenticateToken;
+module.exports = { generateAcessToken, authenticateToken };

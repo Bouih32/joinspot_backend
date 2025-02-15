@@ -1,12 +1,13 @@
 const { validationResult, check } = require("express-validator");
 
-const validationandHandlerrors = (req, res, next) => {
-  const errors = validationResult(req); 
+const validateData = (req, res, next) => {
+  const errors = validationResult(req);
   if (!errors.isEmpty()) {
-     return res.status(400).json({ errors: errors.array()[0].msg });
+    return res.status(400).json({ errors: errors.array()[0].msg });
   }
   next();
 };
+
 const loginValidation = [
   check("email")
     .notEmpty()
@@ -30,8 +31,23 @@ const registerValidation = [
     .withMessage("Fullname must be at least 2 characters long"),
 ];
 
+const categoryValidation = [
+  check("categoryName")
+    .notEmpty()
+    .withMessage("Category must be at least 2 characters long")
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage("Category must be at least 2 characters long"),
+  check("icon")
+    .notEmpty()
+    .withMessage("icon must be at least 2 characters long")
+    .isLength({ min: 2 })
+    .withMessage("icon must be at least 2 characters long"),
+];
+
 module.exports = {
   loginValidation,
   registerValidation,
-  validationandHandlerrors
+  categoryValidation,
+  validateData,
 };

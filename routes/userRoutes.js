@@ -1,6 +1,7 @@
 const express = require("express");
-const { isAuthenticated } = require("../middlewares/Authentication");
-const {checkRole}= require("../middlewares/Autorization")
+const { authenticateToken } = require("../middlewares/auth");
+// const { isAuthenticated } = require("../middlewares/Authentication");
+const { checkRole } = require("../middlewares/Autorization");
 const router = express.Router();
 const {
   loginUser,
@@ -14,37 +15,60 @@ const {
   getUserById,
   addTagsToUser,
   getUserTags,
-  deleteUserTagByTagId,
+  deleteUserTagBytagName,
   followUser,
-  getFollowersAndFollowing
+  getFollowersAndFollowing,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
   registerValidation,
-  validationandHandlerrors,
+  validateData,
 } = require("../utils/validation");
 
 // authentication
-router.post("/register",registerValidation,validationandHandlerrors, registerUser);
-router.post("/login",loginValidation,validationandHandlerrors, loginUser);
-router.post("/logout",validationandHandlerrors, logOut);
+router.post("/register", registerValidation, validateData, registerUser);
+router.post("/login", loginValidation, validateData, loginUser);
+router.post("/logout", authenticateToken, logOut);
 // userTag
-router.post("/tags",isAuthenticated,addTagsToUser)
+router.post("/tags", authenticateToken, addTagsToUser);
 // userFollow
-router.post("/follow",isAuthenticated,validationandHandlerrors,followUser)
+router.post("/follow", authenticateToken, validateData, followUser);
 
 // user data
-router.get("/tags",isAuthenticated,getUserTags)
-router.get("/profil", isAuthenticated,validationandHandlerrors, getUserData);
-router.get("/followers",isAuthenticated,validationandHandlerrors,getFollowersAndFollowing)
-router.get("/users", isAuthenticated,checkRole("ADMIN"),validationandHandlerrors,getAllUsers)
-router.get("/deleted", isAuthenticated,checkRole("ADMIN"),validationandHandlerrors,getDeletedUsers)
-router.get("/:id", isAuthenticated,checkRole("ADMIN"),validationandHandlerrors,getUserById)
+router.get("/tags", authenticateToken, getUserTags);
+router.get("/profil", authenticateToken, validateData, getUserData);
+router.get(
+  "/followers",
+  authenticateToken,
+  validateData,
+  getFollowersAndFollowing
+);
+router.get(
+  "/users",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getAllUsers
+);
+router.get(
+  "/deleted",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getDeletedUsers
+);
+router.get(
+  "/:id",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getUserById
+);
 
-router.put("/change-password", isAuthenticated,validationandHandlerrors, changePassword);
+router.put("/change-password", authenticateToken, validateData, changePassword);
 
-router.patch("/edit-profil", isAuthenticated,validationandHandlerrors, updateUserData);
+router.patch("/edit-profil", authenticateToken, validateData, updateUserData);
 
-router.delete("/tags/:id",isAuthenticated,deleteUserTagByTagId)
+router.delete("/tags/:id", authenticateToken, deleteUserTagBytagName);
 
 module.exports = router;

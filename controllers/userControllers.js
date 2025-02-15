@@ -1,10 +1,26 @@
 const bcrypt = require("bcryptjs");
 const prisma = require("../utils/client");
-const { generateToken } = require("../middlewares/Authentication");
+const { generateAcessToken } = require("../middlewares/auth");
 
 const registerUser = async (req, res) => {
   try {
-    const { userName, fullName, email, password, city, categoryId } = req.body;
+    const {
+      userName,
+      fullName,
+      email,
+      city,
+      role,
+      password,
+      categoryName,
+      degreeName,
+      schoolName,
+      year,
+      frontPic,
+      justification,
+      justificationPic,
+      idFrontPic,
+      idBackPic,
+    } = req.body;
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser)
       return res.status(400).send({ message: "Email is already in use." });
@@ -14,9 +30,18 @@ const registerUser = async (req, res) => {
         userName,
         fullName,
         email,
-        password: hashedPassword,
         city,
-        categoryId,
+        role,
+        password: hashedPassword,
+        categoryName,
+        degreeName,
+        schoolName,
+        year,
+        frontPic,
+        justification,
+        justificationPic,
+        idFrontPic,
+        idBackPic,
       },
     });
     res.status(201).json({ message: "User registered successfully!" });
@@ -32,17 +57,17 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return res.status(401).send("Utilisateur non trouvé");
+      return res.status(401).send({ message: "User not found" });
     }
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      return res.status(401).send("Mot de passe incorrect");
+      return res.status(401).send({ message: "Uncorect password" });
     }
-    const token = generateToken(user);
+    const token = generateAcessToken(user);
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
-      maxAge: 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.status(200).json({ message: "Login successful!", user, token });
   } catch (error) {
@@ -202,9 +227,9 @@ const addTagsToUser = async (req, res) => {
         .json({ message: "tags must be an array", received: req.body });
     }
     const userTags = await prisma.userTags.createMany({
-      data: tags.map((tagId) => ({
+      data: tags.map((tagName) => ({
         userId: req.user.userId, // Ensure userId is correctly obtained
-        tagId,
+        tagName,
       })),
     });
     res.status(200).json({ message: "Tags added", userTags });
@@ -240,12 +265,12 @@ const getUserTags = async (req, res) => {
   }
 };
 
-const deleteUserTagByTagId = async (req, res) => {
+const deleteUserTagBytagName = async (req, res) => {
   try {
     const userTag = await prisma.userTags.findFirst({
       where: {
         userId: req.user.userId,
-        tagId: req.params.id,
+        tagName: req.params.id,
       },
     });
     if (!userTag) {
@@ -299,12 +324,12 @@ const getFollowersAndFollowing = async (req, res) => {
   try {
     const followers = await prisma.follow.findMany({
       where: { followingId: req.user.userId },
-      include: { follower: { select: { userId: true, userName: true } } }, 
+      include: { follower: { select: { userId: true, userName: true } } },
     });
 
     const following = await prisma.follow.findMany({
       where: { followerId: req.user.userId },
-      include: { following: { select: { userId: true, userName: true } } }, 
+      include: { following: { select: { userId: true, userName: true } } },
     });
     console.log(followers, following);
     res.status(200).json({
@@ -331,7 +356,7 @@ module.exports = {
   getUserById,
   addTagsToUser,
   getUserTags,
-  deleteUserTagByTagId,
+  deleteUserTagBytagName,
   followUser,
   getFollowersAndFollowing,
 };

@@ -21,7 +21,7 @@ const getCategoryById = async (req, res) => {
   try {
     const { id } = req.params;
     const category = await prisma.category.findUnique({
-      where: { categoryId: id },
+      where: { categoryName: id },
     });
     if (!category) {
       res.status(404).json({ message: "Category not found" });
@@ -59,14 +59,16 @@ const getDeletedCategories = async (req, res) => {
 
 const createCategory = async (req, res) => {
   try {
-    const { name, icon } = req.body;
+    const { categoryName, icon } = req.body;
     const existedcategory = await prisma.category.findUnique({
-      where: { name: name },
+      where: { categoryName },
     });
     if (existedcategory) {
       return res.status(400).json({ message: "Category already exists" });
     }
-    const category = await prisma.category.create({ data: { name, icon } });
+    const category = await prisma.category.create({
+      data: { categoryName, icon },
+    });
     res.status(201).json({ message: "Category created", category });
   } catch (error) {
     console.error(error);
@@ -77,16 +79,17 @@ const createCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
+    const { categoryName, icon } = req.body;
     const category = await prisma.category.findUnique({
-      where: { categoryId: String(id) },
+      where: { categoryName: id },
     });
     if (!category) {
       res.status(404).json({ message: "Category not found" });
     }
-    const updates = req.body;
+
     const updatedCategory = await prisma.category.update({
-      where: { categoryId: String(id) },
-      data: updates,
+      where: { categoryName: id },
+      data: { categoryName, icon },
     });
     res.status(200).json({
       message: "Category updated successfully",
@@ -102,29 +105,36 @@ const deleteCategory = async (req, res) => {
     const { id } = req.params;
     const category = await prisma.category.findUnique({
       where: {
-        categoryId: String(id),
+        categoryName: id,
         deletedAt: { not: null },
       },
     });
     if (!category) {
       res.status(404).json({ message: "Category not found" });
     }
+
     const tags = await prisma.tag.findMany({
-      where: { categoryId: String(id) },
+      where: { categoryName: id },
     });
-    if (tags.length > 0) {
-      return res
-        .status(400)
-        .json({ message: "Cannot delete category with associated tags" });
-    }
+
     await prisma.category.update({
       where: {
-        categoryId: String(id),
+        categoryName: id,
       },
       data: {
         deletedAt: new Date(),
       },
     });
+
+    await Promise.all(
+      tags.map((tag) =>
+        prisma.tag.update({
+          where: { tagName: tag.tagName },
+          data: { deletedAt: new Date() },
+        })
+      )
+    );
+
     res.status(200).json({ message: "Category deleted" });
   } catch (error) {
     res.status(500).json({ message: "Error", error: error.message });
@@ -136,7 +146,7 @@ const restoreCategory = async (req, res) => {
     const { id } = req.params;
     const category = await prisma.category.findUnique({
       where: {
-        categoryId: String(id),
+        categoryName: id,
         deletedAt: { not: null },
       },
     });
@@ -145,12 +155,21 @@ const restoreCategory = async (req, res) => {
     }
     await prisma.category.update({
       where: {
-        categoryId: String(id),
+        categoryName: String(id),
       },
       data: {
         deletedAt: null,
       },
     });
+
+    await Promise.all(
+      tags.map((tag) =>
+        prisma.tag.update({
+          where: { tagName: tag.tagName },
+          data: { deletedAt: null },
+        })
+      )
+    );
     res.status(200).json({ message: "Category restored" });
   } catch (error) {
     res.status(500).json({ message: "Error", error: error.message });
@@ -159,18 +178,17 @@ const restoreCategory = async (req, res) => {
 // Tags
 const addTag = async (req, res) => {
   try {
-    const { name, color, categoryId } = req.body;
+    const { tagName, categoryName } = req.body;
     const existedTag = await prisma.tag.findFirst({
-      where: { name: name },
+      where: { tagName },
     });
     if (existedTag) {
       res.status(400).json({ message: "Tag already exists" });
     }
     const tag = await prisma.tag.create({
       data: {
-        name,
-        color,
-        categoryId,
+        tagName,
+        categoryName,
       },
     });
     res.status(200).json({ message: "Tag added successfully", data: tag });
@@ -200,7 +218,7 @@ const getTagsByCategory = async (req, res) => {
     const { id } = req.params;
     const tags = await prisma.tag.findMany({
       where: {
-        categoryId: id,
+        categoryName: id,
         deletedAt: null,
       },
     });
@@ -222,7 +240,7 @@ const getTagById = async (req, res) => {
     const { id } = req.params;
     const tag = await prisma.tag.findUnique({
       where: {
-        tagId: id,
+        tagName: id,
       },
     });
     if (!tag) {
@@ -259,14 +277,14 @@ const getDeletedTags = async (req, res) => {
 const updateTag = async (req, res) => {
   try {
     const { id } = req.params;
-    const tag = await prisma.tag.findUnique({ where: { tagId: String(id) } });
+    const { tagName, categoryName } = req.body;
+    const tag = await prisma.tag.findUnique({ where: { tagName: id } });
     if (!tag) {
       res.status(404).json({ message: "tag not found" });
     }
-    const updates = req.body;
     const updatedtag = await prisma.tag.update({
-      where: { tagId: String(id) },
-      data: updates,
+      where: { tagName: id },
+      data: { tagName, categoryName },
     });
     res
       .status(200)
@@ -281,13 +299,13 @@ const updateTag = async (req, res) => {
 const deleteTag = async (req, res) => {
   try {
     const { id } = req.params;
-    const tag = await prisma.tag.findUnique({ where: { tagId: String(id) } });
+    const tag = await prisma.tag.findUnique({ where: { tagName: id } });
     if (!tag) {
       res.status(404).json({ message: "tag not found" });
     }
     await prisma.tag.update({
       where: {
-        tagId: String(id),
+        tagName: id,
       },
       data: {
         deletedAt: new Date(),
@@ -304,13 +322,13 @@ const deleteTag = async (req, res) => {
 const restoreTag = async (req, res) => {
   try {
     const { id } = req.params;
-    const tag = await prisma.tag.findUnique({ where: { tagId: String(id) } });
+    const tag = await prisma.tag.findUnique({ where: { tagName: id } });
     if (!tag) {
       res.status(404).json({ message: "tag not found" });
     }
     await prisma.tag.update({
       where: {
-        tagId: String(id),
+        tagName: id,
       },
       data: {
         deletedAt: null,

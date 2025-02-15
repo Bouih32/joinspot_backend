@@ -15,7 +15,7 @@ datasource db {
 
 enum Role {
   ADMIN
-  USER
+  VISITOR
   ORGANISER
 }
 
@@ -38,7 +38,7 @@ model user {
   fullName          String?
   email             String         @unique
   city              String?
-  role              Role           @default(USER)
+  role              Role           @default(VISITOR)
   password          String
   bio               String?
   phone             String?
@@ -49,8 +49,8 @@ model user {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   deletedAt         DateTime?
-  categoryId        String?        @db.ObjectId
-  category          category?      @relation(fields: [categoryId], references: [categoryId])
+  categoryName      String?
+  category          category?      @relation(fields: [categoryName], references: [categoryName])
   degree            degree[]
   bank              bank[]
   userTags          userTags[]
@@ -110,23 +110,20 @@ model bank {
 }
 
 model category {
-  categoryId String     @id @default(auto()) @map("_id") @db.ObjectId
-  name       String     
-  icon       String
-  deletedAt  DateTime?
-  user       user[]
-  tag        tag[]
-  activity   activity[]
-  post       post[]
+  categoryName String     @id @map("_id")
+  icon         String
+  deletedAt    DateTime?
+  user         user[]
+  tag          tag[]
+  activity     activity[]
+  post         post[]
 }
 
 model tag {
-  tagId        String         @id @default(auto()) @map("_id") @db.ObjectId
-  name         String         
-  color        String
+  tagName      String         @id @map("_id")
   deletedAt    DateTime?
-  categoryId   String         @db.ObjectId
-  category     category       @relation(fields: [categoryId], references: [categoryId])
+  categoryName String
+  category     category       @relation(fields: [categoryName], references: [categoryName])
   userTags     userTags[]
   activityTags activityTags[]
   postTags     postTags[]
@@ -150,8 +147,8 @@ model activity {
   deletedAt    DateTime?
   userId       String         @db.ObjectId
   user         user           @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  categoryId   String         @db.ObjectId
-  category     category       @relation(fields: [categoryId], references: [categoryId])
+  categoryName String
+  category     category       @relation(fields: [categoryName], references: [categoryName])
   ticket       ticket[]
   saveAct      saveAct[]
   review       review[]
@@ -161,23 +158,23 @@ model activity {
 }
 
 model post {
-  postId      String        @id @default(auto()) @map("_id") @db.ObjectId
-  bannerPic   String?
-  description String
-  likesCount  Int?          @default(0)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  deletedAt   DateTime?
-  userId      String        @db.ObjectId
-  user        user          @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  categoryId  String        @db.ObjectId
-  category    category      @relation(fields: [categoryId], references: [categoryId])
-  likes       likes[]
-  savePost    savePost[]
-  comment     comment[]
-  postTags    postTags[]
-  repportPost repportPost[]
-  share       share[]
+  postId       String        @id @default(auto()) @map("_id") @db.ObjectId
+  bannerPic    String?
+  description  String
+  likesCount   Int?          @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deletedAt    DateTime?
+  userId       String        @db.ObjectId
+  user         user          @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  categoryName String
+  category     category      @relation(fields: [categoryName], references: [categoryName])
+  likes        likes[]
+  savePost     savePost[]
+  comment      comment[]
+  postTags     postTags[]
+  repportPost  repportPost[]
+  share        share[]
 }
 
 model background {
@@ -198,9 +195,9 @@ model reset {
 model userTags {
   userTagsId String @id @default(auto()) @map("_id") @db.ObjectId
   userId     String @db.ObjectId
-  tagId      String @db.ObjectId
+  tagName    String
   user       user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  tag        tag    @relation(fields: [tagId], references: [tagId], onDelete: Cascade)
+  tag        tag    @relation(fields: [tagName], references: [tagName], onDelete: Cascade)
 }
 
 model ticket {
@@ -268,17 +265,17 @@ model comment {
 
 model activityTags {
   activityTagsId String   @id @default(auto()) @map("_id") @db.ObjectId
-  tagId          String   @db.ObjectId
+  tagName        String
   activityId     String   @db.ObjectId
-  tag            tag      @relation(fields: [tagId], references: [tagId], onDelete: Cascade)
+  tag            tag      @relation(fields: [tagName], references: [tagName], onDelete: Cascade)
   activity       activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
 }
 
 model postTags {
   postTagId String @id @default(auto()) @map("_id") @db.ObjectId
-  tagId     String @db.ObjectId
+  tagName   String
   postId    String @db.ObjectId
-  tag       tag    @relation(fields: [tagId], references: [tagId], onDelete: Cascade)
+  tag       tag    @relation(fields: [tagName], references: [tagName], onDelete: Cascade)
   post      post   @relation(fields: [postId], references: [postId], onDelete: Cascade)
 }
 
