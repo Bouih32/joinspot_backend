@@ -17,10 +17,13 @@ const {
   restoreTag,
   deleteTag,
 } = require("../controllers/categoryContollers");
+const {
+  validationandHandlerrors,
+} = require("../utils/validation");
 
 // post
-router.post("/add", createCategory);
-router.post("/add-tag", addTag);
+router.post("/add",validationandHandlerrors, createCategory);
+router.post("/add-tag",validationandHandlerrors, addTag);
 
 // Get
 router.get("/", getAllCategories);
