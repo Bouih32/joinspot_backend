@@ -191,6 +191,7 @@ const getUserById = async (req, res) => {
   }
 };
 
+// management UserTags
 const addTagsToUser = async (req, res) => {
   try {
     console.log("Request Body:", req.body);
@@ -264,6 +265,40 @@ const deleteUserTagByTagId = async (req, res) => {
   }
 };
 
+// UserFollow
+const followUser = async (req, res) => {
+  try {
+    const {following} = req.body;
+    if (req.user.userId === following) {
+      return res
+        .status(400)
+        .json({ message: "You can't follow yourself." });
+    }
+    console.log(following, "userid" , req.user.userId);
+    const existingFollow = await prisma.follow.findFirst({
+      where: {
+        followerId: req.user.userId, 
+        followingId: following,
+      },
+    });
+    if (existingFollow) {
+      return res
+        .status(400)
+        .json({ message: "You already follow this user." });
+    }
+    const follow = await prisma.follow.create({
+      data: {
+        followerId: req.user.userId, 
+        followingId: following,
+      },
+    });
+    res.status(201).json({ message: "Follow-up successful.", follow });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
 module.exports = {
   loginUser,
   registerUser,
@@ -277,4 +312,5 @@ module.exports = {
   addTagsToUser,
   getUserTags,
   deleteUserTagByTagId,
+  followUser
 };
