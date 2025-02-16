@@ -11,6 +11,7 @@ const registerUser = async (req, res) => {
       city,
       role,
       password,
+      proveBy,
       categoryName,
       degreeName,
       schoolName,
@@ -43,12 +44,12 @@ const registerUser = async (req, res) => {
       await prisma.degree.create({
         data: {
           userId: newUser.userId,
-          degreeName,
-          school: schoolName,
-          year: year ? Number(year) : null,
-          frontPic,
-          justification,
-          justificationPic,
+          degreeName: proveBy === "degree" ? degreeName : null,
+          school: proveBy === "degree" ? schoolName : null,
+          year: proveBy === "degree" ? Number(year) : null,
+          frontPic: proveBy === "degree" ? frontPic : null,
+          justification: proveBy === "business" ? justification : null,
+          justificationPic: proveBy === "business" ? justificationPic : null,
         },
       });
     }
@@ -356,6 +357,37 @@ const getFollowersAndFollowing = async (req, res) => {
   }
 };
 
+const nodemailer = require("nodemailer");
+
+// Create a Nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.MY_EMAIL,
+    pass: process.env.GMAIL_KEY,
+  },
+});
+
+// Controller function to send email
+const sendEmail = async (req, res) => {
+  const { to, subject, text } = req.body;
+
+  const mailOptions = {
+    from: process.env.MY_EMAIL,
+    to,
+    subject,
+    text,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: "Email sent successfully", info });
+  } catch (error) {
+    console.error("Error sending email:", error);
+    res.status(500).json({ error: "Failed to send email" });
+  }
+};
+
 module.exports = {
   loginUser,
   registerUser,
@@ -371,4 +403,5 @@ module.exports = {
   deleteUserTagBytagName,
   followUser,
   getFollowersAndFollowing,
+  sendEmail,
 };

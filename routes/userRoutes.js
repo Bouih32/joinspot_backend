@@ -18,6 +18,7 @@ const {
   deleteUserTagBytagName,
   followUser,
   getFollowersAndFollowing,
+  sendEmail,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -29,6 +30,7 @@ const {
 router.post("/register", registerValidation, validateData, registerUser);
 router.post("/login", loginValidation, validateData, loginUser);
 router.post("/logout", authenticateToken, logOut);
+router.post("/forgot", authenticateToken, sendEmail);
 // userTag
 router.post("/tags", authenticateToken, addTagsToUser);
 // userFollow
