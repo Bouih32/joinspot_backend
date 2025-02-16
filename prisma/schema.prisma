@@ -87,11 +87,11 @@ model socials {
 
 model degree {
   degreeId         String  @id @default(auto()) @map("_id") @db.ObjectId
-  name             String
-  school           String
-  year             Int
-  frontPic         String
-  backPic          String
+  degreeName       String?
+  school           String?
+  year             Int?
+  frontPic         String?
+  backPic          String?
   verified         Boolean @default(false)
   justification    String?
   justificationPic String?

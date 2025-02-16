@@ -33,6 +33,9 @@ const registerUser = async (req, res) => {
         city,
         role: String(role).toUpperCase(),
         password: hashedPassword,
+        categoryName: role === "organiser" ? categoryName : null,
+        idFrontPic: role === "organiser" ? idFrontPic : null,
+        idBackPic: role === "organiser" ? idBackPic : null,
       },
     });
 
@@ -40,15 +43,12 @@ const registerUser = async (req, res) => {
       await prisma.degree.create({
         data: {
           userId: newUser.userId,
-          categoryName,
           degreeName,
-          schoolName,
-          year: Number(year),
+          school: schoolName,
+          year: year ? Number(year) : null,
           frontPic,
           justification,
           justificationPic,
-          idFrontPic,
-          idBackPic,
         },
       });
     }
@@ -65,7 +65,7 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return res.status(401).send({ message: "User not found" });
+      return res.status(404).send({ message: "User not found" });
     }
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
@@ -176,7 +176,7 @@ const changePassword = async (req, res) => {
 
 const logOut = async (req, res) => {
   res.clearCookie("token", { secure: true, httpOnly: true });
-  res.send({ message: "logoed out successful" });
+  res.send({ message: "logged out successful" });
 };
 
 // User management
