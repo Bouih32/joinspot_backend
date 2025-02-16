@@ -1,6 +1,10 @@
 const bcrypt = require("bcryptjs");
 const prisma = require("../utils/client");
 const { generateAcessToken } = require("../middlewares/auth");
+const crypto = require("crypto");
+
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 const registerUser = async (req, res) => {
   try {
@@ -357,11 +361,12 @@ const getFollowersAndFollowing = async (req, res) => {
   }
 };
 
-const nodemailer = require("nodemailer");
-
 // Create a Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
+  host: process.env.EMAIL_HOST,
+  port: Number(process.env.EMAIL_PORT),
+  secure: false,
   auth: {
     user: process.env.MY_EMAIL,
     pass: process.env.GMAIL_KEY,
@@ -369,22 +374,55 @@ const transporter = nodemailer.createTransport({
 });
 
 // Controller function to send email
-const sendEmail = async (req, res) => {
-  const { to, subject, text } = req.body;
-
+const sendEmail = async (to, subject, html) => {
   const mailOptions = {
     from: process.env.MY_EMAIL,
     to,
     subject,
-    text,
+    html,
   };
 
+  await transporter.sendMail(mailOptions);
+};
+
+const forgotPswrd = async (req, res) => {
+  const { email } = req.body;
   try {
-    const info = await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: "Email sent successfully", info });
+    // Check if user exists
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(404).send({ message: "No user found" });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    // Save reset token to DB
+    await prisma.reset.create({
+      data: {
+        token: resetToken,
+        expiresAt,
+        userId: user.userId,
+      },
+    });
+
+    // Generate reset link
+    const link = `${process.env.FRONTEND_URL}/reset/${resetToken}`;
+
+    // Send reset email
+    await sendEmail(
+      "joinspot.team@gmail.com", // sender email
+      "Password Reset Request", // subject
+      `<p>Click <a href="${link}">here</a> to reset your password. This link expires in 1 hour.</p>`
+    );
+
+    res.status(200).send({ message: "Password reset link sent successfully!" });
   } catch (error) {
-    console.error("Error sending email:", error);
-    res.status(500).json({ error: "Failed to send email" });
+    console.error("Error during password reset:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to send reset email", error: error.message });
   }
 };
 
@@ -403,5 +441,5 @@ module.exports = {
   deleteUserTagBytagName,
   followUser,
   getFollowersAndFollowing,
-  sendEmail,
+  forgotPswrd,
 };
