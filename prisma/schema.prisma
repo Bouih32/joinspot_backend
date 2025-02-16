@@ -92,7 +92,7 @@ model degree {
   year             Int
   frontPic         String
   backPic          String
-  verified         Boolean
+  verified         Boolean @default(false)
   justification    String?
   justificationPic String?
   userId           String  @db.ObjectId

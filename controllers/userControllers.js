@@ -25,25 +25,33 @@ const registerUser = async (req, res) => {
     if (existingUser)
       return res.status(400).send({ message: "Email is already in use." });
     const hashedPassword = await bcrypt.hash(password, 10);
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         userName,
         fullName,
         email,
         city,
-        role,
+        role: String(role).toUpperCase(),
         password: hashedPassword,
-        categoryName,
-        degreeName,
-        schoolName,
-        year,
-        frontPic,
-        justification,
-        justificationPic,
-        idFrontPic,
-        idBackPic,
       },
     });
+
+    if (role === "organiser") {
+      await prisma.degree.create({
+        data: {
+          userId: newUser.userId,
+          categoryName,
+          degreeName,
+          schoolName,
+          year: Number(year),
+          frontPic,
+          justification,
+          justificationPic,
+          idFrontPic,
+          idBackPic,
+        },
+      });
+    }
     res.status(201).json({ message: "User registered successfully!" });
   } catch (error) {
     res
@@ -63,7 +71,11 @@ const loginUser = async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).send({ message: "Uncorect password" });
     }
-    const token = generateAcessToken({ id: user.id, email: user.email });
+    const token = generateAcessToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
