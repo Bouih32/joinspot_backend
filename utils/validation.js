@@ -24,7 +24,7 @@ const loginValidation = [
 
 const registerValidation = [
   ...loginValidation,
-  check("fullname")
+  check("fullName")
     .notEmpty()
     .withMessage("Fullname must be at least 2 characters long")
     .isLength({ min: 2 })
