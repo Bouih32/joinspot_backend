@@ -63,7 +63,7 @@ const loginUser = async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).send({ message: "Uncorect password" });
     }
-    const token = generateAcessToken(user);
+    const token = generateAcessToken({ id: user.id, email: user.email });
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,

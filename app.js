@@ -4,9 +4,14 @@ const app = express();
 require("dotenv").config();
 
 const port = process.env.PORT || 7856;
-
 const cors = require("cors");
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Or your allowed origins
+    credentials: true, // Crucial for cookies
+  })
+);
 
 app.disable("x-powered-by");
 
