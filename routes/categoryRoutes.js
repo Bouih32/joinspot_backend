@@ -17,7 +17,11 @@ const {
   restoreTag,
   deleteTag,
 } = require("../controllers/categoryContollers");
-const { validateData, categoryValidation } = require("../utils/validation");
+const {
+  validateData,
+  categoryValidation,
+  tagValidation,
+} = require("../utils/validation");
 const { authenticateToken } = require("../middlewares/auth");
 const { checkRole } = require("../middlewares/Autorization");
 
@@ -30,7 +34,7 @@ router.post(
   validateData,
   createCategory
 );
-router.post("/add-tag", validateData, addTag);
+router.post("/add-tag", tagValidation, validateData, addTag);
 
 // Get
 router.get("/", getAllCategories);

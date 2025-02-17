@@ -45,9 +45,25 @@ const categoryValidation = [
     .withMessage("icon must be at least 2 characters long"),
 ];
 
+const tagValidation = [
+  check("categoryName")
+    .notEmpty()
+    .withMessage("Category must be at least 2 characters long")
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage("Category must be at least 2 characters long"),
+  check("tagName")
+    .notEmpty()
+    .withMessage("Tag must be at least 2 characters long")
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage("Tag must be at least 2 characters long"),
+];
+
 module.exports = {
   loginValidation,
   registerValidation,
   categoryValidation,
+  tagValidation,
   validateData,
 };
