@@ -20,6 +20,7 @@ const {
   followUser,
   getFollowersAndFollowing,
   forgotPswrd,
+  resetForgotenPswrd,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -32,6 +33,7 @@ router.post("/register", registerValidation, validateData, registerUser);
 router.post("/login", loginValidation, validateData, loginUser);
 router.post("/logout", authenticateToken, logOut);
 router.post("/forgot", forgotPswrd);
+router.post("/reset", resetForgotenPswrd);
 // userTag
 router.post("/tags", authenticateToken, addTagsToUser);
 // userFollow

@@ -186,7 +186,7 @@ model background {
 
 model reset {
   resetId   String   @id @default(auto()) @map("_id") @db.ObjectId
-  token     String
+  token     String   @unique
   expiresAt DateTime
   userId    String   @db.ObjectId
   user      user     @relation(fields: [userId], references: [userId], onDelete: Cascade)

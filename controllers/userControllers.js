@@ -394,11 +394,9 @@ const forgotPswrd = async (req, res) => {
       return res.status(404).send({ message: "No user found" });
     }
 
-    // Generate reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
-    // Save reset token to DB
     await prisma.reset.create({
       data: {
         token: resetToken,
@@ -407,17 +405,39 @@ const forgotPswrd = async (req, res) => {
       },
     });
 
-    // Generate reset link
     const link = `${process.env.FRONTEND_URL}/reset/${resetToken}`;
 
     // Send reset email
     await sendEmail(
-      "joinspot.team@gmail.com", // sender email
+      "enamto.bouih@gmail.com", // sender email
       "Password Reset Request", // subject
       `<p>Click <a href="${link}">here</a> to reset your password. This link expires in 1 hour.</p>`
     );
 
     res.status(200).send({ message: "Password reset link sent successfully!" });
+  } catch (error) {
+    console.error("Error during password reset:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to send reset email", error: error.message });
+  }
+};
+
+const resetForgotenPswrd = async (req, res) => {
+  const { token, newPassword } = req.body;
+  try {
+    const resetToken = await prisma.reset.findUnique({ where: { token } });
+    if (!resetToken || resetToken.expiresAt < new Date()) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { userId: resetToken.userId },
+      data: { password: hashedPassword },
+    });
+
+    return res.status(200).send({ message: "Password reset seccessfully" });
   } catch (error) {
     console.error("Error during password reset:", error);
     res
@@ -442,4 +462,5 @@ module.exports = {
   followUser,
   getFollowersAndFollowing,
   forgotPswrd,
+  resetForgotenPswrd,
 };
