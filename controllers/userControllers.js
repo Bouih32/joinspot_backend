@@ -36,7 +36,6 @@ const registerUser = async (req, res) => {
         fullName,
         email,
         city,
-        role: String(role).toUpperCase(),
         password: hashedPassword,
         categoryName: role === "organiser" ? categoryName : null,
         idFrontPic: role === "organiser" ? idFrontPic : null,
@@ -77,7 +76,7 @@ const loginUser = async (req, res) => {
       return res.status(401).send({ message: "Uncorect password" });
     }
     const token = generateAcessToken({
-      id: user.id,
+      userId: user.id,
       email: user.email,
       role: user.role,
     });
