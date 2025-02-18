@@ -117,10 +117,48 @@ const addTagsToActivity = async (req, res) => {
     });
     res.status(200).json({ message: "Tags added to activity", activityTags });
   } catch (error) {
+    res.status(500).json({
+      message: "Failed to add tags to activity",
+      error: error.message,
+    });
+  }
+};
+
+const deleteActivityTagBytagName = async (req, res) => {
+  try {
+    const { tags } = req.body;
+    if (!Array.isArray(tags)) {
+      return res.status(400).json({ message: "Tags must be an array" });
+    }
+
+    const activityTags = await prisma.activityTags.findMany({
+      where: {
+        activityId: req.params.activityId,
+        tagName: {
+          in: tags,
+        },
+      },
+    });
+    if (activityTags.length === 0) {
+      return res.status(404).json({ message: "Tags not found" });
+    }
+    await prisma.activityTags.deleteMany({
+      where: {
+        activityId: req.params.activityId,
+        tagName: {
+          in: tags,
+        },
+      },
+    });
+    res
+      .status(200)
+      .json({ message: "Tags deleted from activity", activityTags: tags });
+  } catch (error) {
+    console.log(error);
     res
       .status(500)
       .json({
-        message: "Failed to add tags to activity",
+        message: "Failed to delete tags from activity",
         error: error.message,
       });
   }
@@ -132,4 +170,5 @@ module.exports = {
   getActivityById,
   deleteActivity,
   addTagsToActivity,
+  deleteActivityTagBytagName,
 };
