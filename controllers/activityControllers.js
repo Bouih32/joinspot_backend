@@ -13,8 +13,12 @@ const createActivity = async (req, res) => {
       endDay,
       seat,
       price,
-      categoryName,
     } = req.body;
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: req.user.userId,
+      },
+    });
     const activity = await prisma.activity.create({
       data: {
         coverPic,
@@ -29,7 +33,7 @@ const createActivity = async (req, res) => {
         price,
         score: 0,
         userId: req.user.userId,
-        categoryName,
+        categoryName: user.categoryName,
       },
     });
     res
@@ -125,6 +129,7 @@ module.exports = {
   getActivities,
   getActivityById,
   deleteActivity,
+  addTagsToActivity,
 };
 
 
