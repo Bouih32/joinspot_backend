@@ -63,7 +63,6 @@ router.patch(
   "/:id",
   authenticateToken,
   checkRole("ADMIN"),
-  categoryValidation,
   validateData,
   updateCategory
 );
