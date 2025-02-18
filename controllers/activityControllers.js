@@ -98,6 +98,24 @@ const getActivityByCategory = async (req, res) => {
   }
 };
 
+const getMyActivities = async (req, res) => {
+  try {
+    const activities = await prisma.activity.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+    });
+    if (!activities) {
+      return res.status(404).json({ message: "No activities found" });
+    }
+    res.status(200).json({ message: "Activities fetched successfully", activities });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch activities",
+      error: error.message,
+    });
+  }
+};
 
 const deleteActivity = async (req, res) => {
   try {
@@ -301,5 +319,6 @@ module.exports = {
   deleteActivityTagBytagName,
   reserveActivity,
   getActivityTickets,
-  getActivityReservations
+  getActivityReservations,
+  getMyActivities
 };
