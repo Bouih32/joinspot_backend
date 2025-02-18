@@ -76,7 +76,7 @@ const loginUser = async (req, res) => {
       return res.status(401).send({ message: "Uncorect password" });
     }
     const token = generateAcessToken({
-      userId: user.id,
+      userId: user.userId,
       email: user.email,
       role: user.role,
     });
