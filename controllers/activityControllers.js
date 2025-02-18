@@ -204,6 +204,22 @@ const reserveActivity = async (req, res) => {
   }
 };
 
+const getActivityReservations = async (req, res) => {
+  try {
+    const reservations = await prisma.ticket.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+    });
+    res.status(200).json({ message: "Activity reservations fetched successfully", reservations });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch activity reservations",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createActivity,
   getActivities,
@@ -212,4 +228,5 @@ module.exports = {
   addTagsToActivity,
   deleteActivityTagBytagName,
   reserveActivity,
+  getActivityReservations
 };
