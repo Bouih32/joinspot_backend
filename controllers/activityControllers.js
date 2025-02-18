@@ -81,6 +81,24 @@ const getActivityById = async (req, res) => {
   }
 };
 
+const getActivityByCategory = async (req, res) => {
+  try {
+    const { categoryName } = req.params;
+    const activities = await prisma.activity.findMany({
+      where: {
+        categoryName,
+      },
+    });
+    res.status(200).json({ message: "Activities fetched successfully", activities });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch activities by category",
+      error: error.message,
+    });
+  }
+};
+
+
 const deleteActivity = async (req, res) => {
   try {
     const { activityId } = req.params;
@@ -204,7 +222,7 @@ const reserveActivity = async (req, res) => {
   }
 };
 
-const getActivityReservations = async (req, res) => {
+const getActivityTickets = async (req, res) => {
   try {
     const reservations = await prisma.ticket.findMany({
       where: {
@@ -220,13 +238,68 @@ const getActivityReservations = async (req, res) => {
   }
 };
 
+const getActivityReservations = async (req, res) => {
+  try {
+    const activities = await prisma.activity.findMany({
+      where: {
+        userId: req.user.userId,
+        deletedAt: null
+      }
+    });
+    const activityIds = activities.map(activity => activity.activityId);
+
+    const reservations = await prisma.ticket.findMany({
+      where: {
+        activityId: {
+          in: activityIds
+        }
+      },
+      include: {
+        user: {
+          select: {
+            userName: true,
+            fullName: true,
+            email: true,
+            phone: true,
+            avatar: true
+          }
+        },
+        activity: {
+          select: {
+            title: true,
+            startDay: true,
+            startTime: true,
+            location: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    res.status(200).json({
+      message: "reservations fetched successfully",
+      reservations
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch activity reservations",
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createActivity,
   getActivities,
   getActivityById,
+  getActivityByCategory,
   deleteActivity,
   addTagsToActivity,
   deleteActivityTagBytagName,
   reserveActivity,
+  getActivityTickets,
   getActivityReservations
 };
