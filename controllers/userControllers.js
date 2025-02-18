@@ -360,6 +360,27 @@ const getFollowersAndFollowing = async (req, res) => {
   }
 };
 
+const UnfollowUser = async (req, res) => {
+  try {
+    const { following } = req.body;
+    const existingFollow = await prisma.follow.findFirst({
+      where: {
+        followerId: req.user.userId,
+        followingId: following,
+      },
+    });
+    if (!existingFollow) {
+      return res.status(400).json({ message: "You don't follow this user." });
+    }
+    await prisma.follow.delete({
+      where: { followId: existingFollow.followId },
+    });
+    res.status(200).json({ message: "Unfollow successful." });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // Create a Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -462,4 +483,5 @@ module.exports = {
   getFollowersAndFollowing,
   forgotPswrd,
   resetForgotenPswrd,
+  UnfollowUser,
 };

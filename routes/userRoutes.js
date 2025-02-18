@@ -19,6 +19,7 @@ const {
   deleteUserTagBytagName,
   followUser,
   getFollowersAndFollowing,
+  UnfollowUser,
   forgotPswrd,
   resetForgotenPswrd,
 } = require("../controllers/userControllers");
@@ -74,6 +75,8 @@ router.put("/change-password", authenticateToken, validateData, changePassword);
 
 router.patch("/edit-profil", authenticateToken, validateData, updateUserData);
 
+router.delete("/unfollow", authenticateToken,validateData, UnfollowUser);
 router.delete("/tags/:id", authenticateToken, deleteUserTagBytagName);
+
 
 module.exports = router;
