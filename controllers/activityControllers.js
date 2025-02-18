@@ -102,25 +102,27 @@ const deleteActivity = async (req, res) => {
       .json({ message: "Failed to delete activity", error: error.message });
   }
 };
+
 const addTagsToActivity = async (req, res) => {
-    try {
-      const { tags } = req.body;
-      if (!Array.isArray(tags)) {
-        return res.status(400).json({ message: "Tags must be an array" });
-      }
-      const activityTags = await prisma.activityTags.createMany({
-        data: tags.map((tagName) => ({
-          tagName,
-          activityId: req.params.activityId,
-        })),
-      });
-      res
-        .status(200)
-        .json({ message: "Tags added to activity", activityTags });
+  try {
+    const { tags } = req.body;
+    if (!Array.isArray(tags)) {
+      return res.status(400).json({ message: "Tags must be an array" });
+    }
+    const activityTags = await prisma.activityTags.createMany({
+      data: tags.map((tagName) => ({
+        tagName,
+        activityId: req.params.activityId,
+      })),
+    });
+    res.status(200).json({ message: "Tags added to activity", activityTags });
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Failed to add tags to activity", error: error.message });
+      .json({
+        message: "Failed to add tags to activity",
+        error: error.message,
+      });
   }
 };
 
@@ -131,5 +133,3 @@ module.exports = {
   deleteActivity,
   addTagsToActivity,
 };
-
-
