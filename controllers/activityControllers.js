@@ -155,12 +155,52 @@ const deleteActivityTagBytagName = async (req, res) => {
       .json({ message: "Tags deleted from activity", activityTags: tags });
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({
-        message: "Failed to delete tags from activity",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to delete tags from activity",
+      error: error.message,
+    });
+  }
+};
+
+const reserveActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const { quantity } = req.body;
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+    });
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+    if (activity.seat < quantity) {
+      return res.status(400).json({ message: "Not enough seats available" });
+    }
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const ticket = await prisma.ticket.create({
+      data: {
+        userId: req.user.userId,
+        activityId,
+        code,
+        quantity,
+      },
+    });
+
+    await prisma.activity.update({
+      where: { activityId },
+      data: {
+        seat: activity.seat - quantity,
+      },
+    });
+
+    res.status(201).json({
+      message: "Reservation successful",
+      ticket,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to reserve activity",
+      error: error.message,
+    });
   }
 };
 
@@ -171,4 +211,5 @@ module.exports = {
   deleteActivity,
   addTagsToActivity,
   deleteActivityTagBytagName,
+  reserveActivity,
 };

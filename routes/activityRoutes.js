@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { createActivity, getActivities, getActivityById, deleteActivity,addTagsToActivity,deleteActivityTagBytagName} = require("../controllers/activityControllers");
+const { createActivity, getActivities, getActivityById, deleteActivity,addTagsToActivity,deleteActivityTagBytagName,reserveActivity} = require("../controllers/activityControllers");
 const {checkRole} = require("../middlewares/Autorization");
 const {authenticateToken} = require("../middlewares//auth");
 const {validateData} = require("../utils/validation");
 
 router.post("/add", authenticateToken, checkRole("ORGANISER"),validateData, createActivity);
 router.post("/:activityId/tags", authenticateToken, checkRole("ORGANISER"),validateData, addTagsToActivity);
+router.post("/:activityId/reserve", authenticateToken, validateData, reserveActivity);
 
 router.get("/", authenticateToken,validateData, getActivities);
 router.get("/:activityId", authenticateToken,validateData, getActivityById);
