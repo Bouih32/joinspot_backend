@@ -48,13 +48,13 @@ router.get(
   validateData,
   getActivityReservations
 );
-router.get("/:activityId", authenticateToken, validateData, getActivityById);
 router.get(
-  "/category/:categoryName",
-  authenticateToken,
-  validateData,
-  getActivityByCategory
+    "/category/:categoryName",
+    authenticateToken,
+    validateData,
+    getActivityByCategory
 );
+router.get("/:activityId", authenticateToken, validateData, getActivityById);
 
 router.delete(
   "/:activityId/tags",
