@@ -71,6 +71,7 @@ router.patch(
 // Delete
 
 router.delete("/tags/:id", authenticateToken, checkRole("ADMIN"), deleteTag);
-router.delete("/:id", authenticateToken, checkRole("ADMIN"), deleteCategory);
+router.delete("/tags/:id", authenticateToken, checkRole("ADMIN"), deleteTag);
+router.delete("/:id", deleteCategory);
 
 module.exports = router;

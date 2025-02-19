@@ -24,14 +24,14 @@ const getCategoryById = async (req, res) => {
       where: { categoryName: id },
     });
     if (!category) {
-      res.status(404).json({ message: "Category not found" });
+      return res.status(404).json({ message: "Category not found" });
     } else {
-      res
+      return res
         .status(200)
         .json({ message: "Category retrieved successfully", data: category });
     }
   } catch (error) {
-    res.status(500).json({ message: "Error", error: error.message });
+    return res.status(500).json({ message: "Error", error: error.message });
   }
 };
 
@@ -106,36 +106,38 @@ const deleteCategory = async (req, res) => {
     const category = await prisma.category.findUnique({
       where: {
         categoryName: id,
-        deletedAt: { not: null },
+        // deletedAt: { not: null },
       },
     });
     if (!category) {
-      res.status(404).json({ message: "Category not found" });
+      return res.status(404).json({ message: "Category not found" });
     }
 
     const tags = await prisma.tag.findMany({
       where: { categoryName: id },
     });
 
-    await prisma.category.update({
+    await prisma.category.delete({
       where: {
         categoryName: id,
       },
-      data: {
-        deletedAt: new Date(),
-      },
+      // data: {
+      //   deletedAt: new Date(),
+      // },
     });
 
-    await Promise.all(
-      tags.map((tag) =>
-        prisma.tag.update({
-          where: { tagName: tag.tagName },
-          data: { deletedAt: new Date() },
-        })
-      )
-    );
+    if (tags.length > 0) {
+      await Promise.all(
+        tags.map((tag) =>
+          prisma.tag.delete({
+            where: { tagName: tag.tagName },
+            // data: { deletedAt: new Date() },
+          })
+        )
+      );
+    }
 
-    res.status(200).json({ message: "Category deleted" });
+    res.status(200).send({ message: "Category deleted" });
   } catch (error) {
     res.status(500).json({ message: "Error", error: error.message });
   }
@@ -151,7 +153,9 @@ const restoreCategory = async (req, res) => {
       },
     });
     if (!category) {
-      res.status(404).json({ message: "Category not found in deleted state" });
+      return res
+        .status(404)
+        .json({ message: "Category not found in deleted state" });
     }
     await prisma.category.update({
       where: {
@@ -183,7 +187,7 @@ const addTag = async (req, res) => {
       where: { tagName },
     });
     if (existedTag) {
-      res.status(400).json({ message: "Tag already exists" });
+      return res.status(400).json({ message: "Tag already exists" });
     }
 
     const category = await prisma.category.findUnique({

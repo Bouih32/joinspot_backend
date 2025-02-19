@@ -85,10 +85,10 @@ const loginUser = async (req, res) => {
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    res.status(200).json({ message: "Login successful!", user, token });
+    return res.status(200).json({ message: "Login successful!", user, token });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(500)
       .json({ message: "Erreur interne du serveur", error: error.message });
   }
@@ -104,10 +104,12 @@ const getUserData = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json({ user });
+    return res.status(200).json({ user });
   } catch (error) {
     console.error("Error getting profil:", error);
-    res.status(500).json({ message: "Erreur serveur", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
   }
 };
 
@@ -141,12 +143,14 @@ const updateUserData = async (req, res) => {
         userId: req.user.userId,
       },
     });
-    res
+    return res
       .status(200)
       .json({ message: "User updated successfully", user: updatedUser });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Erreur serveur", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: err.message });
   }
 };
 
@@ -172,9 +176,11 @@ const changePassword = async (req, res) => {
       },
       data: { password: hashedPassword },
     });
-    res.status(200).json({ message: "Password changed successfully" });
+    return res.status(200).json({ message: "Password changed successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error server", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error server", error: error.message });
   }
 };
 
@@ -189,9 +195,9 @@ const getAllUsers = async (req, res) => {
     const users = await prisma.user.findMany();
     if (users.length == 0)
       return res.status(404).json({ message: "No users found" });
-    res.status(200).json({ users: users });
+    return res.status(200).json({ users: users });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching users" });
+    return res.status(500).json({ message: "Error fetching users" });
   }
 };
 
@@ -206,9 +212,9 @@ const getDeletedUsers = async (req, res) => {
     });
     if (users.length == 0)
       return res.status(404).json({ message: "No users found" });
-    res.status(200).json({ users });
+    return res.status(200).json({ users });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching users" });
+    return res.status(500).json({ message: "Error fetching users" });
   }
 };
 
@@ -223,10 +229,10 @@ const getUserById = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json({ user });
+    return res.status(200).json({ user });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(500)
       .json({ message: "Error fetching user", error: error.message });
   }
@@ -248,10 +254,10 @@ const addTagsToUser = async (req, res) => {
         tagName,
       })),
     });
-    res.status(200).json({ message: "Tags added", userTags });
+    return res.status(200).json({ message: "Tags added", userTags });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
   }
@@ -272,10 +278,12 @@ const getUserTags = async (req, res) => {
       },
     });
     const tagNames = userTags.map((userTag) => userTag.tag.name); // Extract names
-    res.status(200).json({ message: "User tags fetched", tags: tagNames });
+    return res
+      .status(200)
+      .json({ message: "User tags fetched", tags: tagNames });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
   }
