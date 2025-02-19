@@ -37,7 +37,7 @@ model user {
   userName          String?
   fullName          String?
   email             String         @unique
-  city              String?
+  cityName          String?
   role              Role           @default(VISITOR)
   password          String
   bio               String?
@@ -50,6 +50,7 @@ model user {
   updatedAt         DateTime       @updatedAt
   deletedAt         DateTime?
   categoryName      String?
+  city              city?          @relation(fields: [cityName], references: [cityName])
   category          category?      @relation(fields: [categoryName], references: [categoryName])
   degree            degree[]
   bank              bank[]
@@ -123,10 +124,17 @@ model tag {
   tagName      String         @id @map("_id")
   deletedAt    DateTime?
   categoryName String
-  category     category       @relation(fields: [categoryName], references: [categoryName])
+  category     category       @relation(fields: [categoryName], references: [categoryName], onDelete: Cascade)
   userTags     userTags[]
   activityTags activityTags[]
   postTags     postTags[]
+}
+
+model city {
+  cityName String     @id @map("_id")
+  cover    String
+  activity activity[]
+  user     user[]
 }
 
 model activity {
@@ -140,6 +148,7 @@ model activity {
   startDay     String
   endDay       String
   seat         Int
+  cityName     String
   price        Float
   score        Float
   createdAt    DateTime       @default(now())
@@ -149,6 +158,7 @@ model activity {
   user         user           @relation(fields: [userId], references: [userId], onDelete: Cascade)
   categoryName String
   category     category       @relation(fields: [categoryName], references: [categoryName])
+  city         city           @relation(fields: [cityName], references: [cityName], onDelete: Cascade)
   ticket       ticket[]
   saveAct      saveAct[]
   review       review[]
