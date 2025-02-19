@@ -4,11 +4,9 @@ const prisma = require("../utils/client");
 const getAllCategories = async (req, res) => {
   try {
     const categories = await prisma.category.findMany({
-      where: {
-        deletedAt: null,
-      },
+      where: { deletedAt: null },
     });
-    if (!categories) {
+    if (categories.length === 0) {
       return res.status(404).json({ message: "No categories found" });
     }
     return res.status(200).json({ categories });
@@ -67,7 +65,7 @@ const createCategory = async (req, res) => {
       return res.status(400).json({ message: "Category already exists" });
     }
     const category = await prisma.category.create({
-      data: { categoryName, icon },
+      data: { categoryName, icon, deletedAt: null },
     });
     return res.status(201).json({ message: "Category created", category });
   } catch (error) {
@@ -117,7 +115,7 @@ const deleteCategory = async (req, res) => {
       where: { categoryName: id },
     });
 
-    await prisma.category.patch({
+    await prisma.category.update({
       where: {
         categoryName: id,
       },
@@ -129,7 +127,7 @@ const deleteCategory = async (req, res) => {
     if (tags.length > 0) {
       await Promise.all(
         tags.map((tag) =>
-          prisma.tag.patch({
+          prisma.tag.update({
             where: { tagName: tag.tagName },
             data: { deletedAt: new Date() },
           })
@@ -202,6 +200,7 @@ const addTag = async (req, res) => {
       data: {
         tagName,
         categoryName,
+        deletedAt: null,
       },
     });
     return res

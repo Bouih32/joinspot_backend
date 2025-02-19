@@ -28,8 +28,7 @@ const { checkRole } = require("../middlewares/Autorization");
 // post
 router.post(
   "/add",
-  authenticateToken,
-  checkRole("ADMIN"),
+
   categoryValidation,
   validateData,
   createCategory
