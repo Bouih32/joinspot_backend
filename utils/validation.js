@@ -46,7 +46,7 @@ const categoryValidation = [
 ];
 
 const tagValidation = [
-  check("categoryName")
+  check("categoryId")
     .notEmpty()
     .withMessage("Category must be at least 2 characters long")
     .trim()
