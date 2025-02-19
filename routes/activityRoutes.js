@@ -12,6 +12,7 @@ const {
   getActivityByCategory,
   getActivityReservations,
   getMyActivities,
+  getActivitiesBytags
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const { authenticateToken } = require("../middlewares//auth");
@@ -47,6 +48,12 @@ router.get(
   checkRole("ORGANISER"),
   validateData,
   getActivityReservations
+);
+router.get(
+  "/tags",
+  authenticateToken,
+  validateData,
+  getActivitiesBytags
 );
 router.get(
     "/category/:categoryName",

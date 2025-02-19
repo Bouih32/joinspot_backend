@@ -98,6 +98,30 @@ const getActivityByCategory = async (req, res) => {
   }
 };
 
+const getActivitiesBytags = async (req, res) => {
+  try {
+    const { tagName } = req.body;
+    const activities = await prisma.activity.findMany({
+      where: {
+        activityTags: {
+          some: {
+            tagName: tagName,
+          },
+        },
+      },
+      include: {
+        activityTags: true,
+      },
+    });
+    res.status(200).json({ message: "Activities fetched successfully", activities });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch activities by tags",
+      error: error.message,
+    });
+  }
+};
+
 const getMyActivities = async (req, res) => {
   try {
     const activities = await prisma.activity.findMany({
@@ -314,6 +338,7 @@ module.exports = {
   getActivities,
   getActivityById,
   getActivityByCategory,
+  getActivitiesBytags,
   deleteActivity,
   addTagsToActivity,
   deleteActivityTagBytagName,
