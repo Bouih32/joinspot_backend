@@ -46,6 +46,7 @@ router.get("/:id/tags", getTagsByCategory);
 router.get("/:id", getCategoryById);
 
 // Patch
+
 router.patch("/tags/:id", authenticateToken, checkRole("ADMIN"), updateTag);
 router.patch(
   "/restore/:id",
@@ -67,11 +68,11 @@ router.patch(
   validateData,
   updateCategory
 );
+router.patch("/delete/:id", deleteCategory);
 
 // Delete
 
 router.delete("/tags/:id", authenticateToken, checkRole("ADMIN"), deleteTag);
 router.delete("/tags/:id", authenticateToken, checkRole("ADMIN"), deleteTag);
-router.delete("/:id", deleteCategory);
 
 module.exports = router;

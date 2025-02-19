@@ -106,7 +106,7 @@ const deleteCategory = async (req, res) => {
     const category = await prisma.category.findUnique({
       where: {
         categoryName: id,
-        // deletedAt: { not: null },
+        deletedAt: null,
       },
     });
     if (!category) {
@@ -117,21 +117,21 @@ const deleteCategory = async (req, res) => {
       where: { categoryName: id },
     });
 
-    await prisma.category.delete({
+    await prisma.category.patch({
       where: {
         categoryName: id,
       },
-      // data: {
-      //   deletedAt: new Date(),
-      // },
+      data: {
+        deletedAt: new Date(),
+      },
     });
 
     if (tags.length > 0) {
       await Promise.all(
         tags.map((tag) =>
-          prisma.tag.delete({
+          prisma.tag.patch({
             where: { tagName: tag.tagName },
-            // data: { deletedAt: new Date() },
+            data: { deletedAt: new Date() },
           })
         )
       );
