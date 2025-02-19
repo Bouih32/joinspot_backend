@@ -4,16 +4,13 @@ const prisma = require("../utils/client");
 const getAllCategories = async (req, res) => {
   try {
     const categories = await prisma.category.findMany({
-      where: {
-        deletedAt: null,
-      },
     });
-    if (!categories) {
+    if (categories.length == 0) {
       return res.status(404).json({ message: "No categories found" });
     }
-    res.status(200).json({ categories });
+    return res.status(200).json({ categories });
   } catch (err) {
-    res.status(500).json({ message: "Error", error: err.message });
+    return res.status(500).json({ message: "Error", error: err.message });
   }
 };
 
@@ -200,10 +197,10 @@ const addTag = async (req, res) => {
         categoryName,
       },
     });
-    res.status(200).json({ message: "Tag added successfully", data: tag });
+    return res.status(200).json({ message: "Tag added successfully", data: tag });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(500)
       .json({ message: "Failed to add tag", error: error.message });
   }

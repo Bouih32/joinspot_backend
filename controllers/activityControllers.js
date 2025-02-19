@@ -36,14 +36,11 @@ const createActivity = async (req, res) => {
         categoryName: user.categoryName,
       },
     });
-    if (!title || !description || !user.categoryName) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
     return res
       .status(201)
       .json({ message: "Activity created successfully", activity });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Failed to create activity", error: error.message });
   }
@@ -66,14 +63,14 @@ const getActivities = async (req, res) => {
         },
       },
     });
-    if (!activities) {
+    if (activities.length == 0) {
       return res.status(404).json({ message: "No activities found" });
     }
-    res
+    return res
       .status(200)
       .json({ message: "Activities fetched successfully", activities });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Failed to fetch activities", error: error.message });
   }
@@ -101,11 +98,11 @@ const getActivityById = async (req, res) => {
     if (!activity) {
       return res.status(404).json({ message: "Activity not found" });
     }
-    res
+    return res
       .status(200)
       .json({ message: "Activity fetched successfully", activity });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Failed to fetch activity", error: error.message });
   }
@@ -132,11 +129,14 @@ const getActivityByCategory = async (req, res) => {
         },
       },
     });
-    res
+    if (activities.length == 0) {
+      return res.status(404).json({ message: "No activities found" });
+    }
+    return res
       .status(200)
       .json({ message: "Activities fetched successfully", activities });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to fetch activities by category",
       error: error.message,
     });
@@ -146,6 +146,16 @@ const getActivityByCategory = async (req, res) => {
 const getActivitiesBytags = async (req, res) => {
   try {
     const { tagName } = req.body;
+    const existingTags = await prisma.tag.findFirst({
+      where: {
+        tagName: {
+          in: tagName,
+        },
+      },
+    });
+    if (!existingTags) {
+      return res.status(400).json({ message: "Some tags do not exist" });
+    }
     const activities = await prisma.activity.findMany({
       where: {
         activityTags: {
@@ -168,11 +178,12 @@ const getActivitiesBytags = async (req, res) => {
         },
       },
     });
-    res
+    return res
       .status(200)
       .json({ message: "Activities fetched successfully", activities });
   } catch (error) {
-    res.status(500).json({
+    console.log(error);
+    return res.status(500).json({
       message: "Failed to fetch activities by tags",
       error: error.message,
     });
@@ -202,11 +213,11 @@ const getMyActivities = async (req, res) => {
     if (!activities) {
       return res.status(404).json({ message: "No activities found" });
     }
-    res
+    return res
       .status(200)
       .json({ message: "Activities fetched successfully", activities });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to fetch activities",
       error: error.message,
     });
@@ -225,11 +236,11 @@ const deleteActivity = async (req, res) => {
     if (!activity) {
       return res.status(404).json({ message: "Activity not found" });
     }
-    res
+    return res
       .status(200)
       .json({ message: "Activity deleted successfully", activity });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Failed to delete activity", error: error.message });
   }
@@ -247,9 +258,11 @@ const addTagsToActivity = async (req, res) => {
         activityId: req.params.activityId,
       })),
     });
-    res.status(200).json({ message: "Tags added to activity", activityTags });
+    return res
+      .status(200)
+      .json({ message: "Tags added to activity", activityTags });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to add tags to activity",
       error: error.message,
     });
@@ -282,12 +295,12 @@ const deleteActivityTagBytagName = async (req, res) => {
         },
       },
     });
-    res
+    return res
       .status(200)
       .json({ message: "Tags deleted from activity", activityTags: tags });
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to delete tags from activity",
       error: error.message,
     });
@@ -324,12 +337,12 @@ const reserveActivity = async (req, res) => {
       },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Reservation successful",
       ticket,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to reserve activity",
       error: error.message,
     });
@@ -356,14 +369,12 @@ const getActivityTickets = async (req, res) => {
         },
       },
     });
-    res
-      .status(200)
-      .json({
-        message: "Activity reservations fetched successfully",
-        reservations,
-      });
+    return res.status(200).json({
+      message: "Activity reservations fetched successfully",
+      reservations,
+    });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to fetch activity reservations",
       error: error.message,
     });
@@ -410,12 +421,12 @@ const getActivityReservations = async (req, res) => {
       },
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "reservations fetched successfully",
       reservations,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to fetch activity reservations",
       error: error.message,
     });
