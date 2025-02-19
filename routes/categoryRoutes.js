@@ -46,7 +46,14 @@ router.get("/:id", getCategoryById);
 
 // Patch
 
-router.patch("/tags/:id", authenticateToken, checkRole("ADMIN"), updateTag);
+router.patch(
+  "/tags/:id",
+  authenticateToken,
+  tagValidation,
+  validateData,
+  checkRole("ADMIN"),
+  updateTag
+);
 router.patch(
   "/restore/:id",
   authenticateToken,
