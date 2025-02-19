@@ -1,1 +1,449 @@
-const prisma = require("../utils/primsaClient");
+const prisma = require("../utils/client");
+
+const createActivity = async (req, res) => {
+  try {
+    const {
+      coverPic,
+      title,
+      description,
+      startTime,
+      endTime,
+      location,
+      startDay,
+      endDay,
+      seat,
+      price,
+    } = req.body;
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: req.user.userId,
+      },
+    });
+    const activity = await prisma.activity.create({
+      data: {
+        coverPic,
+        title,
+        description,
+        startTime,
+        endTime,
+        location,
+        startDay,
+        endDay,
+        seat,
+        price,
+        score: 0,
+        userId: req.user.userId,
+        categoryName: user.categoryName,
+      },
+    });
+    return res
+      .status(201)
+      .json({ message: "Activity created successfully", activity });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Failed to create activity", error: error.message });
+  }
+};
+
+const getActivities = async (req, res) => {
+  try {
+    const activities = await prisma.activity.findMany({
+      include: {
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        activityTags: {
+          select: {
+            tagName: true,
+          },
+        },
+      },
+    });
+    if (activities.length == 0) {
+      return res.status(404).json({ message: "No activities found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Activities fetched successfully", activities });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch activities", error: error.message });
+  }
+};
+
+const getActivityById = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+      include: {
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        activityTags: {
+          select: {
+            tagName: true,
+          },
+        },
+      },
+    });
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Activity fetched successfully", activity });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch activity", error: error.message });
+  }
+};
+
+const getActivityByCategory = async (req, res) => {
+  try {
+    const { categoryName } = req.params;
+    const activities = await prisma.activity.findMany({
+      where: {
+        categoryName,
+      },
+      include: {
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        activityTags: {
+          select: {
+            tagName: true,
+          },
+        },
+      },
+    });
+    if (activities.length == 0) {
+      return res.status(404).json({ message: "No activities found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Activities fetched successfully", activities });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch activities by category",
+      error: error.message,
+    });
+  }
+};
+
+const getActivitiesBytags = async (req, res) => {
+  try {
+    const { tagName } = req.body;
+    const existingTags = await prisma.tag.findFirst({
+      where: {
+        tagName: {
+          in: tagName,
+        },
+      },
+    });
+    if (!existingTags) {
+      return res.status(400).json({ message: "Some tags do not exist" });
+    }
+    const activities = await prisma.activity.findMany({
+      where: {
+        activityTags: {
+          some: {
+            tagName: tagName,
+          },
+        },
+      },
+      include: {
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        activityTags: {
+          select: {
+            tagName: true,
+          },
+        },
+      },
+    });
+    return res
+      .status(200)
+      .json({ message: "Activities fetched successfully", activities });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Failed to fetch activities by tags",
+      error: error.message,
+    });
+  }
+};
+
+const getMyActivities = async (req, res) => {
+  try {
+    const activities = await prisma.activity.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+      include: {
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        activityTags: {
+          select: {
+            tagName: true,
+          },
+        },
+      },
+    });
+    if (!activities) {
+      return res.status(404).json({ message: "No activities found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Activities fetched successfully", activities });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch activities",
+      error: error.message,
+    });
+  }
+};
+
+const deleteActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const activity = await prisma.activity.update({
+      where: { activityId },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Activity deleted successfully", activity });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Failed to delete activity", error: error.message });
+  }
+};
+
+const addTagsToActivity = async (req, res) => {
+  try {
+    const { tags } = req.body;
+    if (!Array.isArray(tags)) {
+      return res.status(400).json({ message: "Tags must be an array" });
+    }
+    const activityTags = await prisma.activityTags.createMany({
+      data: tags.map((tagName) => ({
+        tagName,
+        activityId: req.params.activityId,
+      })),
+    });
+    return res
+      .status(200)
+      .json({ message: "Tags added to activity", activityTags });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to add tags to activity",
+      error: error.message,
+    });
+  }
+};
+
+const deleteActivityTagBytagName = async (req, res) => {
+  try {
+    const { tags } = req.body;
+    if (!Array.isArray(tags)) {
+      return res.status(400).json({ message: "Tags must be an array" });
+    }
+
+    const activityTags = await prisma.activityTags.findMany({
+      where: {
+        activityId: req.params.activityId,
+        tagName: {
+          in: tags,
+        },
+      },
+    });
+    if (activityTags.length === 0) {
+      return res.status(404).json({ message: "Tags not found" });
+    }
+    await prisma.activityTags.deleteMany({
+      where: {
+        activityId: req.params.activityId,
+        tagName: {
+          in: tags,
+        },
+      },
+    });
+    return res
+      .status(200)
+      .json({ message: "Tags deleted from activity", activityTags: tags });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Failed to delete tags from activity",
+      error: error.message,
+    });
+  }
+};
+
+const reserveActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const { quantity } = req.body;
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+    });
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+    if (activity.seat < quantity) {
+      return res.status(400).json({ message: "Not enough seats available" });
+    }
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const ticket = await prisma.ticket.create({
+      data: {
+        userId: req.user.userId,
+        activityId,
+        code,
+        quantity,
+      },
+    });
+
+    await prisma.activity.update({
+      where: { activityId },
+      data: {
+        seat: activity.seat - quantity,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Reservation successful",
+      ticket,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to reserve activity",
+      error: error.message,
+    });
+  }
+};
+
+const getActivityTickets = async (req, res) => {
+  try {
+    const reservations = await prisma.ticket.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+      include: {
+        activity: {
+          select: {
+            title: true,
+            startTime: true,
+            endTime: true,
+            startDay: true,
+            endDay: true,
+            location: true,
+            coverPic: true,
+          },
+        },
+      },
+    });
+    return res.status(200).json({
+      message: "Activity reservations fetched successfully",
+      reservations,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch activity reservations",
+      error: error.message,
+    });
+  }
+};
+
+const getActivityReservations = async (req, res) => {
+  try {
+    const activities = await prisma.activity.findMany({
+      where: {
+        userId: req.user.userId,
+        deletedAt: null,
+      },
+    });
+    const activityIds = activities.map((activity) => activity.activityId);
+
+    const reservations = await prisma.ticket.findMany({
+      where: {
+        activityId: {
+          in: activityIds,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            userName: true,
+            fullName: true,
+            email: true,
+            phone: true,
+            avatar: true,
+          },
+        },
+        activity: {
+          select: {
+            title: true,
+            startDay: true,
+            startTime: true,
+            location: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.status(200).json({
+      message: "reservations fetched successfully",
+      reservations,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch activity reservations",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  createActivity,
+  getActivities,
+  getActivityById,
+  getActivityByCategory,
+  getActivitiesBytags,
+  deleteActivity,
+  addTagsToActivity,
+  deleteActivityTagBytagName,
+  reserveActivity,
+  getActivityTickets,
+  getActivityReservations,
+  getMyActivities,
+};
