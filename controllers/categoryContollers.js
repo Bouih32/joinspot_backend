@@ -11,9 +11,9 @@ const getAllCategories = async (req, res) => {
     if (!categories) {
       return res.status(404).json({ message: "No categories found" });
     }
-    res.status(200).json({ categories });
+    return res.status(200).json({ categories });
   } catch (err) {
-    res.status(500).json({ message: "Error", error: err.message });
+    return res.status(500).json({ message: "Error", error: err.message });
   }
 };
 
@@ -47,13 +47,13 @@ const getDeletedCategories = async (req, res) => {
       return res.status(404).json({ message: "No deleted categories found" });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Deleted categories retrieved successfully",
       categories,
     });
   } catch (err) {
     console.error("Error retrieving deleted categories:", err);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -69,10 +69,10 @@ const createCategory = async (req, res) => {
     const category = await prisma.category.create({
       data: { categoryName, icon },
     });
-    res.status(201).json({ message: "Category created", category });
+    return res.status(201).json({ message: "Category created", category });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error", error: error.message });
+    return res.status(500).json({ message: "Error", error: error.message });
   }
 };
 
@@ -84,19 +84,19 @@ const updateCategory = async (req, res) => {
       where: { categoryName: id },
     });
     if (!category) {
-      res.status(404).json({ message: "Category not found" });
+      return res.status(404).json({ message: "Category not found" });
     }
 
     const updatedCategory = await prisma.category.update({
       where: { categoryName: id },
       data: { categoryName, icon },
     });
-    res.status(200).json({
+    return res.status(200).json({
       message: "Category updated successfully",
       category: updatedCategory,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error", error: error.message });
+    return res.status(500).json({ message: "Error", error: error.message });
   }
 };
 
@@ -137,9 +137,9 @@ const deleteCategory = async (req, res) => {
       );
     }
 
-    res.status(200).send({ message: "Category deleted" });
+    return res.status(200).send({ message: "Category deleted" });
   } catch (error) {
-    res.status(500).json({ message: "Error", error: error.message });
+    return res.status(500).json({ message: "Error", error: error.message });
   }
 };
 
@@ -174,9 +174,9 @@ const restoreCategory = async (req, res) => {
         })
       )
     );
-    res.status(200).json({ message: "Category restored" });
+    return res.status(200).json({ message: "Category restored" });
   } catch (error) {
-    res.status(500).json({ message: "Error", error: error.message });
+    return res.status(500).json({ message: "Error", error: error.message });
   }
 };
 // Tags
@@ -195,7 +195,7 @@ const addTag = async (req, res) => {
     });
 
     if (!category) {
-      res.status(404).json({ message: "Category does not exists" });
+      return res.status(404).json({ message: "Category does not exists" });
     }
 
     const tag = await prisma.tag.create({
@@ -204,10 +204,12 @@ const addTag = async (req, res) => {
         categoryName,
       },
     });
-    res.status(200).json({ message: "Tag added successfully", data: tag });
+    return res
+      .status(200)
+      .json({ message: "Tag added successfully", data: tag });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(500)
       .json({ message: "Failed to add tag", error: error.message });
   }
@@ -216,11 +218,11 @@ const addTag = async (req, res) => {
 const getTags = async (req, res) => {
   try {
     const tags = await prisma.tag.findMany();
-    res
+    return res
       .status(200)
       .json({ message: "Tags retrieved successfully", data: tags });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Failed to retrieve tags", error: error.message });
   }
@@ -236,13 +238,13 @@ const getTagsByCategory = async (req, res) => {
       },
     });
     if (!tags) {
-      res.status(404).json({ message: "Tags not found" });
+      return res.status(404).json({ message: "Tags not found" });
     }
-    res
+    return res
       .status(200)
       .json({ message: "Tags retrieved successfully", data: tags });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Failed to retrieve tags", error: error.message });
   }
@@ -257,11 +259,13 @@ const getTagById = async (req, res) => {
       },
     });
     if (!tag) {
-      res.status(404).json({ message: "Tag not found" });
+      return res.status(404).json({ message: "Tag not found" });
     }
-    res.status(200).json({ message: "Tag retrieved successfully", data: tag });
+    return res
+      .status(200)
+      .json({ message: "Tag retrieved successfully", data: tag });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Failed to retrieve tag", error: error.message });
   }
@@ -283,7 +287,7 @@ const getDeletedTags = async (req, res) => {
     });
   } catch (error) {
     console.error("Error retrieving deleted tags:", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -293,17 +297,17 @@ const updateTag = async (req, res) => {
     const { tagName, categoryName } = req.body;
     const tag = await prisma.tag.findUnique({ where: { tagName: id } });
     if (!tag) {
-      res.status(404).json({ message: "tag not found" });
+      return res.status(404).json({ message: "tag not found" });
     }
     const updatedtag = await prisma.tag.update({
       where: { tagName: id },
       data: { tagName, categoryName },
     });
-    res
+    return res
       .status(200)
       .json({ message: "Tag updated successfully", data: updatedtag });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Failed to update tag", error: error.message });
   }
@@ -314,7 +318,7 @@ const deleteTag = async (req, res) => {
     const { id } = req.params;
     const tag = await prisma.tag.findUnique({ where: { tagName: id } });
     if (!tag) {
-      res.status(404).json({ message: "tag not found" });
+      return res.status(404).json({ message: "tag not found" });
     }
     await prisma.tag.update({
       where: {
@@ -324,9 +328,9 @@ const deleteTag = async (req, res) => {
         deletedAt: new Date(),
       },
     });
-    res.status(200).json({ message: "Tag deleted successfully" });
+    return res.status(200).json({ message: "Tag deleted successfully" });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Failed to delete tag", error: error.message });
   }
@@ -337,7 +341,7 @@ const restoreTag = async (req, res) => {
     const { id } = req.params;
     const tag = await prisma.tag.findUnique({ where: { tagName: id } });
     if (!tag) {
-      res.status(404).json({ message: "tag not found" });
+      return res.status(404).json({ message: "tag not found" });
     }
     await prisma.tag.update({
       where: {
@@ -347,9 +351,9 @@ const restoreTag = async (req, res) => {
         deletedAt: null,
       },
     });
-    res.status(200).json({ message: "Tag restored successfully" });
+    return res.status(200).json({ message: "Tag restored successfully" });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ message: "Failed to restore tag", error: error.message });
   }

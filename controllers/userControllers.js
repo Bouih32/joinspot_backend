@@ -305,10 +305,10 @@ const deleteUserTagBytagName = async (req, res) => {
         userTagsId: userTag.userTagsId,
       },
     });
-    res.status(200).json({ message: "User tag deleted successfully" });
+    return res.status(200).json({ message: "User tag deleted successfully" });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
   }
@@ -337,10 +337,12 @@ const followUser = async (req, res) => {
         followingId: following,
       },
     });
-    res.status(201).json({ message: "Follow-up successful.", follow });
+    return res.status(201).json({ message: "Follow-up successful.", follow });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Erreur serveur", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
   }
 };
 
@@ -356,7 +358,7 @@ const getFollowersAndFollowing = async (req, res) => {
       include: { following: { select: { userId: true, userName: true } } },
     });
     console.log(followers, following);
-    res.status(200).json({
+    return res.status(200).json({
       followersCount: followers.length,
       followers: followers.map((f) => f.follower),
       followingCount: following.length,
@@ -364,7 +366,9 @@ const getFollowersAndFollowing = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Erreur serveur", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
   }
 };
 
@@ -421,10 +425,12 @@ const forgotPswrd = async (req, res) => {
       `<p>Click <a href="${link}">here</a> to reset your password. This link expires in 1 hour.</p>`
     );
 
-    res.status(200).send({ message: "Password reset link sent successfully!" });
+    return res
+      .status(200)
+      .send({ message: "Password reset link sent successfully!" });
   } catch (error) {
     console.error("Error during password reset:", error);
-    res
+    return res
       .status(500)
       .json({ message: "Failed to send reset email", error: error.message });
   }
@@ -447,7 +453,7 @@ const resetForgotenPswrd = async (req, res) => {
     return res.status(200).send({ message: "Password reset seccessfully" });
   } catch (error) {
     console.error("Error during password reset:", error);
-    res
+    return res
       .status(500)
       .json({ message: "Failed to send reset email", error: error.message });
   }
