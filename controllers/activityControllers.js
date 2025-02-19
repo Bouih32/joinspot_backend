@@ -36,7 +36,10 @@ const createActivity = async (req, res) => {
         categoryName: user.categoryName,
       },
     });
-    res
+    if (!title || !description || !user.categoryName) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+    return res
       .status(201)
       .json({ message: "Activity created successfully", activity });
   } catch (error) {
