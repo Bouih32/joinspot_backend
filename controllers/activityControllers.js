@@ -146,14 +146,14 @@ const getActivityByCategory = async (req, res) => {
 const getActivitiesBytags = async (req, res) => {
   try {
     const { tagName } = req.body;
-    const existingTags = await prisma.tag.findFirst({
+    const existingTags = await prisma.tag.findMany({
       where: {
         tagName: {
           in: tagName,
         },
       },
     });
-    if (!existingTags) {
+    if (existingTags.length === 0) {
       return res.status(400).json({ message: "Some tags do not exist" });
     }
     const activities = await prisma.activity.findMany({
@@ -210,7 +210,7 @@ const getMyActivities = async (req, res) => {
         },
       },
     });
-    if (!activities) {
+    if (activities.length === 0) {
       return res.status(404).json({ message: "No activities found" });
     }
     return res
@@ -227,7 +227,13 @@ const getMyActivities = async (req, res) => {
 const deleteActivity = async (req, res) => {
   try {
     const { activityId } = req.params;
-    const activity = await prisma.activity.update({
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+    });
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    } 
+    await prisma.activity.update({
       where: { activityId },
       data: {
         deletedAt: new Date(),
@@ -369,6 +375,9 @@ const getActivityTickets = async (req, res) => {
         },
       },
     });
+    if (reservations.length === 0) {
+      return res.status(404).json({ message: "No reservations found" });
+    }
     return res.status(200).json({
       message: "Activity reservations fetched successfully",
       reservations,
@@ -390,7 +399,9 @@ const getActivityReservations = async (req, res) => {
       },
     });
     const activityIds = activities.map((activity) => activity.activityId);
-
+    if (activityIds.length === 0) {
+      return res.status(404).json({ message: "No activities found" });
+    }
     const reservations = await prisma.ticket.findMany({
       where: {
         activityId: {
@@ -420,7 +431,9 @@ const getActivityReservations = async (req, res) => {
         createdAt: "desc",
       },
     });
-
+    if (reservations.length === 0) {
+      return res.status(404).json({ message: "No reservations found" });
+    }
     return res.status(200).json({
       message: "reservations fetched successfully",
       reservations,
