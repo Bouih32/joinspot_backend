@@ -150,7 +150,7 @@ const restoreCategory = async (req, res) => {
         deletedAt: { not: null },
       },
     });
-    if (!category) {
+    if (category === 0) {
       return res
         .status(404)
         .json({ message: "Category not found in deleted state" });
@@ -241,7 +241,7 @@ const getTagsByCategory = async (req, res) => {
         deletedAt: null,
       },
     });
-    if (!tags) {
+    if (tags.length ===0) {
       return res.status(404).json({ message: "Tags not found" });
     }
     return res
