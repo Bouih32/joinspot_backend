@@ -173,11 +173,11 @@ const getActivityByCategory = async (req, res) => {
 
 const getActivitiesBytags = async (req, res) => {
   try {
-    const { tagName } = req.body;
+    const { tagIds } = req.body;
     const existingTags = await prisma.tag.findMany({
       where: {
         tagName: {
-          in: tagName,
+          in: tagIds,
         },
       },
     });
@@ -188,7 +188,9 @@ const getActivitiesBytags = async (req, res) => {
       where: {
         activityTags: {
           some: {
-            tagName: tagName,
+            tagId: {
+              in: tagIds,
+            },
           },
         },
       },
@@ -301,7 +303,7 @@ const addTagsToActivity = async (req, res) => {
 
     const existingActivityTags = await prisma.activityTags.findMany({
       where: {
-        activityId: req.body.activityId,
+        activityId: req.params.activityId,
         tagId: { in: tagIds },
       },
     });
@@ -309,7 +311,6 @@ const addTagsToActivity = async (req, res) => {
     if (existingActivityTags.length > 0) {
       return res.status(400).json({
         message: "Tags already exist",
-        received: req.body,
       });
     }
     const newActivityTags = tagIds.filter(
@@ -317,7 +318,7 @@ const addTagsToActivity = async (req, res) => {
     );
     const activityTags = await prisma.activityTags.createMany({
       data: newActivityTags.map((tagId) => ({
-        activityId: req.body.activityId,
+        activityId: req.params.activityId,
         tagId,
       })),
     });
@@ -329,6 +330,7 @@ const addTagsToActivity = async (req, res) => {
       .status(200)
       .json({ message: "Tags added to activity", activityTags });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({
       message: "Failed to add tags to activity",
       error: error.message,
