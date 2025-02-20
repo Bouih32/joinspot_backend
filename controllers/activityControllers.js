@@ -340,16 +340,16 @@ const addTagsToActivity = async (req, res) => {
 
 const deleteActivityTagBytagName = async (req, res) => {
   try {
-    const { tags } = req.body;
-    if (!Array.isArray(tags)) {
+    const { tagIds } = req.body;
+    if (!Array.isArray(tagIds)) {
       return res.status(400).json({ message: "Tags must be an array" });
     }
 
     const activityTags = await prisma.activityTags.findMany({
       where: {
         activityId: req.params.activityId,
-        tagName: {
-          in: tags,
+        tagId: {
+          in: tagIds,
         },
       },
     });
@@ -359,14 +359,14 @@ const deleteActivityTagBytagName = async (req, res) => {
     await prisma.activityTags.deleteMany({
       where: {
         activityId: req.params.activityId,
-        tagName: {
-          in: tags,
+        tagId: {
+          in: tagIds,
         },
       },
     });
     return res
       .status(200)
-      .json({ message: "Tags deleted from activity", activityTags: tags });
+      .json({ message: "Tags deleted from activity", activityTags });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -458,7 +458,7 @@ const getActivityReservations = async (req, res) => {
     const activities = await prisma.activity.findMany({
       where: {
         userId: req.user.userId,
-        deletedAt: null,
+        // deletedAt: null
       },
     });
     const activityIds = activities.map((activity) => activity.activityId);
