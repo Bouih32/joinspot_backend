@@ -24,7 +24,8 @@ const {
   resetForgotenPswrd,
   addCity,
   getCities,
-  deleteCity
+  deleteCity,
+  updateUserCity
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -43,9 +44,9 @@ router.post("/tags", authenticateToken, addTagsToUser);
 // userFollow
 router.post("/follow", authenticateToken, validateData, followUser);
 router.post("/add-city", authenticateToken, addCity);
+
+
 router.get("/cities", authenticateToken, getCities);
-
-
 // user data
 router.get("/tags", authenticateToken, getUserTags);
 router.get("/profil", authenticateToken, validateData, getUserData);
@@ -78,6 +79,8 @@ router.get(
 );
 
 router.put("/change-password", authenticateToken, validateData, changePassword);
+router.put("/update-cityuser", authenticateToken, updateUserCity);
+
 
 router.patch("/edit-profil", authenticateToken, validateData, updateUserData);
 

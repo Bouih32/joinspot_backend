@@ -464,6 +464,7 @@ const UnfollowUser = async (req, res) => {
   }
 };
 
+// management City
 const addCity = async (req, res) => {
   try {
     const { cityName, cover } = req.body;
@@ -508,6 +509,33 @@ const deleteCity = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error: error.message })
   }
 };
+
+const updateUserCity = async (req, res) => {  
+  try {
+    const { cityId } = req.body;
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: req.user.userId
+      }
+    })
+    if(!user){
+      return res.status(404).json({message:"User not found"})
+    }
+    await prisma.user.update({
+      where: {
+        userId: req.user.userId
+      },
+      data: {
+        cityId: cityId
+      }
+    })
+    return res.status(200).json({message:"City added to user successfully"})
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({message:"Internal server error", error: error.message})
+  }
+}
+
 // Create a Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -615,5 +643,6 @@ module.exports = {
   resetForgotenPswrd,
   addCity,
   getCities,
-  deleteCity
+  deleteCity,
+  updateUserCity
 };
