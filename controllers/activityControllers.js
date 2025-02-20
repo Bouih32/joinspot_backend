@@ -176,7 +176,7 @@ const getActivitiesBytags = async (req, res) => {
     const { tagIds } = req.body;
     const existingTags = await prisma.tag.findMany({
       where: {
-        tagName: {
+        tagId: {
           in: tagIds,
         },
       },
