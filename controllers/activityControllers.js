@@ -58,8 +58,12 @@ const getActivities = async (req, res) => {
           },
         },
         activityTags: {
-          select: {
-            tagName: true,
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
           },
         },
       },
@@ -71,6 +75,7 @@ const getActivities = async (req, res) => {
       .status(200)
       .json({ message: "Activities fetched successfully", activities });
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
       .json({ message: "Failed to fetch activities", error: error.message });
