@@ -32,8 +32,21 @@ const createActivity = async (req, res) => {
         seat,
         price,
         score: 0,
-        userId: req.user.userId,
-        categoryName: user.categoryName,
+        user: {
+          connect: {
+            userId: req.user.userId
+          }
+        },
+        category:{
+          connect:{
+            categoryId: user.categoryId,
+          }
+        },
+        city: {
+          connect: {
+            cityId,
+          },
+        },
       },
     });
     return res
@@ -276,16 +289,41 @@ const deleteActivity = async (req, res) => {
 
 const addTagsToActivity = async (req, res) => {
   try {
-    const { tags } = req.body;
-    if (!Array.isArray(tags)) {
-      return res.status(400).json({ message: "Tags must be an array" });
+    const { tagIds } = req.body;
+    console.log(tagIds, "tagids");
+    if (!Array.isArray(tagIds) || tagIds.length === 0) {
+      return res.status(400).json({
+        message: "Tags must be an array and not empty",
+        received: req.body,
+      });
     }
+
+    const existingActivityTags = await prisma.activityTags.findMany({
+      where: {
+        activityId: req.body.activityId,
+        tagId: { in: tagIds },
+      },
+    });
+
+    if (existingActivityTags.length > 0) {
+      return res.status(400).json({
+        message: "Tags already exist",
+        received: req.body,
+      });
+    }
+    const newActivityTags = tagIds.filter(
+      (id) => !existingActivityTags.some((tag) => tag.tagId === id)
+    );
     const activityTags = await prisma.activityTags.createMany({
-      data: tags.map((tagName) => ({
-        tagName,
-        activityId: req.params.activityId,
+      data: newActivityTags.map((tagId) => ({
+        activityId: req.body.activityId,
+        tagId,
       })),
     });
+    if (activityTags.length === 0) {
+      return res.status(404).json({ message: "Tags not found" });
+    }
+
     return res
       .status(200)
       .json({ message: "Tags added to activity", activityTags });
