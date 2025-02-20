@@ -250,6 +250,7 @@ const getTagsByCategory = async (req, res) => {
       .status(200)
       .json({ message: "Tags retrieved successfully", data: tags });
   } catch (error) {
+    console.error(error);
     return res
       .status(500)
       .json({ message: "Failed to retrieve tags", error: error.message });

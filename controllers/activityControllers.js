@@ -134,10 +134,10 @@ const getActivityById = async (req, res) => {
 
 const getActivityByCategory = async (req, res) => {
   try {
-    const { categoryName } = req.params;
+    const { id } = req.params;
     const activities = await prisma.activity.findMany({
       where: {
-        categoryName,
+        categoryId: id,
       },
       include: {
         user: {
