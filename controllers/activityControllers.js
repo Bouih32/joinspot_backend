@@ -40,6 +40,7 @@ const createActivity = async (req, res) => {
       .status(201)
       .json({ message: "Activity created successfully", activity });
   } catch (error) {
+    console.error(error);
     return res
       .status(500)
       .json({ message: "Failed to create activity", error: error.message });
