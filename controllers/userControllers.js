@@ -243,25 +243,83 @@ const getUserById = async (req, res) => {
 // management UserTags
 const addTagsToUser = async (req, res) => {
   try {
-    console.log("Request Body:", req.body);
-    const { tags } = req.body;
-    if (!Array.isArray(tags)) {
-      return res
-        .status(400)
-        .json({ message: "tags must be an array", received: req.body });
+    const { tagIds } = req.body;
+    console.log(tagIds, "tagids");
+    if (!Array.isArray(tagIds) || tagIds.length === 0) {
+      return res.status(400).json({
+        message: "Tags must be an array and not empty",
+        received: req.body,
+      });
     }
-    const userTags = await prisma.userTags.createMany({
-      data: tags.map((tagName) => ({
-        userId: req.user.userId, // Ensure userId is correctly obtained
-        tagName,
+
+    // Vérifier les doublons existants
+    const existingUserTags = await prisma.userTags.findMany({
+      where: {
+        userId: req.user.userId,
+        tagId: { in: tagIds },
+      },
+    });
+
+    // Filtrer les tags déjà associés
+    const newTagIds = tagIds.filter(
+      (id) => !existingUserTags.some((ut) => ut.tagId === id)
+    );
+
+    if (newTagIds.length === 0) {
+      return res.status(400).json({
+        message: "All selected tags are already associated with the user",
+      });
+    }
+
+    // Vérifier l'existence des tags
+    const existingTags = await prisma.tag.findMany({
+      where: { tagId: { in: newTagIds } },
+    });
+
+    if (existingTags.length !== newTagIds.length) {
+      const notFoundTags = newTagIds.filter(
+        (id) => !existingTags.some((tag) => tag.tagId === id)
+      );
+      return res.status(400).json({
+        message: "Some tags don't exist",
+        notFound: notFoundTags,
+      });
+    }
+
+    // Créer les nouvelles associations
+    await prisma.userTags.createMany({
+      data: newTagIds.map((tagId) => ({
+        userId: req.user.userId,
+        tagId: tagId,
       })),
     });
-    return res.status(200).json({ message: "Tags added", userTags });
+
+    // Récupérer tous les tags de l'utilisateur
+    const userTags = await prisma.userTags.findMany({
+      where: { userId: req.user.userId },
+      include: {
+        tag: {
+          select: {
+            tagId: true,
+            tagName: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      message: "Tags ajoutés avec succès",
+      tags: userTags.map((ut) => ({
+        tagId: ut.tag.tagId,
+        tagName: ut.tag.tagName,
+      })),
+    });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    return res.status(500).json({
+      message: "Erreur interne du serveur",
+      error: error.message,
+    });
   }
 };
 
@@ -271,18 +329,29 @@ const getUserTags = async (req, res) => {
       where: {
         userId: req.user.userId,
       },
-      select: {
+      include: {
         tag: {
           select: {
-            name: true, // Fetch only the tag names
+            tagId: true,
+            tagName: true,
           },
         },
       },
     });
-    const tagNames = userTags.map((userTag) => userTag.tag.name); // Extract names
-    return res
-      .status(200)
-      .json({ message: "User tags fetched", tags: tagNames });
+
+    if (!userTags.length) {
+      return res.status(404).json({ message: "No tags found" });
+    }
+
+    const tags = userTags.map((userTag) => ({
+      id: userTag.tag.tagId,
+      name: userTag.tag.tagName,
+    }));
+
+    return res.status(200).json({
+      message: "User tags fetched",
+      tags,
+    });
   } catch (error) {
     console.error(error);
     return res
