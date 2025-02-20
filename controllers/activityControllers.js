@@ -95,8 +95,12 @@ const getActivityById = async (req, res) => {
           },
         },
         activityTags: {
-          select: {
-            tagName: true,
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
           },
         },
       },
@@ -129,8 +133,12 @@ const getActivityByCategory = async (req, res) => {
           },
         },
         activityTags: {
-          select: {
-            tagName: true,
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
           },
         },
       },
@@ -178,8 +186,12 @@ const getActivitiesBytags = async (req, res) => {
           },
         },
         activityTags: {
-          select: {
-            tagName: true,
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
           },
         },
       },
@@ -210,8 +222,12 @@ const getMyActivities = async (req, res) => {
           },
         },
         activityTags: {
-          select: {
-            tagName: true,
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
           },
         },
       },
