@@ -13,6 +13,7 @@ const createActivity = async (req, res) => {
       endDay,
       seat,
       price,
+      cityId,
     } = req.body;
     const user = await prisma.user.findUnique({
       where: {
@@ -44,7 +45,7 @@ const createActivity = async (req, res) => {
         },
         city: {
           connect: {
-            cityId,
+            cityId: cityId,
           },
         },
       },
