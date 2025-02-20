@@ -57,9 +57,10 @@ const registerUser = async (req, res) => {
         },
       });
     }
-    res.status(201).json({ message: "User registered successfully!" });
+    return res.status(201).json({ message: "User registered successfully!" });
   } catch (error) {
-    res
+    console.error(error);
+    return res
       .status(500)
       .json({ message: "Error creating user", error: error.message });
   }
@@ -242,25 +243,83 @@ const getUserById = async (req, res) => {
 // management UserTags
 const addTagsToUser = async (req, res) => {
   try {
-    console.log("Request Body:", req.body);
-    const { tags } = req.body;
-    if (!Array.isArray(tags)) {
-      return res
-        .status(400)
-        .json({ message: "tags must be an array", received: req.body });
+    const { tagIds } = req.body;
+    console.log(tagIds, "tagids");
+    if (!Array.isArray(tagIds) || tagIds.length === 0) {
+      return res.status(400).json({
+        message: "Tags must be an array and not empty",
+        received: req.body,
+      });
     }
-    const userTags = await prisma.userTags.createMany({
-      data: tags.map((tagName) => ({
-        userId: req.user.userId, // Ensure userId is correctly obtained
-        tagName,
+
+    // Vérifier les doublons existants
+    const existingUserTags = await prisma.userTags.findMany({
+      where: {
+        userId: req.user.userId,
+        tagId: { in: tagIds },
+      },
+    });
+
+    // Filtrer les tags déjà associés
+    const newTagIds = tagIds.filter(
+      (id) => !existingUserTags.some((ut) => ut.tagId === id)
+    );
+
+    if (newTagIds.length === 0) {
+      return res.status(400).json({
+        message: "All selected tags are already associated with the user",
+      });
+    }
+
+    // Vérifier l'existence des tags
+    const existingTags = await prisma.tag.findMany({
+      where: { tagId: { in: newTagIds } },
+    });
+
+    if (existingTags.length !== newTagIds.length) {
+      const notFoundTags = newTagIds.filter(
+        (id) => !existingTags.some((tag) => tag.tagId === id)
+      );
+      return res.status(400).json({
+        message: "Some tags don't exist",
+        notFound: notFoundTags,
+      });
+    }
+
+    // Créer les nouvelles associations
+    await prisma.userTags.createMany({
+      data: newTagIds.map((tagId) => ({
+        userId: req.user.userId,
+        tagId: tagId,
       })),
     });
-    return res.status(200).json({ message: "Tags added", userTags });
+
+    // Récupérer tous les tags de l'utilisateur
+    const userTags = await prisma.userTags.findMany({
+      where: { userId: req.user.userId },
+      include: {
+        tag: {
+          select: {
+            tagId: true,
+            tagName: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      message: "Tags ajoutés avec succès",
+      tags: userTags.map((ut) => ({
+        tagId: ut.tag.tagId,
+        tagName: ut.tag.tagName,
+      })),
+    });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    return res.status(500).json({
+      message: "Erreur interne du serveur",
+      error: error.message,
+    });
   }
 };
 
@@ -270,18 +329,29 @@ const getUserTags = async (req, res) => {
       where: {
         userId: req.user.userId,
       },
-      select: {
+      include: {
         tag: {
           select: {
-            name: true, // Fetch only the tag names
+            tagId: true,
+            tagName: true,
           },
         },
       },
     });
-    const tagNames = userTags.map((userTag) => userTag.tag.name); // Extract names
-    return res
-      .status(200)
-      .json({ message: "User tags fetched", tags: tagNames });
+
+    if (!userTags.length) {
+      return res.status(404).json({ message: "No tags found" });
+    }
+
+    const tags = userTags.map((userTag) => ({
+      id: userTag.tag.tagId,
+      name: userTag.tag.tagName,
+    }));
+
+    return res.status(200).json({
+      message: "User tags fetched",
+      tags,
+    });
   } catch (error) {
     console.error(error);
     return res
@@ -372,6 +442,111 @@ const getFollowersAndFollowing = async (req, res) => {
       .json({ message: "Erreur serveur", error: error.message });
   }
 };
+
+const UnfollowUser = async (req, res) => {
+  try {
+    const { following } = req.body;
+    const existingFollow = await prisma.follow.findFirst({
+      where: {
+        followerId: req.user.userId,
+        followingId: following,
+      },
+    });
+    if (!existingFollow) {
+      return res.status(400).json({ message: "You don't follow this user." });
+    }
+    await prisma.follow.delete({
+      where: { followId: existingFollow.followId },
+    });
+    res.status(200).json({ message: "Unfollow successful." });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// management City
+const addCity = async (req, res) => {
+  try {
+    const { cityName, cover } = req.body;
+    const existingCity = await prisma.city.findUnique({
+      where: { cityName },
+    });
+    if (existingCity) {
+      return res.status(400).json({ message: "City already exists" });
+    }
+    const city = await prisma.city.create({
+      data: { 
+        cityName,
+        cover
+       },
+    });
+    return res.status(200).json({ message: "City added successfully", city });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const getCities = async (req, res) => {
+  try {
+    const cities = await prisma.city.findMany();
+    return res.status(200).json({ cities });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const deleteCity = async (req, res) => {
+  try {
+    const { cityId } = req.params;
+    await prisma.city.delete({ where: { cityId } });
+    return res.status(200).json({ message: "City deleted successfully" });
+  }catch(error) {
+    console.error(error)
+    return res.status(500).json({ message: "Internal server error", error: error.message })
+  }
+};
+
+const updateUserCity = async (req, res) => {  
+  try {
+    const { cityId } = req.body;
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: req.user.userId
+      }
+    })
+    if(!user){
+      return res.status(404).json({message:"User not found"})
+    }
+    await prisma.user.update({
+      where: {
+        userId: req.user.userId
+      },
+      data: {
+        cityId: cityId
+      }
+    })
+    const city = await prisma.user.findUnique({
+      where: {
+        userId: req.user.userId
+      },
+      include:{
+        city:{
+          select:{
+            cityName: true
+          }
+        }
+      }
+    })
+    return res.status(200).json({message:"City updated successfully", city})
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({message:"Internal server error", error: error.message})
+  }
+}
 
 // Create a Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -475,6 +650,11 @@ module.exports = {
   deleteUserTagBytagName,
   followUser,
   getFollowersAndFollowing,
+  UnfollowUser,
   forgotPswrd,
   resetForgotenPswrd,
+  addCity,
+  getCities,
+  deleteCity,
+  updateUserCity
 };

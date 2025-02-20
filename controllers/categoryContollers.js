@@ -241,7 +241,9 @@ const getTagsByCategory = async (req, res) => {
         deletedAt: null,
       },
     });
+
     if (tags.length ===0) {
+
       return res.status(404).json({ message: "Tags not found" });
     }
     return res

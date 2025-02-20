@@ -13,6 +13,7 @@ const createActivity = async (req, res) => {
       endDay,
       seat,
       price,
+      cityId,
     } = req.body;
     const user = await prisma.user.findUnique({
       where: {
@@ -32,14 +33,28 @@ const createActivity = async (req, res) => {
         seat,
         price,
         score: 0,
-        userId: req.user.userId,
-        categoryName: user.categoryName,
+        user: {
+          connect: {
+            userId: req.user.userId
+          }
+        },
+        category:{
+          connect:{
+            categoryId: user.categoryId,
+          }
+        },
+        city: {
+          connect: {
+            cityId: cityId,
+          },
+        },
       },
     });
     return res
       .status(201)
       .json({ message: "Activity created successfully", activity });
   } catch (error) {
+    console.error(error);
     return res
       .status(500)
       .json({ message: "Failed to create activity", error: error.message });
@@ -57,8 +72,12 @@ const getActivities = async (req, res) => {
           },
         },
         activityTags: {
-          select: {
-            tagName: true,
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
           },
         },
       },
@@ -70,6 +89,7 @@ const getActivities = async (req, res) => {
       .status(200)
       .json({ message: "Activities fetched successfully", activities });
   } catch (error) {
+    console.log(error);
     return res
       .status(500)
       .json({ message: "Failed to fetch activities", error: error.message });
@@ -89,8 +109,12 @@ const getActivityById = async (req, res) => {
           },
         },
         activityTags: {
-          select: {
-            tagName: true,
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
           },
         },
       },
@@ -123,8 +147,12 @@ const getActivityByCategory = async (req, res) => {
           },
         },
         activityTags: {
-          select: {
-            tagName: true,
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
           },
         },
       },
@@ -146,14 +174,14 @@ const getActivityByCategory = async (req, res) => {
 const getActivitiesBytags = async (req, res) => {
   try {
     const { tagName } = req.body;
-    const existingTags = await prisma.tag.findFirst({
+    const existingTags = await prisma.tag.findMany({
       where: {
         tagName: {
           in: tagName,
         },
       },
     });
-    if (!existingTags) {
+    if (existingTags.length === 0) {
       return res.status(400).json({ message: "Some tags do not exist" });
     }
     const activities = await prisma.activity.findMany({
@@ -172,8 +200,12 @@ const getActivitiesBytags = async (req, res) => {
           },
         },
         activityTags: {
-          select: {
-            tagName: true,
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
           },
         },
       },
@@ -204,13 +236,17 @@ const getMyActivities = async (req, res) => {
           },
         },
         activityTags: {
-          select: {
-            tagName: true,
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
           },
         },
       },
     });
-    if (!activities) {
+    if (activities.length === 0) {
       return res.status(404).json({ message: "No activities found" });
     }
     return res
@@ -227,7 +263,13 @@ const getMyActivities = async (req, res) => {
 const deleteActivity = async (req, res) => {
   try {
     const { activityId } = req.params;
-    const activity = await prisma.activity.update({
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+    });
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    } 
+    await prisma.activity.update({
       where: { activityId },
       data: {
         deletedAt: new Date(),
@@ -248,16 +290,41 @@ const deleteActivity = async (req, res) => {
 
 const addTagsToActivity = async (req, res) => {
   try {
-    const { tags } = req.body;
-    if (!Array.isArray(tags)) {
-      return res.status(400).json({ message: "Tags must be an array" });
+    const { tagIds } = req.body;
+    console.log(tagIds, "tagids");
+    if (!Array.isArray(tagIds) || tagIds.length === 0) {
+      return res.status(400).json({
+        message: "Tags must be an array and not empty",
+        received: req.body,
+      });
     }
+
+    const existingActivityTags = await prisma.activityTags.findMany({
+      where: {
+        activityId: req.body.activityId,
+        tagId: { in: tagIds },
+      },
+    });
+
+    if (existingActivityTags.length > 0) {
+      return res.status(400).json({
+        message: "Tags already exist",
+        received: req.body,
+      });
+    }
+    const newActivityTags = tagIds.filter(
+      (id) => !existingActivityTags.some((tag) => tag.tagId === id)
+    );
     const activityTags = await prisma.activityTags.createMany({
-      data: tags.map((tagName) => ({
-        tagName,
-        activityId: req.params.activityId,
+      data: newActivityTags.map((tagId) => ({
+        activityId: req.body.activityId,
+        tagId,
       })),
     });
+    if (activityTags.length === 0) {
+      return res.status(404).json({ message: "Tags not found" });
+    }
+
     return res
       .status(200)
       .json({ message: "Tags added to activity", activityTags });
@@ -369,6 +436,9 @@ const getActivityTickets = async (req, res) => {
         },
       },
     });
+    if (reservations.length === 0) {
+      return res.status(404).json({ message: "No reservations found" });
+    }
     return res.status(200).json({
       message: "Activity reservations fetched successfully",
       reservations,
@@ -390,7 +460,9 @@ const getActivityReservations = async (req, res) => {
       },
     });
     const activityIds = activities.map((activity) => activity.activityId);
-
+    if (activityIds.length === 0) {
+      return res.status(404).json({ message: "No activities found" });
+    }
     const reservations = await prisma.ticket.findMany({
       where: {
         activityId: {
@@ -420,7 +492,9 @@ const getActivityReservations = async (req, res) => {
         createdAt: "desc",
       },
     });
-
+    if (reservations.length === 0) {
+      return res.status(404).json({ message: "No reservations found" });
+    }
     return res.status(200).json({
       message: "reservations fetched successfully",
       reservations,
