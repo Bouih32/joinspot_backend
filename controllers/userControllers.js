@@ -496,6 +496,7 @@ module.exports = {
   deleteUserTagBytagName,
   followUser,
   getFollowersAndFollowing,
+  UnfollowUser,
   forgotPswrd,
   resetForgotenPswrd,
 };
