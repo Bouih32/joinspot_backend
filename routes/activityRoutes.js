@@ -12,7 +12,8 @@ const {
   getActivityByCategory,
   getActivityReservations,
   getMyActivities,
-  getActivitiesBytags
+  getActivitiesBytags,
+  getActivityByCity,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const { authenticateToken } = require("../middlewares//auth");
@@ -40,7 +41,13 @@ router.post(
 );
 
 router.get("/", authenticateToken, validateData, getActivities);
-router.get("/my-activities", authenticateToken,checkRole("ORGANISER"), validateData, getMyActivities);
+router.get(
+  "/my-activities",
+  authenticateToken,
+  checkRole("ORGANISER"),
+  validateData,
+  getMyActivities
+);
 router.get("/tickets", authenticateToken, validateData, getActivityTickets);
 router.get(
   "/reservations",
@@ -49,18 +56,14 @@ router.get(
   validateData,
   getActivityReservations
 );
+router.get("/tags", authenticateToken, validateData, getActivitiesBytags);
 router.get(
-  "/tags",
+  "/category/:id",
   authenticateToken,
   validateData,
-  getActivitiesBytags
+  getActivityByCategory
 );
-router.get(
-    "/category/:categoryName",
-    authenticateToken,
-    validateData,
-    getActivityByCategory
-);
+router.get("/city/:cityId", authenticateToken, validateData, getActivityByCity);
 router.get("/:activityId", authenticateToken, validateData, getActivityById);
 
 router.delete(

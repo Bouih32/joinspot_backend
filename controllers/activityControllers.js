@@ -224,6 +224,26 @@ const getActivitiesBytags = async (req, res) => {
   }
 };
 
+const getActivityByCity = async (req, res) => {
+  try {
+    const { cityId } = req.params;
+    const activities = await prisma.activity.findMany({
+      where: {
+        cityId: cityId,
+      },
+    });
+    if (activities.length === 0) {
+      return res.status(404).json({ message: "No activities found" });
+    }
+    return res.status(200).json({ message: "Activities fetched successfully", activities });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch activities by city",
+      error: error.message,
+    });
+  }
+};
+
 const getMyActivities = async (req, res) => {
   try {
     const activities = await prisma.activity.findMany({
@@ -522,4 +542,5 @@ module.exports = {
   getActivityTickets,
   getActivityReservations,
   getMyActivities,
+  getActivityByCity
 };
