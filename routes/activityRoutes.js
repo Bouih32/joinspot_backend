@@ -21,11 +21,15 @@ const {
   getReviews,
   updateReview,
   deleteReview,
+  repportActivity,
+  getRepportedActivities,
+  checkRepport,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const { authenticateToken } = require("../middlewares//auth");
 const { validateData } = require("../utils/validation");
 
+//POST
 router.post(
   "/add",
   authenticateToken,
@@ -48,7 +52,21 @@ router.post(
   reserveActivity
 );
 router.post("/:activityId/review", authenticateToken, validateData, addReview);
+router.post(
+  "/:activityId/repport",
+  authenticateToken,
+  validateData,
+  repportActivity
+);
+router.post(
+  "/repport/:repportId/check",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  checkRepport
+);
 
+// GET
 router.get("/", authenticateToken, validateData, getActivities);
 router.get(
   "/my-activities",
@@ -68,6 +86,13 @@ router.get(
 router.get("/tags", authenticateToken, validateData, getActivitiesBytags);
 router.get("/saved", authenticateToken, validateData, getSavedActivities);
 router.get(
+  "/repported",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getRepportedActivities
+);
+router.get(
   "/category/:id",
   authenticateToken,
   validateData,
@@ -77,12 +102,16 @@ router.get("/city/:cityId", authenticateToken, validateData, getActivityByCity);
 router.get("/:activityId", authenticateToken, validateData, getActivityById);
 router.get("/:activityId/reviews", authenticateToken, validateData, getReviews);
 
+
+// PUT
 router.put(
   "/:activityId/reviews/:reviewId",
   authenticateToken,
   validateData,
   updateReview
 );
+
+// DELETE
 router.delete(
   "/:activityId/tags",
   authenticateToken,

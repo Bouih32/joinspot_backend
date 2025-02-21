@@ -739,9 +739,103 @@ const deleteReview = async (req, res) => {
       .json({ message: "Review deleted successfully", review });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Failed to delete review", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Failed to delete review", error: error.message });
   }
-}
+};
+
+const repportActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const { description } = req.body;
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+    });
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+    const existedRepport = await prisma.repportAct.findFirst({
+      where: {
+        userId: req.user.userId,
+        activityId,
+      },
+    });
+    if (existedRepport) {
+      return res
+        .status(400)
+        .json({ message: "You have already reported this activity" });
+    }
+    await prisma.repportAct.create({
+      data: {
+        userId: req.user.userId,
+        activityId,
+        description,
+        status: "pending",
+      },
+    });
+    return res.status(201).json({ message: "Activity reported successfully" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Failed to report activity", error: error.message });
+  }
+};
+
+const getRepportedActivities = async (req, res) => {
+  try {
+    const repportedActivities = await prisma.repportAct.findMany({
+      include: {
+        activity: {
+          select: {
+            title: true,
+          },
+        },
+      },
+    });
+    if (repportedActivities.length === 0) {
+      return res.status(404).json({ message: "No repported activities found" });
+    }
+    return res.status(200).json({
+      message: "Repported activities fetched successfully",
+      repportedActivities,
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({
+        message: "Failed to fetch repported activities",
+        error: error.message,
+      });
+  }
+};
+
+const checkRepport = async (req, res) => {
+  try {
+    const { repportId } = req.params;
+    const repport = await prisma.repportAct.findUnique({
+      where: { repportId },
+    });
+    if (!repport) {
+      return res.status(404).json({ message: "Repport not found" });
+    }
+    const updatedRepport = await prisma.repportAct.update({
+      where: { repportId },
+      data: { status: "checked" },
+    });
+    return res
+      .status(200)
+      .json({ message: "Repport checked successfully", updatedRepport });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Failed to check repport", error: error.message });
+  }
+};
+
 module.exports = {
   createActivity,
   getActivities,
@@ -762,5 +856,8 @@ module.exports = {
   addReview,
   getReviews,
   updateReview,
-  deleteReview
+  deleteReview,
+  repportActivity,
+  getRepportedActivities,
+  checkRepport,
 };
