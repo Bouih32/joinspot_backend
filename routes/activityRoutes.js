@@ -15,7 +15,8 @@ const {
   getActivitiesBytags,
   getActivityByCity,
   saveActivity,
-  getSavedActivities
+  getSavedActivities,
+  unSaveActivity,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const { authenticateToken } = require("../middlewares//auth");
@@ -86,6 +87,12 @@ router.delete(
   checkRole("ORGANISER"),
   validateData,
   deleteActivityTagBytagName
+);
+router.delete(
+  "/:activityId/unsave",
+  authenticateToken,
+  validateData,
+  unSaveActivity
 );
 router.delete(
   "/:activityId",

@@ -587,6 +587,33 @@ const getSavedActivities = async (req, res) => {
   }
 };
 
+const unSaveActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const savedActivity = await prisma.saveAct.findFirst({
+      where: {
+        userId: req.user.userId,
+        activityId,
+      },
+    });
+    if (!savedActivity) {
+      return res.status(404).json({ message: "Saved activity not found" });
+    }
+    await prisma.saveAct.delete({
+      where: {
+        saveActId: savedActivity.saveActId,
+      },
+    });
+    return res.status(200).json({ message: "Saved activity deleted successfully", savedActivity });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to delete saved activity",
+      error: error.message,
+    });
+  }
+};
+
 
 module.exports = {
   createActivity,
@@ -603,5 +630,6 @@ module.exports = {
   getMyActivities,
   getActivityByCity,
   saveActivity,
-  getSavedActivities
+  getSavedActivities,
+  unSaveActivity,
 };
