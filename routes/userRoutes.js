@@ -25,7 +25,10 @@ const {
   addCity,
   getCities,
   deleteCity,
-  updateUserCity
+  updateUserCity,
+  repportUser,
+  getRepportedUsers,
+  checkRepport,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -44,6 +47,9 @@ router.post("/tags", authenticateToken, addTagsToUser);
 // userFollow
 router.post("/follow", authenticateToken, validateData, followUser);
 router.post("/add-city", authenticateToken, addCity);
+router.post("/repport", authenticateToken, validateData, repportUser);
+router.post("/repport/:repportId/check", authenticateToken, validateData, checkRepport);
+
 
 
 router.get("/cities", authenticateToken, getCities);
@@ -70,6 +76,7 @@ router.get(
   validateData,
   getDeletedUsers
 );
+router.get("/repported", authenticateToken, validateData, getRepportedUsers);
 router.get(
   "/:id",
   authenticateToken,

@@ -554,6 +554,82 @@ const updateUserCity = async (req, res) => {
   }
 };
 
+const repportUser = async (req, res) => {
+  try {
+    const { repport_to, description } = req.body;
+    const repport = await prisma.repportUser.findFirst({
+      where: {
+        repport_from: req.user.userId,
+        repport_to: repport_to,
+      },
+    });
+    if (repport) {
+      return res
+        .status(400)
+        .json({ message: "You have already repported this user." });
+    }
+    await prisma.repportUser.create({
+      data: {
+        repport_from: req.user.userId,
+        repport_to: repport_to,
+        description,
+        status: "pending",
+      },
+    });
+    return res.status(200).json({ message: "User repported successfully" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const getRepportedUsers = async (req, res) => {
+  try {
+    const repportedUsers = await prisma.repportUser.findMany({
+      where: { status: "pending" },
+    });
+    if (repportedUsers.length === 0) {
+      return res.status(404).json({ message: "No repported users found" });
+    }
+    return res.status(200).json({ repportedUsers });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const checkRepport = async (req, res) => {
+  try {
+    const { repportId } = req.params;
+    const repport = await prisma.repportUser.findFirst({
+      where: {
+        repportUserId: repportId,
+      },
+    });
+    if (!repport) {
+      return res.status(404).json({ message: "Repport not found" });
+    }
+    await prisma.repportUser.update({
+      where: {
+        repportUserId: repportId,
+      },
+      data: {
+        status: "checked",
+      },
+    });
+    return res.status(200).json({ message: "Repport checked successfully" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 // Create a Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -663,4 +739,7 @@ module.exports = {
   getCities,
   deleteCity,
   updateUserCity,
+  repportUser,
+  getRepportedUsers,
+  checkRepport,
 };
