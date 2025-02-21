@@ -554,6 +554,40 @@ const saveActivity = async (req, res) => {
   }
 }
 
+const getSavedActivities = async (req, res) => {
+  try {
+    const savedActivities = await prisma.saveAct.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+      include: {
+        activity: {
+          select: {
+            title: true,
+            startTime: true,
+            endTime: true,
+            startDay: true,
+            endDay: true,
+            location: true,
+            coverPic: true,
+          },
+        },
+      },
+    });
+    if (savedActivities.length === 0) {
+      return res.status(404).json({ message: "No saved activities found" });
+    }
+    return res.status(200).json({ message: "Saved activities fetched successfully", savedActivities });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch saved activities",
+      error: error.message,
+    });
+  }
+};
+
+
 module.exports = {
   createActivity,
   getActivities,
@@ -568,5 +602,6 @@ module.exports = {
   getActivityReservations,
   getMyActivities,
   getActivityByCity,
-  saveActivity
+  saveActivity,
+  getSavedActivities
 };

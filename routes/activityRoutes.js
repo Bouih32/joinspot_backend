@@ -14,7 +14,8 @@ const {
   getMyActivities,
   getActivitiesBytags,
   getActivityByCity,
-  saveActivity
+  saveActivity,
+  getSavedActivities
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const { authenticateToken } = require("../middlewares//auth");
@@ -64,6 +65,12 @@ router.get(
   getActivityReservations
 );
 router.get("/tags", authenticateToken, validateData, getActivitiesBytags);
+router.get(
+  "/saved",
+  authenticateToken,
+  validateData,
+  getSavedActivities
+);
 router.get(
   "/category/:id",
   authenticateToken,
