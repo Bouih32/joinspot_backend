@@ -35,13 +35,13 @@ const createActivity = async (req, res) => {
         score: 0,
         user: {
           connect: {
-            userId: req.user.userId
-          }
+            userId: req.user.userId,
+          },
         },
-        category:{
-          connect:{
+        category: {
+          connect: {
             categoryId: user.categoryId,
-          }
+          },
         },
         city: {
           connect: {
@@ -235,7 +235,9 @@ const getActivityByCity = async (req, res) => {
     if (activities.length === 0) {
       return res.status(404).json({ message: "No activities found" });
     }
-    return res.status(200).json({ message: "Activities fetched successfully", activities });
+    return res
+      .status(200)
+      .json({ message: "Activities fetched successfully", activities });
   } catch (error) {
     return res.status(500).json({
       message: "Failed to fetch activities by city",
@@ -290,7 +292,7 @@ const deleteActivity = async (req, res) => {
     });
     if (!activity) {
       return res.status(404).json({ message: "Activity not found" });
-    } 
+    }
     await prisma.activity.update({
       where: { activityId },
       data: {
@@ -538,13 +540,15 @@ const saveActivity = async (req, res) => {
     if (!activity) {
       return res.status(404).json({ message: "Activity not found" });
     }
-     const savedActivity = await prisma.saveAct.create({
+    const savedActivity = await prisma.saveAct.create({
       data: {
         userId: req.user.userId,
         activityId,
       },
     });
-    return res.status(201).json({ message: "Activity saved successfully", savedActivity });
+    return res
+      .status(201)
+      .json({ message: "Activity saved successfully", savedActivity });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -552,7 +556,7 @@ const saveActivity = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const getSavedActivities = async (req, res) => {
   try {
@@ -577,7 +581,10 @@ const getSavedActivities = async (req, res) => {
     if (savedActivities.length === 0) {
       return res.status(404).json({ message: "No saved activities found" });
     }
-    return res.status(200).json({ message: "Saved activities fetched successfully", savedActivities });
+    return res.status(200).json({
+      message: "Saved activities fetched successfully",
+      savedActivities,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -604,7 +611,9 @@ const unSaveActivity = async (req, res) => {
         saveActId: savedActivity.saveActId,
       },
     });
-    return res.status(200).json({ message: "Saved activity deleted successfully", savedActivity });
+    return res
+      .status(200)
+      .json({ message: "Saved activity deleted successfully", savedActivity });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -614,7 +623,125 @@ const unSaveActivity = async (req, res) => {
   }
 };
 
+const addReview = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const { rating, comment } = req.body;
+    const existedreview = await prisma.review.findFirst({
+      where: {
+        userId: req.user.userId,
+        activityId,
+      },
+    });
+    if (existedreview) {
+      return res
+        .status(400)
+        .json({ message: "You have already reviewed this activity" });
+    }
+    const activity = await prisma.activity.findFirst({
+      where: { activityId },
+    });
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+    const review = await prisma.review.create({
+      data: {
+        userId: req.user.userId,
+        activityId,
+        rating,
+        comment,
+      },
+    });
+    return res
+      .status(201)
+      .json({ message: "Review added successfully", review });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to add review",
+      error: error.message,
+    });
+  }
+};
 
+const getReviews = async (req, res) => {
+  try {
+    const reviews = await prisma.review.findMany({
+      where: {
+        activityId: req.params.activityId,
+      },
+      select: {
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        comment: true,
+        rating: true,
+      },
+    });
+    if (reviews.length === 0) {
+      return res.status(404).json({ message: "No reviews found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Reviews fetched successfully", reviews });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch reviews",
+      error: error.message,
+    });
+  }
+};
+
+const updateReview = async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const { rating, comment } = req.body;
+    const review = await prisma.review.findUnique({
+      where: { reviewId },
+    });
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+    const updatedReview = await prisma.review.update({
+      where: { reviewId },
+      data: { rating, comment },
+    });
+    return res
+      .status(200)
+      .json({ message: "Review updated successfully", updatedReview });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to update review",
+      error: error.message,
+    });
+  }
+};
+
+const deleteReview = async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const review = await prisma.review.findFirst({
+      where: { reviewId },
+    });
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+    await prisma.review.delete({
+      where: { reviewId },
+    });
+    return res
+      .status(200)
+      .json({ message: "Review deleted successfully", review });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed to delete review", error: error.message });
+  }
+}
 module.exports = {
   createActivity,
   getActivities,
@@ -632,4 +759,8 @@ module.exports = {
   saveActivity,
   getSavedActivities,
   unSaveActivity,
+  addReview,
+  getReviews,
+  updateReview,
+  deleteReview
 };
