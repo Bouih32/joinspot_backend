@@ -626,7 +626,7 @@ const unSaveActivity = async (req, res) => {
 const addReview = async (req, res) => {
   try {
     const { activityId } = req.params;
-    const { rating, comment } = req.body;
+    const { stars, comment } = req.body;
     const existedreview = await prisma.review.findFirst({
       where: {
         userId: req.user.userId,
@@ -648,7 +648,7 @@ const addReview = async (req, res) => {
       data: {
         userId: req.user.userId,
         activityId,
-        rating,
+        stars,
         comment,
       },
     });
@@ -678,7 +678,7 @@ const getReviews = async (req, res) => {
           },
         },
         comment: true,
-        rating: true,
+        stars: true,
       },
     });
     if (reviews.length === 0) {
