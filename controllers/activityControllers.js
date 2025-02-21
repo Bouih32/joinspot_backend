@@ -815,14 +815,14 @@ const getRepportedActivities = async (req, res) => {
 const checkRepport = async (req, res) => {
   try {
     const { repportId } = req.params;
-    const repport = await prisma.repportAct.findUnique({
-      where: { repportId },
+    const repport = await prisma.repportAct.findFirst({
+      where: { repportActId:repportId },
     });
     if (!repport) {
       return res.status(404).json({ message: "Repport not found" });
     }
     const updatedRepport = await prisma.repportAct.update({
-      where: { repportId },
+      where: { repportActId:repportId },
       data: { status: "checked" },
     });
     return res
