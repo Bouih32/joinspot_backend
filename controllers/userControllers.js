@@ -475,10 +475,10 @@ const addCity = async (req, res) => {
       return res.status(400).json({ message: "City already exists" });
     }
     const city = await prisma.city.create({
-      data: { 
+      data: {
         cityName,
-        cover
-       },
+        cover,
+      },
     });
     return res.status(200).json({ message: "City added successfully", city });
   } catch (error) {
@@ -495,7 +495,9 @@ const getCities = async (req, res) => {
     return res.status(200).json({ cities });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Internal server error", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -504,49 +506,53 @@ const deleteCity = async (req, res) => {
     const { cityId } = req.params;
     await prisma.city.delete({ where: { cityId } });
     return res.status(200).json({ message: "City deleted successfully" });
-  }catch(error) {
-    console.error(error)
-    return res.status(500).json({ message: "Internal server error", error: error.message })
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
-const updateUserCity = async (req, res) => {  
+const updateUserCity = async (req, res) => {
   try {
     const { cityId } = req.body;
     const user = await prisma.user.findUnique({
       where: {
-        userId: req.user.userId
-      }
-    })
-    if(!user){
-      return res.status(404).json({message:"User not found"})
+        userId: req.user.userId,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
     await prisma.user.update({
       where: {
-        userId: req.user.userId
+        userId: req.user.userId,
       },
       data: {
-        cityId: cityId
-      }
-    })
+        cityId: cityId,
+      },
+    });
     const city = await prisma.user.findUnique({
       where: {
-        userId: req.user.userId
+        userId: req.user.userId,
       },
-      include:{
-        city:{
-          select:{
-            cityName: true
-          }
-        }
-      }
-    })
-    return res.status(200).json({message:"City updated successfully", city})
+      include: {
+        city: {
+          select: {
+            cityName: true,
+          },
+        },
+      },
+    });
+    return res.status(200).json({ message: "City updated successfully", city });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({message:"Internal server error", error: error.message})
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
-}
+};
 
 // Create a Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -656,5 +662,5 @@ module.exports = {
   addCity,
   getCities,
   deleteCity,
-  updateUserCity
+  updateUserCity,
 };
