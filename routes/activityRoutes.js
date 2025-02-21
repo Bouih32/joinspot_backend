@@ -12,7 +12,11 @@ const {
   getActivityByCategory,
   getActivityReservations,
   getMyActivities,
-  getActivitiesBytags
+  getActivitiesBytags,
+  getActivityByCity,
+  saveActivity,
+  getSavedActivities,
+  unSaveActivity,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const { authenticateToken } = require("../middlewares//auth");
@@ -24,6 +28,12 @@ router.post(
   checkRole("ORGANISER"),
   validateData,
   createActivity
+);
+router.post(
+  "/:activityId/save",
+  authenticateToken,
+  validateData,
+  saveActivity
 );
 router.post(
   "/:activityId/tags",
@@ -40,7 +50,13 @@ router.post(
 );
 
 router.get("/", authenticateToken, validateData, getActivities);
-router.get("/my-activities", authenticateToken,checkRole("ORGANISER"), validateData, getMyActivities);
+router.get(
+  "/my-activities",
+  authenticateToken,
+  checkRole("ORGANISER"),
+  validateData,
+  getMyActivities
+);
 router.get("/tickets", authenticateToken, validateData, getActivityTickets);
 router.get(
   "/reservations",
@@ -49,18 +65,20 @@ router.get(
   validateData,
   getActivityReservations
 );
+router.get("/tags", authenticateToken, validateData, getActivitiesBytags);
 router.get(
-  "/tags",
+  "/saved",
   authenticateToken,
   validateData,
-  getActivitiesBytags
+  getSavedActivities
 );
 router.get(
-    "/category/:categoryName",
-    authenticateToken,
-    validateData,
-    getActivityByCategory
+  "/category/:id",
+  authenticateToken,
+  validateData,
+  getActivityByCategory
 );
+router.get("/city/:cityId", authenticateToken, validateData, getActivityByCity);
 router.get("/:activityId", authenticateToken, validateData, getActivityById);
 
 router.delete(
@@ -69,6 +87,12 @@ router.delete(
   checkRole("ORGANISER"),
   validateData,
   deleteActivityTagBytagName
+);
+router.delete(
+  "/:activityId/unsave",
+  authenticateToken,
+  validateData,
+  unSaveActivity
 );
 router.delete(
   "/:activityId",

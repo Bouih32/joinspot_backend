@@ -224,6 +224,26 @@ const getActivitiesBytags = async (req, res) => {
   }
 };
 
+const getActivityByCity = async (req, res) => {
+  try {
+    const { cityId } = req.params;
+    const activities = await prisma.activity.findMany({
+      where: {
+        cityId: cityId,
+      },
+    });
+    if (activities.length === 0) {
+      return res.status(404).json({ message: "No activities found" });
+    }
+    return res.status(200).json({ message: "Activities fetched successfully", activities });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch activities by city",
+      error: error.message,
+    });
+  }
+};
+
 const getMyActivities = async (req, res) => {
   try {
     const activities = await prisma.activity.findMany({
@@ -509,6 +529,92 @@ const getActivityReservations = async (req, res) => {
   }
 };
 
+const saveActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+    });
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+     const savedActivity = await prisma.saveAct.create({
+      data: {
+        userId: req.user.userId,
+        activityId,
+      },
+    });
+    return res.status(201).json({ message: "Activity saved successfully", savedActivity });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to save activity",
+      error: error.message,
+    });
+  }
+}
+
+const getSavedActivities = async (req, res) => {
+  try {
+    const savedActivities = await prisma.saveAct.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+      include: {
+        activity: {
+          select: {
+            title: true,
+            startTime: true,
+            endTime: true,
+            startDay: true,
+            endDay: true,
+            location: true,
+            coverPic: true,
+          },
+        },
+      },
+    });
+    if (savedActivities.length === 0) {
+      return res.status(404).json({ message: "No saved activities found" });
+    }
+    return res.status(200).json({ message: "Saved activities fetched successfully", savedActivities });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch saved activities",
+      error: error.message,
+    });
+  }
+};
+
+const unSaveActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const savedActivity = await prisma.saveAct.findFirst({
+      where: {
+        userId: req.user.userId,
+        activityId,
+      },
+    });
+    if (!savedActivity) {
+      return res.status(404).json({ message: "Saved activity not found" });
+    }
+    await prisma.saveAct.delete({
+      where: {
+        saveActId: savedActivity.saveActId,
+      },
+    });
+    return res.status(200).json({ message: "Saved activity deleted successfully", savedActivity });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to delete saved activity",
+      error: error.message,
+    });
+  }
+};
+
+
 module.exports = {
   createActivity,
   getActivities,
@@ -522,4 +628,8 @@ module.exports = {
   getActivityTickets,
   getActivityReservations,
   getMyActivities,
+  getActivityByCity,
+  saveActivity,
+  getSavedActivities,
+  unSaveActivity,
 };
