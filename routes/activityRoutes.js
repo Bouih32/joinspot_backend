@@ -17,6 +17,10 @@ const {
   saveActivity,
   getSavedActivities,
   unSaveActivity,
+  addReview,
+  getReviews,
+  updateReview,
+  deleteReview,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const { authenticateToken } = require("../middlewares//auth");
@@ -29,12 +33,7 @@ router.post(
   validateData,
   createActivity
 );
-router.post(
-  "/:activityId/save",
-  authenticateToken,
-  validateData,
-  saveActivity
-);
+router.post("/:activityId/save", authenticateToken, validateData, saveActivity);
 router.post(
   "/:activityId/tags",
   authenticateToken,
@@ -48,6 +47,7 @@ router.post(
   validateData,
   reserveActivity
 );
+router.post("/:activityId/review", authenticateToken, validateData, addReview);
 
 router.get("/", authenticateToken, validateData, getActivities);
 router.get(
@@ -66,12 +66,7 @@ router.get(
   getActivityReservations
 );
 router.get("/tags", authenticateToken, validateData, getActivitiesBytags);
-router.get(
-  "/saved",
-  authenticateToken,
-  validateData,
-  getSavedActivities
-);
+router.get("/saved", authenticateToken, validateData, getSavedActivities);
 router.get(
   "/category/:id",
   authenticateToken,
@@ -80,7 +75,14 @@ router.get(
 );
 router.get("/city/:cityId", authenticateToken, validateData, getActivityByCity);
 router.get("/:activityId", authenticateToken, validateData, getActivityById);
+router.get("/:activityId/reviews", authenticateToken, validateData, getReviews);
 
+router.put(
+  "/:activityId/reviews/:reviewId",
+  authenticateToken,
+  validateData,
+  updateReview
+);
 router.delete(
   "/:activityId/tags",
   authenticateToken,
@@ -100,5 +102,11 @@ router.delete(
   checkRole("ORGANISER", "ADMIN"),
   validateData,
   deleteActivity
+);
+router.delete(
+  "/:activityId/reviews/:reviewId",
+  authenticateToken,
+  validateData,
+  deleteReview
 );
 module.exports = router;
