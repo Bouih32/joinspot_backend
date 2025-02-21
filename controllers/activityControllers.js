@@ -529,6 +529,31 @@ const getActivityReservations = async (req, res) => {
   }
 };
 
+const saveActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+    });
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+     const savedActivity = await prisma.saveAct.create({
+      data: {
+        userId: req.user.userId,
+        activityId,
+      },
+    });
+    return res.status(201).json({ message: "Activity saved successfully", savedActivity });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to save activity",
+      error: error.message,
+    });
+  }
+}
+
 module.exports = {
   createActivity,
   getActivities,
@@ -542,5 +567,6 @@ module.exports = {
   getActivityTickets,
   getActivityReservations,
   getMyActivities,
-  getActivityByCity
+  getActivityByCity,
+  saveActivity
 };

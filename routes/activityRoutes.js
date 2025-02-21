@@ -14,6 +14,7 @@ const {
   getMyActivities,
   getActivitiesBytags,
   getActivityByCity,
+  saveActivity
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const { authenticateToken } = require("../middlewares//auth");
@@ -25,6 +26,12 @@ router.post(
   checkRole("ORGANISER"),
   validateData,
   createActivity
+);
+router.post(
+  "/:activityId/save",
+  authenticateToken,
+  validateData,
+  saveActivity
 );
 router.post(
   "/:activityId/tags",
