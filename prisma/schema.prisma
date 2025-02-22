@@ -135,7 +135,7 @@ model tag {
 model city {
   cityId   String     @id @default(auto()) @map("_id") @db.ObjectId
   cityName String     @unique
-  cover    String
+  cover    String?
   activity activity[]
   user     user[]
 }
