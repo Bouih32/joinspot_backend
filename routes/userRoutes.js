@@ -46,13 +46,16 @@ router.post("/reset", resetForgotenPswrd);
 router.post("/tags", authenticateToken, addTagsToUser);
 // userFollow
 router.post("/follow", authenticateToken, validateData, followUser);
-router.post("/add-city", authenticateToken, addCity);
+router.post("/add-city", addCity);
 router.post("/repport", authenticateToken, validateData, repportUser);
-router.post("/repport/:repportId/check", authenticateToken, validateData, checkRepport);
+router.post(
+  "/repport/:repportId/check",
+  authenticateToken,
+  validateData,
+  checkRepport
+);
 
-
-
-router.get("/cities", authenticateToken, getCities);
+router.get("/cities", getCities);
 // user data
 router.get("/tags", authenticateToken, getUserTags);
 router.get("/profil", authenticateToken, validateData, getUserData);
@@ -88,12 +91,10 @@ router.get(
 router.put("/change-password", authenticateToken, validateData, changePassword);
 router.put("/update-cityuser", authenticateToken, updateUserCity);
 
-
 router.patch("/edit-profil", authenticateToken, validateData, updateUserData);
 
-router.delete("/unfollow", authenticateToken,validateData, UnfollowUser);
+router.delete("/unfollow", authenticateToken, validateData, UnfollowUser);
 router.delete("/cities/:cityId", authenticateToken, deleteCity);
 router.delete("/tags/:id", authenticateToken, deleteUserTagBytagName);
-
 
 module.exports = router;

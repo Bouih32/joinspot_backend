@@ -492,7 +492,7 @@ const addCity = async (req, res) => {
 const getCities = async (req, res) => {
   try {
     const cities = await prisma.city.findMany();
-    return res.status(200).json({ cities });
+    return res.status(200).send({ message: "success", cities });
   } catch (error) {
     console.error(error);
     return res
