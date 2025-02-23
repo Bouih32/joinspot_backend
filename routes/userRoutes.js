@@ -29,6 +29,11 @@ const {
   repportUser,
   getRepportedUsers,
   checkRepport,
+  sendMessage,
+  getMessages,
+  getMessagesByUser,
+  markAsRead,
+  getUnreadMessages,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -53,6 +58,14 @@ router.post(
   authenticateToken,
   validateData,
   checkRepport
+);
+router.post("/send-message", authenticateToken, validateData, sendMessage);
+
+router.put(
+  "/messages/:messageId/read",
+  authenticateToken,
+  validateData,
+  markAsRead
 );
 
 router.get("/cities", getCities);
@@ -86,6 +99,24 @@ router.get(
   checkRole("ADMIN"),
   validateData,
   getUserById
+);
+router.get(
+  "/messages", 
+  authenticateToken, 
+  validateData, 
+  getMessages
+);
+router.get(
+  "/messages/:toId",
+  authenticateToken,
+  validateData,
+  getMessagesByUser
+);
+router.get(
+  "/unread-messages",
+  authenticateToken,
+  validateData,
+  getUnreadMessages
 );
 
 router.put("/change-password", authenticateToken, validateData, changePassword);
