@@ -35,7 +35,7 @@ const registerUser = async (req, res) => {
         userName,
         fullName,
         email,
-        city,
+        cityId: city,
         deletedAt: null,
         password: hashedPassword,
         categoryId: role === "organiser" ? categoryId : null,
