@@ -304,14 +304,19 @@ model message {
   messageId    String @id @default(auto()) @map("_id") @db.ObjectId
   fromId       String @db.ObjectId
   toId         String @db.ObjectId
+  content      String
+  createdAt    DateTime @default(now())
   message_from user   @relation("message_from", fields: [fromId], references: [userId], onDelete: Cascade)
   message_to   user   @relation("message_to", fields: [toId], references: [userId], onDelete: Cascade)
+  read         Boolean @default(false)
 }
 
 model notification {
   notificationId    String @id @default(auto()) @map("_id") @db.ObjectId
   fromId            String @db.ObjectId
   toId              String @db.ObjectId
+  content           String
+  createdAt         DateTime @default(now())
   notification_from user   @relation("notification_from", fields: [fromId], references: [userId], onDelete: Cascade)
   notification_to   user   @relation("notification_to", fields: [toId], references: [userId], onDelete: Cascade)
 }
