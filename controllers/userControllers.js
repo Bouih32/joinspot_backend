@@ -630,6 +630,152 @@ const checkRepport = async (req, res) => {
   }
 };
 
+const sendMessage = async (req, res) => {
+  try {
+    const { toId, content } = req.body;
+    const toUser = await prisma.user.findUnique({
+      where: { userId: toId },
+    });
+    if (!toUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const message = await prisma.message.create({
+      data: {
+        fromId: req.user.userId,
+        toId,
+        content: content,
+        read: false,
+      },
+    });
+    return res.status(201).json({
+      message: "Message sent successfully",
+      data: message,
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const getMessages = async (req, res) => {
+  try {
+    const messages = await prisma.message.findMany({
+      where: {
+        toId: req.user.userId,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+    if (messages.length === 0) {
+      return res.status(404).json({ message: "No messages found" });
+    }
+    return res.status(200).json({ messages });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const getMessagesByUser = async (req, res) => {
+  try {
+    const receivedMessages = await prisma.message.findMany({
+      where: {
+        fromId: req.params.toId,
+        toId: req.user.userId,
+      },
+      select: {
+        message_from: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        content: true,
+        createdAt: true,
+        read: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+    const sentMessages = await prisma.message.findMany({
+      where: {
+        fromId: req.user.userId,
+        toId: req.params.toId,
+      },
+      select: {
+        message_from: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        content: true,
+        createdAt: true,
+        read: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+    const messages = [...receivedMessages, ...sentMessages];
+    messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    if (messages.length === 0) {
+      return res.status(404).json({ message: "No messages found" });
+    }
+    return res.status(200).json({ messages });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const markAsRead = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const message = await prisma.message.findUnique({
+      where: { messageId },
+    });
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+    await prisma.message.update({
+      where: { messageId },
+      data: { read: true },
+    });
+    return res.status(200).json({ message: "Message marked as read" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const getUnreadMessages = async (req, res) => {
+  try {
+    const unreadMessages = await prisma.message.findMany({
+      where: {
+        toId: req.user.userId,
+        read: false,
+      },
+    });
+    return res.status(200).json({ unreadMessages });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 // Create a Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -742,4 +888,9 @@ module.exports = {
   repportUser,
   getRepportedUsers,
   checkRepport,
+  sendMessage,
+  getMessages,
+  getMessagesByUser,
+  markAsRead,
+  getUnreadMessages,
 };

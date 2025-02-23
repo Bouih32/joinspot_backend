@@ -29,6 +29,11 @@ const {
   repportUser,
   getRepportedUsers,
   checkRepport,
+  sendMessage,
+  getMessages,
+  getMessagesByUser,
+  markAsRead,
+  getUnreadMessages,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -53,6 +58,14 @@ router.post(
   authenticateToken,
   validateData,
   checkRepport
+);
+router.post("/send-message", authenticateToken, validateData, sendMessage);
+
+router.put(
+  "/messages/:messageId/read",
+  authenticateToken,
+  validateData,
+  markAsRead
 );
 
 router.get("/cities", getCities);
@@ -79,7 +92,30 @@ router.get(
   validateData,
   getDeletedUsers
 );
-router.get("/repported", authenticateToken, validateData, getRepportedUsers);
+router.get(
+  "/repported", 
+  authenticateToken, 
+  validateData, 
+  getRepportedUsers
+);
+router.get(
+  "/messages", 
+  authenticateToken, 
+  validateData, 
+  getMessages
+);
+router.get(
+  "/messages/:toId",
+  authenticateToken,
+  validateData,
+  getMessagesByUser
+);
+router.get(
+  "/unread-messages",
+  authenticateToken,
+  validateData,
+  getUnreadMessages
+);
 router.get(
   "/:id",
   authenticateToken,
@@ -88,6 +124,13 @@ router.get(
   getUserById
 );
 
+
+router.put(
+  "/messages/:messageId/read",
+  authenticateToken,
+  validateData,
+  markAsRead
+);
 router.put("/change-password", authenticateToken, validateData, changePassword);
 router.put("/update-cityuser", authenticateToken, updateUserCity);
 
