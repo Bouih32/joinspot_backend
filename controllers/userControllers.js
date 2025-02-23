@@ -643,7 +643,7 @@ const sendMessage = async (req, res) => {
       data: {
         fromId: req.user.userId,
         toId,
-        content,
+        content: content,
         read: false,
       },
     });
@@ -689,6 +689,12 @@ const getMessagesByUser = async (req, res) => {
         toId: req.user.userId,
       },
       select: {
+        message_from: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
         content: true,
         createdAt: true,
         read: true,
@@ -703,6 +709,12 @@ const getMessagesByUser = async (req, res) => {
         toId: req.params.toId,
       },
       select: {
+        message_from: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
         content: true,
         createdAt: true,
         read: true,

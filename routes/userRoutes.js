@@ -92,13 +92,11 @@ router.get(
   validateData,
   getDeletedUsers
 );
-router.get("/repported", authenticateToken, validateData, getRepportedUsers);
 router.get(
-  "/:id",
-  authenticateToken,
-  checkRole("ADMIN"),
-  validateData,
-  getUserById
+  "/repported", 
+  authenticateToken, 
+  validateData, 
+  getRepportedUsers
 );
 router.get(
   "/messages", 
@@ -118,7 +116,21 @@ router.get(
   validateData,
   getUnreadMessages
 );
+router.get(
+  "/:id",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getUserById
+);
 
+
+router.put(
+  "/messages/:messageId/read",
+  authenticateToken,
+  validateData,
+  markAsRead
+);
 router.put("/change-password", authenticateToken, validateData, changePassword);
 router.put("/update-cityuser", authenticateToken, updateUserCity);
 
