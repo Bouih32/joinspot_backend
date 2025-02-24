@@ -34,6 +34,8 @@ const {
   getMessagesByUser,
   markAsRead,
   getUnreadMessages,
+  getNotifications,
+  deleteNotification, 
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -85,13 +87,7 @@ router.get(
   validateData,
   getAllUsers
 );
-router.get(
-  "/deleted",
-  authenticateToken,
-  checkRole("ADMIN"),
-  validateData,
-  getDeletedUsers
-);
+
 router.get(
   "/repported", 
   authenticateToken, 
@@ -103,6 +99,12 @@ router.get(
   authenticateToken, 
   validateData, 
   getMessages
+);
+router.get(
+  "/notifications",
+  authenticateToken,
+  validateData,
+  getNotifications
 );
 router.get(
   "/messages/:toId",
@@ -123,7 +125,20 @@ router.get(
   validateData,
   getUserById
 );
-
+router.get(
+  "/users",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getAllUsers
+);
+router.get(
+  "/deleted",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getDeletedUsers
+);
 
 router.put(
   "/messages/:messageId/read",
@@ -139,5 +154,11 @@ router.patch("/edit-profil", authenticateToken, validateData, updateUserData);
 router.delete("/unfollow", authenticateToken, validateData, UnfollowUser);
 router.delete("/cities/:cityId", authenticateToken, deleteCity);
 router.delete("/tags/:id", authenticateToken, deleteUserTagBytagName);
+router.delete(
+  "/notifications/:notificationId",
+  authenticateToken,
+  validateData,
+  deleteNotification
+);
 
 module.exports = router;

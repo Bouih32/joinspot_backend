@@ -1,5 +1,5 @@
 const prisma = require("../utils/client");
-
+const { createNotification } = require("../utils/notification");
 const createActivity = async (req, res) => {
   try {
     const {
@@ -427,7 +427,16 @@ const reserveActivity = async (req, res) => {
         seat: activity.seat - quantity,
       },
     });
+    const reserver = await prisma.user.findUnique({
+      where: { userId: req.user.userId },
+      select: { userName: true }
+    });
 
+    await createNotification(
+      req.user.userId,
+      activity.user.userId,
+      `${reserver.userName} a réservé ${quantity} place(s) pour votre activité "${activity.title}"`
+    );
     return res.status(201).json({
       message: "Reservation successful",
       ticket,
@@ -652,9 +661,16 @@ const addReview = async (req, res) => {
         comment,
       },
     });
-    return res
-      .status(201)
-      .json({ message: "Review added successfully", review });
+    const reviewer = await prisma.user.findUnique({
+      where: { userId: req.user.userId },
+      select: { userName: true },
+    });
+    await createNotification(
+      req.user.userId,
+      activity.user.userId,
+      `${reviewer.userName} has reviewed your activity "${activity.title}"`
+    );
+    return res.status(201).json({ message: "Review added successfully", review });
   } catch (error) {
     console.error(error);
     return res.status(500).json({

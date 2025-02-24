@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const prisma = require("../utils/client");
 const { generateAcessToken } = require("../middlewares/auth");
 const crypto = require("crypto");
+const { createNotification } = require("../utils/notification");
 
 const nodemailer = require("nodemailer");
 require("dotenv").config();
@@ -408,6 +409,15 @@ const followUser = async (req, res) => {
         followingId: following,
       },
     });
+    const follower = await prisma.user.findUnique({
+      where: { userId: req.user.userId },
+      select: { userName: true },
+    });
+    await createNotification(
+      req.user.userId,
+      following,
+      `${follower.userName} a follow you`
+    );
     return res.status(201).json({ message: "Follow-up successful.", follow });
   } catch (error) {
     console.error(error);
@@ -647,6 +657,16 @@ const sendMessage = async (req, res) => {
         read: false,
       },
     });
+    const sender = await prisma.user.findUnique({
+      where: { userId: req.user.userId },
+      select: { userName: true },
+    });
+    await createNotification(
+      req.user.userId,
+      toId,
+      `${sender.userName} a send you a message ${toUser.userName}`
+    );
+    console.log(message, "message");
     return res.status(201).json({
       message: "Message sent successfully",
       data: message,
@@ -776,6 +796,36 @@ const getUnreadMessages = async (req, res) => {
   }
 };
 
+const getNotifications = async (req, res) => {
+  try {
+    const notifications = await prisma.notification.findMany({
+      where: { toId: req.user.userId },
+      orderBy: { createdAt: "desc" },
+    });
+    return res.status(200).json({ notifications });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const deleteNotification = async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    await prisma.notification.delete({ where: { notificationId } });
+    return res
+      .status(200)
+      .json({ message: "Notification deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 // Create a Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -893,4 +943,6 @@ module.exports = {
   getMessagesByUser,
   markAsRead,
   getUnreadMessages,
+  getNotifications,
+  deleteNotification,
 };
