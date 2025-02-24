@@ -411,7 +411,7 @@ const followUser = async (req, res) => {
     });
     const follower = await prisma.user.findUnique({
       where: { userId: req.user.userId },
-      select: { userName: true }
+      select: { userName: true },
     });
     await createNotification(
       req.user.userId,
@@ -660,14 +660,9 @@ const sendMessage = async (req, res) => {
     });
     const sender = await prisma.user.findUnique({
       where: { userId: req.user.userId },
-      select: { userName: true }
+      select: { userName: true },
     });
-    await createNotification(
-      req.user.userId,
-      toId,
-      "MESSAGE",
-      sender.userName
-    );
+    await createNotification(req.user.userId, toId, "MESSAGE", sender.userName);
     console.log(message, "message");
     return res.status(201).json({
       message: "Message sent successfully",
@@ -798,6 +793,36 @@ const getUnreadMessages = async (req, res) => {
   }
 };
 
+const getNotifications = async (req, res) => {
+  try {
+    const notifications = await prisma.notification.findMany({
+      where: { toId: req.user.userId },
+      orderBy: { createdAt: "desc" },
+    });
+    return res.status(200).json({ notifications });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const deleteNotification = async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    await prisma.notification.delete({ where: { notificationId } });
+    return res
+      .status(200)
+      .json({ message: "Notification deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 // Create a Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -915,4 +940,6 @@ module.exports = {
   getMessagesByUser,
   markAsRead,
   getUnreadMessages,
+  getNotifications,
+  deleteNotification, 
 };
