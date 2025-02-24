@@ -416,8 +416,7 @@ const followUser = async (req, res) => {
     await createNotification(
       req.user.userId,
       following,
-      "FOLLOW",
-      follower.userName
+      `${follower.userName} a follow you`
     );
     return res.status(201).json({ message: "Follow-up successful.", follow });
   } catch (error) {
@@ -662,7 +661,11 @@ const sendMessage = async (req, res) => {
       where: { userId: req.user.userId },
       select: { userName: true },
     });
-    await createNotification(req.user.userId, toId, "MESSAGE", sender.userName);
+    await createNotification(
+      req.user.userId,
+      toId,
+      `${sender.userName} a send you a message ${toUser.userName}`
+    );
     console.log(message, "message");
     return res.status(201).json({
       message: "Message sent successfully",
@@ -941,5 +944,5 @@ module.exports = {
   markAsRead,
   getUnreadMessages,
   getNotifications,
-  deleteNotification, 
+  deleteNotification,
 };

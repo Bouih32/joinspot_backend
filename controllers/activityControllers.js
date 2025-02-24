@@ -427,7 +427,16 @@ const reserveActivity = async (req, res) => {
         seat: activity.seat - quantity,
       },
     });
+    const reserver = await prisma.user.findUnique({
+      where: { userId: req.user.userId },
+      select: { userName: true }
+    });
 
+    await createNotification(
+      req.user.userId,
+      activity.user.userId,
+      `${reserver.userName} a réservé ${quantity} place(s) pour votre activité "${activity.title}"`
+    );
     return res.status(201).json({
       message: "Reservation successful",
       ticket,
