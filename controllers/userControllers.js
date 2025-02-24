@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const prisma = require("../utils/client");
 const { generateAcessToken } = require("../middlewares/auth");
 const crypto = require("crypto");
+const { createNotification } = require("../utils/notification");
 
 const nodemailer = require("nodemailer");
 require("dotenv").config();
@@ -408,6 +409,16 @@ const followUser = async (req, res) => {
         followingId: following,
       },
     });
+    const follower = await prisma.user.findUnique({
+      where: { userId: req.user.userId },
+      select: { userName: true }
+    });
+    await createNotification(
+      req.user.userId,
+      following,
+      "FOLLOW",
+      follower.userName
+    );
     return res.status(201).json({ message: "Follow-up successful.", follow });
   } catch (error) {
     console.error(error);
@@ -647,6 +658,17 @@ const sendMessage = async (req, res) => {
         read: false,
       },
     });
+    const sender = await prisma.user.findUnique({
+      where: { userId: req.user.userId },
+      select: { userName: true }
+    });
+    await createNotification(
+      req.user.userId,
+      toId,
+      "MESSAGE",
+      sender.userName
+    );
+    console.log(message, "message");
     return res.status(201).json({
       message: "Message sent successfully",
       data: message,
