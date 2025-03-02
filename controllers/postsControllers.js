@@ -176,7 +176,7 @@ const getPostByCategory = async (req, res) => {
     }
     return res
       .status(200)
-      .json({ message: "posts fetched successfully", activities });
+      .json({ message: "posts fetched successfully", posts });
   } catch (error) {
     return res.status(500).json({
       message: "Failed to fetch post by category",
@@ -188,7 +188,7 @@ const getPostByCategory = async (req, res) => {
 const getPostBytags = async (req, res) => {
   try {
     const { tagIds } = req.body;
-    const existingTags = await prisma.post.findMany({
+    const existingTags = await prisma.tag.findMany({
       where: {
         tagId: {
           in: tagIds,
@@ -228,7 +228,7 @@ const getPostBytags = async (req, res) => {
     });
     return res
       .status(200)
-      .json({ message: "post fetched successfully", activities });
+      .json({ message: "post fetched successfully", posts });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
