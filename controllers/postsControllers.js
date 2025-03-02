@@ -23,51 +23,51 @@ const createPost = async (req, res) => {
 };
 
 const addTagToPost = async (req, res) => {
-    try {
-        const { tagIds } = req.body;
-        console.log(tagIds, "tagids");
-        if (!Array.isArray(tagIds) || tagIds.length === 0) {
-          return res.status(400).json({
-            message: "Tags must be an array and not empty",
-            received: req.body,
-          });
-        }
-    
-        const existingPostTags = await prisma.postTags.findMany({
-          where: {
-            postId: req.params.postId,
-            tagId: { in: tagIds },
-          },
-        });
-    
-        if (existingPostTags.length > 0) {
-          return res.status(400).json({
-            message: "Tags already exist",
-          });
-        }
-        const newPostTags = tagIds.filter(
-          (id) => !existingPostTags.some((tag) => tag.tagId === id)
-        );
-        const postTags = await prisma.postTags.createMany({
-          data: newPostTags.map((tagId) => ({
-            postId: req.params.postId,
-            tagId,
-          })),
-        });
-        if (postTags.length === 0) {
-          return res.status(404).json({ message: "Tags not found" });
-        }
-    
-        return res
-          .status(200)
-          .json({ message: "Tags added to activity", postTags });
-      } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-          message: "Failed to add tags to activity",
-          error: error.message,
-        });
-      }
+  try {
+    const { tagIds } = req.body;
+    console.log(tagIds, "tagids");
+    if (!Array.isArray(tagIds) || tagIds.length === 0) {
+      return res.status(400).json({
+        message: "Tags must be an array and not empty",
+        received: req.body,
+      });
+    }
+
+    const existingPostTags = await prisma.postTags.findMany({
+      where: {
+        postId: req.params.postId,
+        tagId: { in: tagIds },
+      },
+    });
+
+    if (existingPostTags.length > 0) {
+      return res.status(400).json({
+        message: "Tags already exist",
+      });
+    }
+    const newPostTags = tagIds.filter(
+      (id) => !existingPostTags.some((tag) => tag.tagId === id)
+    );
+    const postTags = await prisma.postTags.createMany({
+      data: newPostTags.map((tagId) => ({
+        postId: req.params.postId,
+        tagId,
+      })),
+    });
+    if (postTags.length === 0) {
+      return res.status(404).json({ message: "Tags not found" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Tags added to activity", postTags });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to add tags to activity",
+      error: error.message,
+    });
+  }
 };
 
 const getPosts = async (req, res) => {
@@ -147,135 +147,172 @@ const getPostById = async (req, res) => {
 };
 
 const getPostByCategory = async (req, res) => {
-    try {
-      const { id } = req.params;
-      const posts = await prisma.post.findMany({
-        where: {
-          categoryId: id,
-        },
-        include: {
-          user: {
-            select: {
-              userName: true,
-              avatar: true,
-            },
+  try {
+    const { id } = req.params;
+    const posts = await prisma.post.findMany({
+      where: {
+        categoryId: id,
+      },
+      include: {
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
           },
-          postTags: {
-            include: {
-              tag: {
-                select: {
-                  tagName: true,
-                },
+        },
+        postTags: {
+          include: {
+            tag: {
+              select: {
+                tagName: true,
               },
             },
           },
         },
-      });
-      if (posts.length == 0) {
-        return res.status(404).json({ message: "No post found" });
-      }
-      return res
-        .status(200)
-        .json({ message: "posts fetched successfully", activities });
-    } catch (error) {
-      return res.status(500).json({
-        message: "Failed to fetch post by category",
-        error: error.message,
-      });
+      },
+    });
+    if (posts.length == 0) {
+      return res.status(404).json({ message: "No post found" });
     }
+    return res
+      .status(200)
+      .json({ message: "posts fetched successfully", activities });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch post by category",
+      error: error.message,
+    });
+  }
 };
 
 const getPostBytags = async (req, res) => {
-    try {
-      const { tagIds } = req.body;
-      const existingTags = await prisma.post.findMany({
-        where: {
-          tagId: {
-            in: tagIds,
-          },
+  try {
+    const { tagIds } = req.body;
+    const existingTags = await prisma.post.findMany({
+      where: {
+        tagId: {
+          in: tagIds,
         },
-      });
-      if (existingTags.length === 0) {
-        return res.status(400).json({ message: "Some tags do not exist" });
-      }
-      const posts = await prisma.post.findMany({
-        where: {
-          postTags: {
-            some: {
-              tagId: {
-                in: tagIds,
-              },
-            },
-          },
-        },
-        include: {
-          user: {
-            select: {
-              userName: true,
-              avatar: true,
-            },
-          },
-          postTags: {
-            include: {
-              tag: {
-                select: {
-                  tagName: true,
-                },
-              },
-            },
-          },
-        },
-      });
-      return res
-        .status(200)
-        .json({ message: "post fetched successfully", activities });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({
-        message: "Failed to fetch post by tags",
-        error: error.message,
-      });
+      },
+    });
+    if (existingTags.length === 0) {
+      return res.status(400).json({ message: "Some tags do not exist" });
     }
-  
+    const posts = await prisma.post.findMany({
+      where: {
+        postTags: {
+          some: {
+            tagId: {
+              in: tagIds,
+            },
+          },
+        },
+      },
+      include: {
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        postTags: {
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return res
+      .status(200)
+      .json({ message: "post fetched successfully", activities });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Failed to fetch post by tags",
+      error: error.message,
+    });
+  }
 };
 
 const getMyPost = async (req, res) => {
-    try {
-      const posts = await prisma.post.findMany({
-        where: {
-          userId: req.user.userId,
-        },
-        include: {
-          user: {
-            select: {
-              userName: true,
-              avatar: true,
-            },
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+      include: {
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
           },
-          postTags: {
-            include: {
-              tag: {
-                select: {
-                  tagName: true,
-                },
+        },
+        postTags: {
+          include: {
+            tag: {
+              select: {
+                tagName: true,
               },
             },
           },
         },
-      });
-      if (posts.length === 0) {
-        return res.status(404).json({ message: "No post found" });
-      }
-      return res
-        .status(200)
-        .json({ message: "post fetched successfully", posts });
-    } catch (error) {
-      return res.status(500).json({
-        message: "Failed to fetch post",
-        error: error.message,
-      });
+      },
+    });
+    if (posts.length === 0) {
+      return res.status(404).json({ message: "No post found" });
     }
-  };
+    return res
+      .status(200)
+      .json({ message: "post fetched successfully", posts });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch post",
+      error: error.message,
+    });
+  }
+};
+
+const deletePostTag = async (req, res) => {
+  try {
+    const { tagIds } = req.body;
+    if (!Array.isArray(tagIds)) {
+      return res.status(400).json({ message: "Tags must be an array" });
+    }
+
+    const postTags = await prisma.postTags.findMany({
+      where: {
+        postId: req.params.postId,
+        tagId: {
+          in: tagIds,
+        },
+      },
+    });
+    if (postTags.length === 0) {
+      return res.status(404).json({ message: "Tags not found" });
+    }
+    await prisma.postTags.deleteMany({
+      where: {
+        postId: req.params.postId,
+        tagId: {
+          in: tagIds,
+        },
+      },
+    });
+    return res
+      .status(200)
+      .json({ message: "Tags deleted from post", postTags });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Failed to delete tags from post",
+      error: error.message,
+    });
+  }
+};
 module.exports = {
   createPost,
   addTagToPost,
@@ -283,5 +320,6 @@ module.exports = {
   getPostById,
   getPostByCategory,
   getPostBytags,
-  getMyPost
+  getMyPost,
+  deletePostTag
 };
