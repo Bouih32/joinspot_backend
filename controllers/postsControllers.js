@@ -21,6 +21,7 @@ const createPost = async (req, res) => {
       .json({ message: "Failed to create post", error: error.message });
   }
 };
+
 const addTagToPost = async (req, res) => {
     try {
         const { tagIds } = req.body;
@@ -145,9 +146,49 @@ const getPostById = async (req, res) => {
   }
 };
 
+const getPostByCategory = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const posts = await prisma.post.findMany({
+        where: {
+          categoryId: id,
+        },
+        include: {
+          user: {
+            select: {
+              userName: true,
+              avatar: true,
+            },
+          },
+          postTags: {
+            include: {
+              tag: {
+                select: {
+                  tagName: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      if (posts.length == 0) {
+        return res.status(404).json({ message: "No post found" });
+      }
+      return res
+        .status(200)
+        .json({ message: "posts fetched successfully", activities });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to fetch post by category",
+        error: error.message,
+      });
+    }
+  };
+
 module.exports = {
   createPost,
   addTagToPost,
   getPosts,
   getPostById,
+  getPostByCategory
 };

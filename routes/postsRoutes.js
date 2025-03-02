@@ -4,7 +4,8 @@ const {
     createPost,
     addTagToPost,
     getPosts,
-    getPostById
+    getPostById,
+    getPostByCategory
   } = require("../controllers/postsControllers");
   const { checkRole } = require("../middlewares/Autorization");
   const { authenticateToken } = require("../middlewares/auth");
@@ -30,5 +31,10 @@ router.get("/:id",
     authenticateToken,
     validateData,
     getPostById
+  );
+router.get("/category/:id",
+    authenticateToken,
+    validateData,
+    getPostByCategory
   );
 module.exports = router;
