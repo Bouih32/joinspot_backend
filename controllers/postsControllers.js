@@ -314,6 +314,64 @@ const deletePostTag = async (req, res) => {
   }
 };
 
+const likePost = async (req, res) => {
+  try {
+    const post = await prisma.post.findFirst({
+      where: { postId: req.params.postId },
+    });
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    const like = await prisma.likes.findFirst({
+      where: {
+        userId: req.user.userId,
+        postId: req.params.postId,
+      },
+    });
+    if (like) {
+      return res
+        .status(400)
+        .json({ message: "You have already liked this post" });
+    }
+    await prisma.likes.create({
+      data: { userId: req.user.userId, postId: req.params.postId },
+    });
+    return res.status(200).json({ message: "Post liked successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to like post",
+      error: error.message,
+    });
+  }
+};
+
+const unlikePost = async (req, res) => {
+  try {
+    const like = await prisma.likes.findFirst({
+        where: {
+          userId: req.user.userId,
+          postId: req.params.postId,
+        },
+      });
+    if (!like) {
+      return res.status(404).json({ message: "You have not liked this post" });
+    }
+    await prisma.likes.delete({
+      where: {
+        likesId: like.likesId,
+      },
+    });
+    return res.status(404).json({ message: "Post unliked successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to unlike post",
+      error: error.message,
+    });
+  }
+};
+
 const savePost = async (req, res) => {
   try {
     const { postId } = req.params;
@@ -428,4 +486,6 @@ module.exports = {
   savePost,
   getSavedPost,
   unSavePost,
+  likePost,
+  unlikePost,
 };
