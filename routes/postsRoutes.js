@@ -8,7 +8,10 @@ const {
     getPostByCategory,
     getPostBytags,
     getMyPost,
-    deletePostTag
+    deletePostTag,
+    savePost,
+    getSavedPost,
+    unSavePost,
   } = require("../controllers/postsControllers");
   const { checkRole } = require("../middlewares/Autorization");
   const { authenticateToken } = require("../middlewares/auth");
@@ -24,6 +27,11 @@ router.post("/createPost",
     authenticateToken,
     validateData,
     addTagToPost
+  );
+router.post("/:postId/save",
+    authenticateToken,
+    validateData,
+    savePost
   );
 
 // GET
@@ -42,6 +50,11 @@ router.get("/myPosts",
     validateData,
     getMyPost
   );
+router.get("/savedPosts",
+    authenticateToken,
+    validateData,
+    getSavedPost
+  );
 router.get("/category/:id",
     authenticateToken,
     validateData,
@@ -54,10 +67,15 @@ router.get("/:id",
   );
 
 // DELETE
-  router.delete("/:postId/tags",
+router.delete("/:postId/tags",
     authenticateToken,
     validateData,
     deletePostTag
+  );
+router.delete("/:postId/unsave",
+    authenticateToken,
+    validateData,
+    unSavePost
   );
 
 module.exports = router;

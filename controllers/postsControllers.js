@@ -313,6 +313,109 @@ const deletePostTag = async (req, res) => {
     });
   }
 };
+
+const savePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const post = await prisma.post.findFirst({
+      where: { postId },
+    });
+    if (!post) {
+      return res.status(404).json({ message: "post not found" });
+    }
+    const savedPost = await prisma.savePost.create({
+      data: {
+        userId: req.user.userId,
+        postId,
+      },
+    });
+    return res
+      .status(201)
+      .json({ message: "post saved successfully", savedPost });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to save activity",
+      error: error.message,
+    });
+  }
+};
+
+const getSavedPost = async (req, res) => {
+  try {
+    const savedPost = await prisma.savePost.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+      include: {
+        post: {
+          include: {
+            category: {
+              select: {
+                categoryName: true,
+              },
+            },
+            user: {
+              select: {
+                userName: true,
+                avatar: true,
+              },
+            },
+            _count: {
+              select: {
+                likes: true,
+                comment: true,
+                share: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (savedPost.length === 0) {
+      return res.status(404).json({ message: "No saved post found" });
+    }
+    return res.status(200).json({
+      message: "Saved post fetched successfully",
+      savedPost,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch saved posts",
+      error: error.message,
+    });
+  }
+};
+
+const unSavePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const savedpost = await prisma.savePost.findFirst({
+      where: {
+        userId: req.user.userId,
+        postId,
+      },
+    });
+    if (!savedpost) {
+      return res.status(404).json({ message: "Saved post not found" });
+    }
+    await prisma.savePost.delete({
+      where: {
+        savePostId: savedpost.savePostId,
+      },
+    });
+    return res
+      .status(200)
+      .json({ message: "Saved post deleted successfully", savedpost });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to delete saved post",
+      error: error.message,
+    });
+  }
+};
 module.exports = {
   createPost,
   addTagToPost,
@@ -321,5 +424,8 @@ module.exports = {
   getPostByCategory,
   getPostBytags,
   getMyPost,
-  deletePostTag
+  deletePostTag,
+  savePost,
+  getSavedPost,
+  unSavePost,
 };
