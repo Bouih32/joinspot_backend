@@ -68,7 +68,7 @@ const addTagToPost = async (req, res) => {
           error: error.message,
         });
       }
-  };
+};
 
 const getPosts = async (req, res) => {
   try {
@@ -183,6 +183,59 @@ const getPostByCategory = async (req, res) => {
         error: error.message,
       });
     }
+};
+
+const getPostBytags = async (req, res) => {
+    try {
+      const { tagIds } = req.body;
+      const existingTags = await prisma.post.findMany({
+        where: {
+          tagId: {
+            in: tagIds,
+          },
+        },
+      });
+      if (existingTags.length === 0) {
+        return res.status(400).json({ message: "Some tags do not exist" });
+      }
+      const posts = await prisma.post.findMany({
+        where: {
+          postTags: {
+            some: {
+              tagId: {
+                in: tagIds,
+              },
+            },
+          },
+        },
+        include: {
+          user: {
+            select: {
+              userName: true,
+              avatar: true,
+            },
+          },
+          postTags: {
+            include: {
+              tag: {
+                select: {
+                  tagName: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      return res
+        .status(200)
+        .json({ message: "post fetched successfully", activities });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "Failed to fetch post by tags",
+        error: error.message,
+      });
+    }
   };
 
 module.exports = {
@@ -190,5 +243,6 @@ module.exports = {
   addTagToPost,
   getPosts,
   getPostById,
-  getPostByCategory
+  getPostByCategory,
+  getPostBytags
 };

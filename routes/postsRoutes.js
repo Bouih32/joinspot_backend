@@ -5,7 +5,8 @@ const {
     addTagToPost,
     getPosts,
     getPostById,
-    getPostByCategory
+    getPostByCategory,
+    getPostBytags
   } = require("../controllers/postsControllers");
   const { checkRole } = require("../middlewares/Autorization");
   const { authenticateToken } = require("../middlewares/auth");
@@ -27,14 +28,20 @@ router.get("/",
     validateData,
     getPosts
   );
-router.get("/:id",
+router.get("/tags",
     authenticateToken,
     validateData,
-    getPostById
+    getPostBytags
   );
 router.get("/category/:id",
     authenticateToken,
     validateData,
     getPostByCategory
   );
+router.get("/:id",
+    authenticateToken,
+    validateData,
+    getPostById
+  );
+
 module.exports = router;
