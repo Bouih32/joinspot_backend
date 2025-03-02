@@ -236,13 +236,52 @@ const getPostBytags = async (req, res) => {
         error: error.message,
       });
     }
-  };
+  
+};
 
+const getMyPost = async (req, res) => {
+    try {
+      const posts = await prisma.post.findMany({
+        where: {
+          userId: req.user.userId,
+        },
+        include: {
+          user: {
+            select: {
+              userName: true,
+              avatar: true,
+            },
+          },
+          postTags: {
+            include: {
+              tag: {
+                select: {
+                  tagName: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      if (posts.length === 0) {
+        return res.status(404).json({ message: "No post found" });
+      }
+      return res
+        .status(200)
+        .json({ message: "post fetched successfully", posts });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to fetch post",
+        error: error.message,
+      });
+    }
+  };
 module.exports = {
   createPost,
   addTagToPost,
   getPosts,
   getPostById,
   getPostByCategory,
-  getPostBytags
+  getPostBytags,
+  getMyPost
 };
