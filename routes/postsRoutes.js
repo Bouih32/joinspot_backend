@@ -13,7 +13,9 @@ const {
     getSavedPost,
     unSavePost,
     likePost,
-    unlikePost
+    unlikePost,
+    addcomment,
+    deleteComment,
   } = require("../controllers/postsControllers");
   const { checkRole } = require("../middlewares/Autorization");
   const { authenticateToken } = require("../middlewares/auth");
@@ -40,6 +42,11 @@ router.post("/:postId/like",
     validateData,
     likePost
   );
+router.post("/:postId/comment",
+    authenticateToken,
+    validateData,
+    addcomment
+  )
 
 // GET
 router.get("/",
@@ -89,5 +96,10 @@ router.delete("/:postId/unlike",
     validateData,
     unlikePost
   );
+router.delete("/:postId/comment/:commentId",
+    authenticateToken,
+    validateData,
+    deleteComment
+  )
 
 module.exports = router;

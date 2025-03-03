@@ -125,6 +125,25 @@ const getPostById = async (req, res) => {
             avatar: true,
           },
         },
+        postTags: {
+            include: {
+              tag: {
+                select: {
+                  tagName: true,
+                },
+              },
+            },
+          },
+          comments: {
+            include: {
+              user: {
+                select: {
+                  userName: true,
+                  avatar: true,
+                },
+              },
+            },
+          },
         _count: {
           select: {
             likes: true,
@@ -349,11 +368,11 @@ const likePost = async (req, res) => {
 const unlikePost = async (req, res) => {
   try {
     const like = await prisma.likes.findFirst({
-        where: {
-          userId: req.user.userId,
-          postId: req.params.postId,
-        },
-      });
+      where: {
+        userId: req.user.userId,
+        postId: req.params.postId,
+      },
+    });
     if (!like) {
       return res.status(404).json({ message: "You have not liked this post" });
     }
@@ -367,6 +386,49 @@ const unlikePost = async (req, res) => {
     console.error(error);
     return res.status(500).json({
       message: "Failed to unlike post",
+      error: error.message,
+    });
+  }
+};
+
+const addcomment = async (req, res) => {
+  try {
+    const { comment } = req.body;
+    const comments = await prisma.comment.create({
+      data: {
+        userId: req.user.userId,
+        postId: req.params.postId,
+        content: comment,
+      },
+    });
+    return res
+      .status(201)
+      .json({ message: "Comment added successfully", comments });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Failed to add comment", error: error.message });
+  }
+};
+
+const deleteComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const comment = await prisma.comment.findFirst({
+      where: { commentId: commentId },
+    });
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+    await prisma.comment.delete({
+      where: { commentId: commentId },
+    });
+    return res.status(200).json({ message: "Comment deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to delete comment",
       error: error.message,
     });
   }
@@ -488,4 +550,6 @@ module.exports = {
   unSavePost,
   likePost,
   unlikePost,
+  addcomment,
+  deleteComment,
 };
