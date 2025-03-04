@@ -31,7 +31,9 @@ const registerUser = async (req, res) => {
     const [existingUser, isCity, isCategory] = await Promise.all([
       prisma.user.findUnique({ where: { email } }),
       prisma.city.findUnique({ where: { cityName: city } }),
-      prisma.category.findUnique({ where: { categoryName } }),
+      categoryName
+        ? prisma.category.findUnique({ where: { categoryName } })
+        : null,
     ]);
 
     if (existingUser)
