@@ -17,7 +17,7 @@ const registerUser = async (req, res) => {
       role,
       password,
       proveBy,
-      categoryId,
+      categoryName,
       degreeName,
       schoolName,
       year,
@@ -27,7 +27,13 @@ const registerUser = async (req, res) => {
       idFrontPic,
       idBackPic,
     } = req.body;
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+
+    const [existingUser, isCity, isCategory] = await Promise.all([
+      prisma.user.findUnique({ where: { email } }),
+      prisma.city.findUnique({ where: { cityName: city } }),
+      prisma.category.findUnique({ where: { categoryName } }),
+    ]);
+
     if (existingUser)
       return res.status(400).send({ message: "Email is already in use." });
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -36,10 +42,10 @@ const registerUser = async (req, res) => {
         userName,
         fullName,
         email,
-        cityId: city,
+        cityId: isCity.cityId,
         deletedAt: null,
         password: hashedPassword,
-        categoryId: role === "organiser" ? categoryId : null,
+        categoryId: role === "organiser" ? isCategory.categoryId : null,
         idFrontPic: role === "organiser" ? idFrontPic : null,
         idBackPic: role === "organiser" ? idBackPic : null,
       },
