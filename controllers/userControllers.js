@@ -97,9 +97,8 @@ const loginUser = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
-      sameSite: "none", // Crucial for cross-site
-      maxAge: expirationDate,
-      domain: ".joinspot-backend.onrender.com",
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // maxAge in milliseconds
       path: "/",
     });
     console.log(res.getHeaders());
