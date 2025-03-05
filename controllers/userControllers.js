@@ -92,16 +92,21 @@ const loginUser = async (req, res) => {
       role: user.role,
     });
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Only use secure in production
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-      domain:
-        process.env.NODE_ENV === "production"
-          ? ".vercel.app" // Your Vercel app domain
-          : undefined,
-      path: "/", // Ensure cookie is available across your app
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "None",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production", // Only use secure in production
+    //   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    //   maxAge: 24 * 60 * 60 * 1000,
+    //   domain:
+    //     process.env.NODE_ENV === "production"
+    //       ? ".vercel.app" // Your Vercel app domain
+    //       : undefined,
+    //   path: "/",
+    // });
     // res.cookie("token", token, {
     //   httpOnly: true,
     //   secure: true,
