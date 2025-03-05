@@ -96,7 +96,7 @@ const loginUser = async (req, res) => {
       secure: true,
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      domain: ".joinspot-backend.onrender.com", // Ensure the domain is correct for cross-domain cookies
+      domain: ".onrender.com", // Ensure the domain is correct for cross-domain cookies
       path: "/",
     });
     return res.status(200).json({ message: "Login successful!", user, token });
