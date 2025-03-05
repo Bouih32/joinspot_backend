@@ -99,7 +99,7 @@ const loginUser = async (req, res) => {
       secure: true,
       sameSite: "none", // Crucial for cross-site
       maxAge: expirationDate,
-      domain: undefined,
+      domain: ".joinspot-backend.onrender.com",
       path: "/",
     });
     console.log(res.getHeaders());
