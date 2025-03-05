@@ -8,7 +8,7 @@ const cors = require("cors");
 
 app.use(
   cors({
-    origin: "https://joinspot-frontend.vercel.app",
+    origin: ["http://localhost:3000", "https://joinspot-frontend.vercel.app"],
     credentials: true,
   })
 );
