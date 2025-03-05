@@ -15,14 +15,6 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Set-Cookie"
-  );
-  next();
-});
-
 app.disable("x-powered-by");
 
 const helmet = require("helmet");
