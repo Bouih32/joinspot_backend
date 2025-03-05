@@ -100,6 +100,7 @@ const loginUser = async (req, res) => {
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000, // maxAge in milliseconds
       path: "/",
+      partitioned: true,
     });
     console.log(res.getHeaders());
     // res.cookie("token", token, {
@@ -893,7 +894,7 @@ const forgotPswrd = async (req, res) => {
 
     // Send reset email
     await sendEmail(
-      "enamto.bouih@gmail.com", // sender email
+      user.email,
       "Password Reset Request", // subject
       `<p>Click <a href="${link}">here</a> to reset your password. This link expires in 1 hour.</p>`
     );
