@@ -13,6 +13,15 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://joinspot-frontend.vercel.app"
+  );
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
 app.disable("x-powered-by");
 
 const helmet = require("helmet");
