@@ -10,8 +10,8 @@ app.use(
   cors({
     origin: ["http://localhost:3000", "https://joinspot-frontend.vercel.app"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
     methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie", "Cookie"],
   })
 );
 
