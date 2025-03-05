@@ -99,7 +99,7 @@ const loginUser = async (req, res) => {
       secure: true,
       sameSite: "none", // Crucial for cross-site
       maxAge: expirationDate,
-      domain: ".joinspot-frontend.com",
+      domain: undefined,
       path: "/",
     });
     console.log(res.getHeaders());
