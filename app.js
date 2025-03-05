@@ -8,7 +8,11 @@ const cors = require("cors");
 
 app.use(
   cors({
-    origin: ["https://joinspot-frontend.vercel.app", "http://localhost:3000"],
+    origin: [
+      "https://joinspot-frontend.vercel.app",
+      "http://localhost:3000",
+      "https://joinspot-backend.onrender.com",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
