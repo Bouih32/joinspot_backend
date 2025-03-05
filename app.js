@@ -9,9 +9,19 @@ const cors = require("cors");
 app.use(
   cors({
     origin: ["http://localhost:3000", "https://joinspot-frontend.vercel.app"],
-    credentials: true,
+    credentials: true, // ✅ Allow cookies to be sent
+    allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
+    methods: ["GET", "POST", "PUT", "DELETE"], // ✅ Ensure all HTTP methods are allowed
   })
 );
+
+app.use((req, res, next) => {
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, Set-Cookie"
+  );
+  next();
+});
 
 app.disable("x-powered-by");
 
