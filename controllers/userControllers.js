@@ -99,6 +99,7 @@ const loginUser = async (req, res) => {
       domain: ".joinspot-frontend.com",
       path: "/",
     });
+    console.log(res.getHeaders());
     // res.cookie("token", token, {
     //   httpOnly: true
     //   secure: true,
