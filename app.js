@@ -5,6 +5,7 @@ require("dotenv").config();
 
 const port = process.env.PORT || 7856;
 const cors = require("cors");
+app.use(cookieParser());
 
 app.use(
   cors({
@@ -32,7 +33,7 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-app.use(cookieParser());
+
 const activityRoutes = require("./routes/activityRoutes");
 const userRoutes = require("./routes/userRoutes");
 const postsRoutes = require("./routes/postsRoutes");

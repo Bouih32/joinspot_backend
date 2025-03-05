@@ -86,8 +86,6 @@ const loginUser = async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).send({ message: "Uncorect password" });
     }
-    const expirationDate = new Date();
-    expirationDate.setDate(expirationDate.getDate() + 7);
 
     const token = generateAcessToken({
       userId: user.userId,
