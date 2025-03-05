@@ -19,8 +19,6 @@ app.use(
   })
 );
 
-app.options("*", cors());
-
 app.disable("x-powered-by");
 
 const helmet = require("helmet");
