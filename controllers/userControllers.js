@@ -96,11 +96,11 @@ const loginUser = async (req, res) => {
       secure: true,
       sameSite: "none", // Crucial for cross-site
       maxAge: 24 * 60 * 60 * 1000,
-      domain: undefined,
+      domain: ".joinspot-frontend.com",
       path: "/",
     });
     // res.cookie("token", token, {
-    //   httpOnly: true,
+    //   httpOnly: true
     //   secure: true,
     //   maxAge: 24 * 60 * 60 * 1000,
     // });
