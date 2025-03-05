@@ -96,7 +96,8 @@ const loginUser = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
-      path: "/", // 1 day
+      domain: ".joinspot-backend.onrender.com",
+      path: "/",
     });
     return res.status(200).json({ message: "Login successful!", user, token });
   } catch (error) {
