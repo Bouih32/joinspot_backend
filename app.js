@@ -7,7 +7,6 @@ const port = process.env.PORT || 7856;
 const cors = require("cors");
 app.use(cookieParser());
 
-app.options("*", cors());
 app.use(
   cors({
     origin: ["https://www.joinspots.com", "http://localhost:3000"],
