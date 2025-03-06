@@ -76,6 +76,7 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
   try {
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({ where: { email } });
@@ -94,10 +95,10 @@ const loginUser = async (req, res) => {
     });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProduction, // Only require HTTPS in production
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      // domain: ".joinspots.com",
+      domain: isProduction ? ".joinspots.com" : undefined, // Don't set domain for localhost
       path: "/",
     });
 
