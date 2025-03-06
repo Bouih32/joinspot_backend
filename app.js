@@ -9,11 +9,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: [
-      "https://joinspot-frontend.vercel.app",
-      "http://localhost:3000",
-      "https://joinspot-backend.onrender.com",
-    ],
+    origin: ["https://www.joinspots.com/", "http://localhost:3000"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
