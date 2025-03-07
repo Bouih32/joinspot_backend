@@ -7,6 +7,8 @@ const { createNotification } = require("../utils/notification");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const registerUser = async (req, res) => {
   try {
     const {
@@ -76,7 +78,6 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-  const isProduction = process.env.NODE_ENV === "production";
   try {
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({ where: { email } });
@@ -202,7 +203,13 @@ const changePassword = async (req, res) => {
 };
 
 const logOut = async (req, res) => {
-  res.clearCookie("token", { secure: true, httpOnly: true });
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: isProduction, // Only require HTTPS in production
+    sameSite: isProduction ? "none" : "lax",
+    domain: isProduction ? ".joinspots.com" : undefined, // Don't set domain for localhost
+    path: "/",
+  });
   res.send({ message: "logged out successful" });
 };
 
