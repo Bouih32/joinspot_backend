@@ -1,5 +1,6 @@
 const prisma = require("../utils/client");
 const { createNotification } = require("../utils/notification");
+const stripe = require("../utils/stripe");
 const createActivity = async (req, res) => {
   try {
     const {
@@ -398,23 +399,21 @@ const deleteActivityTagBytagName = async (req, res) => {
   }
 };
 
-const reserveActivity = async (req, res) => {
+const createTicket = async (userId, activityId, quantity) => {
   try {
-    const { activityId } = req.params;
-    const { quantity } = req.body;
     const activity = await prisma.activity.findUnique({
       where: { activityId },
     });
     if (!activity) {
-      return res.status(404).json({ message: "Activity not found" });
+      throw new Error("Activity not found" );
     }
     if (activity.seat < quantity) {
-      return res.status(400).json({ message: "Not enough seats available" });
+      throw new Error("Not enough seats available" );
     }
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
     const ticket = await prisma.ticket.create({
       data: {
-        userId: req.user.userId,
+        userId,
         activityId,
         code,
         quantity,
@@ -428,24 +427,20 @@ const reserveActivity = async (req, res) => {
       },
     });
     const reserver = await prisma.user.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId },
       select: { userName: true }
     });
 
-    await createNotification(
-      req.user.userId,
-      activity.user.userId,
-      `${reserver.userName} a réservé ${quantity} place(s) pour votre activité "${activity.title}"`
-    );
-    return res.status(201).json({
-      message: "Reservation successful",
-      ticket,
-    });
+    // await createNotification(
+    //   req.user.userId,
+    //   activity.user.userId,
+    //   `${reserver.userName} a réservé ${quantity} place(s) pour votre activité "${activity.title}"`
+    // );
+    return ticket
+
   } catch (error) {
-    return res.status(500).json({
-      message: "Failed to reserve activity",
-      error: error.message,
-    });
+    console.error("Erreur lors de la réservation :", error.message);
+    throw error; 
   }
 };
 
@@ -852,6 +847,61 @@ const checkRepport = async (req, res) => {
   }
 };
 
+const payment = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const { amount, currency, quantity } = req.body;
+    const userId = req.user.userId; 
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: "Montant invalide" });
+    }
+    if (!currency) {
+      return res.status(400).json({ error: "Devise requise" });
+    }
+    if (!quantity || quantity <= 0) {
+      return res.status(400).json({ error: "Quantité invalide" });
+    }
+
+    // Vérifier si l'activité existe
+    const activity = await prisma.activity.findUnique({ where: { activityId: activityId } });
+    if (!activity) {
+      return res.status(404).json({ error: "Activité non trouvée" });
+    }
+
+    // Créer un paiement Stripe
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount * 100, // Convertir en centimes
+      currency,
+      payment_method_types: ["card"],
+      metadata: { activityId, userId, quantity },
+    });
+
+    if (!paymentIntent || !paymentIntent.client_secret) {
+      return res.status(500).json({ error: "Erreur lors de la création du paiement" });
+    }
+
+    // Créer un ticket pour l'utilisateur
+    const ticket = await createTicket(userId, activityId, quantity);
+
+    return res.json({ clientSecret: paymentIntent.client_secret, ticket });
+  } catch (error) {
+    console.error("Erreur Stripe:", error);
+    return res.status(500).json({ error: "Erreur lors de la création du paiement" });
+  }
+};
+
+const getPaymentIntent = async (req, res) => {
+  try {
+    const { paymentIntentId } = req.params;
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    res.json(paymentIntent);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur lors de la récupération du paiement" });
+  }
+}
+
 module.exports = {
   createActivity,
   getActivities,
@@ -861,7 +911,7 @@ module.exports = {
   deleteActivity,
   addTagsToActivity,
   deleteActivityTagBytagName,
-  reserveActivity,
+  createTicket,
   getActivityTickets,
   getActivityReservations,
   getMyActivities,
@@ -876,4 +926,6 @@ module.exports = {
   repportActivity,
   getRepportedActivities,
   checkRepport,
+  payment,
+  getPaymentIntent,
 };
