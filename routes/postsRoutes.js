@@ -16,6 +16,7 @@ const {
     unlikePost,
     addcomment,
     deleteComment,
+    shareActivity
   } = require("../controllers/postsControllers");
   const { checkRole } = require("../middlewares/Autorization");
   const { authenticateToken } = require("../middlewares/auth");
@@ -27,11 +28,17 @@ router.post("/createPost",
     validateData,
     createPost
   );
-  router.post("/:postId/addTag",
-    authenticateToken,
-    validateData,
-    addTagToPost
-  );
+router.post(
+  "/:activityId/share",
+  authenticateToken,
+  validateData,
+  shareActivity
+);
+router.post("/:postId/addTag",
+  authenticateToken,
+  validateData,
+  addTagToPost
+);
 router.post("/:postId/save",
     authenticateToken,
     validateData,
