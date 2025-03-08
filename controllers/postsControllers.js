@@ -562,7 +562,6 @@ const shareActivity = async (req, res) => {
       });
     }
 
-    // Créer le post
     const post = await prisma.post.create({
       data: {
         description: `Partage de l'activité: ${activity.title}`,
@@ -580,7 +579,6 @@ const shareActivity = async (req, res) => {
       }
     });
 
-    // Créer l'entrée dans la table share
     const share = await prisma.share.create({
       data: {
         userId: req.user.userId,
