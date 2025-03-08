@@ -90,7 +90,22 @@ const getPosts = async (req, res) => {
           select: {
             likes: true,
             comment: true,
-            share: true,
+            savePost: true,
+          },
+        },
+        share: {
+          include: {
+            user: {
+              select: {
+                userName: true,
+                avatar: true,
+              },
+            },
+            activity: {
+              select: {
+                title: true,
+              },
+            },
           },
         },
       },
