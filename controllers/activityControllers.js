@@ -852,28 +852,25 @@ const payment = async (req, res) => {
     const { currency, quantity } = req.body;
     const userId = req.user.userId;
 
-    // Validations
     if (!currency) {
-      return res.status(400).json({ error: "Devise requise" });
+      return res.status(400).json({ error: "Currency required" });
     }
     if (!quantity || quantity <= 0) {
-      return res.status(400).json({ error: "Quantité invalide" });
+      return res.status(400).json({ error: "Invalid quantity" });
     }
 
-    // Vérifier si l'activité existe et s'il y a assez de places
     const activity = await prisma.activity.findUnique({
       where: { activityId: activityId },
     });
-    
+
     if (!activity) {
-      return res.status(404).json({ error: "Activité non trouvée" });
+      return res.status(404).json({ error: "Activity not found" });
     }
 
-    // Vérifier la disponibilité des places avant le paiement
     if (activity.seat < quantity) {
-      return res.status(400).json({ 
-        error: "Pas assez de places disponibles",
-        availableSeats: activity.seat 
+      return res.status(400).json({
+        error: "Not enough seats available",
+        availableSeats: activity.seat,
       });
     }
 
@@ -883,7 +880,7 @@ const payment = async (req, res) => {
       currency,
       payment_method: TEST_CARDS.success,
       confirm: true,
-      payment_method_types: ['card'],
+      payment_method_types: ["card"],
       metadata: {
         activityId,
         userId,
@@ -921,18 +918,6 @@ const payment = async (req, res) => {
   }
 };
 
-const getPaymentIntent = async (req, res) => {
-  try {
-    const { paymentIntentId } = req.params;
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    res.json(paymentIntent);
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ error: "Erreur lors de la récupération du paiement" });
-  }
-};
 
 module.exports = {
   createActivity,
@@ -959,5 +944,4 @@ module.exports = {
   getRepportedActivities,
   checkRepport,
   payment,
-  getPaymentIntent,
 };

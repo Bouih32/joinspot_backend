@@ -7,7 +7,6 @@ const {
   deleteActivity,
   addTagsToActivity,
   deleteActivityTagBytagName,
-  createTicket,
   getActivityTickets,
   getActivityByCategory,
   getActivityReservations,
@@ -25,7 +24,6 @@ const {
   getRepportedActivities,
   checkRepport,
   payment,
-  getPaymentIntent,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const { authenticateToken } = require("../middlewares//auth");
@@ -47,12 +45,7 @@ router.post(
   validateData,
   addTagsToActivity
 );
-// router.post(
-//   "/:activityId/reserve",
-//   authenticateToken,
-//   validateData,
-//   createTicket
-// );
+
 router.post("/:activityId/payment", authenticateToken, validateData, payment);
 router.post("/:activityId/review", authenticateToken, validateData, addReview);
 router.post(
@@ -89,12 +82,6 @@ router.get(
 router.get("/tags", authenticateToken, validateData, getActivitiesBytags);
 router.get("/saved", authenticateToken, validateData, getSavedActivities);
 
-router.get(
-  "/payment/:paymentIntentId",
-  authenticateToken,
-  validateData,
-  getPaymentIntent
-);
 router.get(
   "/category/:id",
   authenticateToken,
