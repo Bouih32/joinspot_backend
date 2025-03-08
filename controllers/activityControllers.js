@@ -1,6 +1,6 @@
 const prisma = require("../utils/client");
 const { createNotification } = require("../utils/notification");
-const stripe = require("../utils/stripe");
+const { stripe, TEST_CARDS } = require("../utils/stripe");
 const createActivity = async (req, res) => {
   try {
     const {
@@ -405,10 +405,10 @@ const createTicket = async (userId, activityId, quantity) => {
       where: { activityId },
     });
     if (!activity) {
-      throw new Error("Activity not found" );
+      throw new Error("Activity not found");
     }
     if (activity.seat < quantity) {
-      throw new Error("Not enough seats available" );
+      throw new Error("Not enough seats available");
     }
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
     const ticket = await prisma.ticket.create({
@@ -428,7 +428,7 @@ const createTicket = async (userId, activityId, quantity) => {
     });
     const reserver = await prisma.user.findUnique({
       where: { userId },
-      select: { userName: true }
+      select: { userName: true },
     });
 
     // await createNotification(
@@ -436,11 +436,10 @@ const createTicket = async (userId, activityId, quantity) => {
     //   activity.user.userId,
     //   `${reserver.userName} a réservé ${quantity} place(s) pour votre activité "${activity.title}"`
     // );
-    return ticket
-
+    return ticket;
   } catch (error) {
     console.error("Erreur lors de la réservation :", error.message);
-    throw error; 
+    throw error;
   }
 };
 
@@ -665,7 +664,9 @@ const addReview = async (req, res) => {
       activity.user.userId,
       `${reviewer.userName} has reviewed your activity "${activity.title}"`
     );
-    return res.status(201).json({ message: "Review added successfully", review });
+    return res
+      .status(201)
+      .json({ message: "Review added successfully", review });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -814,12 +815,10 @@ const getRepportedActivities = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({
-        message: "Failed to fetch repported activities",
-        error: error.message,
-      });
+    return res.status(500).json({
+      message: "Failed to fetch repported activities",
+      error: error.message,
+    });
   }
 };
 
@@ -827,13 +826,13 @@ const checkRepport = async (req, res) => {
   try {
     const { repportId } = req.params;
     const repport = await prisma.repportAct.findFirst({
-      where: { repportActId:repportId },
+      where: { repportActId: repportId },
     });
     if (!repport) {
       return res.status(404).json({ message: "Repport not found" });
     }
     const updatedRepport = await prisma.repportAct.update({
-      where: { repportActId:repportId },
+      where: { repportActId: repportId },
       data: { status: "checked" },
     });
     return res
@@ -850,12 +849,10 @@ const checkRepport = async (req, res) => {
 const payment = async (req, res) => {
   try {
     const { activityId } = req.params;
-    const { amount, currency, quantity } = req.body;
-    const userId = req.user.userId; 
+    const { currency, quantity } = req.body;
+    const userId = req.user.userId;
 
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ error: "Montant invalide" });
-    }
+    // Validations
     if (!currency) {
       return res.status(400).json({ error: "Devise requise" });
     }
@@ -863,31 +860,64 @@ const payment = async (req, res) => {
       return res.status(400).json({ error: "Quantité invalide" });
     }
 
-    // Vérifier si l'activité existe
-    const activity = await prisma.activity.findUnique({ where: { activityId: activityId } });
+    // Vérifier si l'activité existe et s'il y a assez de places
+    const activity = await prisma.activity.findUnique({
+      where: { activityId: activityId },
+    });
+    
     if (!activity) {
       return res.status(404).json({ error: "Activité non trouvée" });
     }
 
-    // Créer un paiement Stripe
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // Convertir en centimes
-      currency,
-      payment_method_types: ["card"],
-      metadata: { activityId, userId, quantity },
-    });
-
-    if (!paymentIntent || !paymentIntent.client_secret) {
-      return res.status(500).json({ error: "Erreur lors de la création du paiement" });
+    // Vérifier la disponibilité des places avant le paiement
+    if (activity.seat < quantity) {
+      return res.status(400).json({ 
+        error: "Pas assez de places disponibles",
+        availableSeats: activity.seat 
+      });
     }
 
-    // Créer un ticket pour l'utilisateur
-    const ticket = await createTicket(userId, activityId, quantity);
+    // Créer l'intention de paiement avec une carte de test prédéfinie
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: activity.price * quantity * 100,
+      currency,
+      payment_method: TEST_CARDS.success,
+      confirm: true,
+      payment_method_types: ['card'],
+      metadata: {
+        activityId,
+        userId,
+        quantity,
+      },
+    });
 
-    return res.json({ clientSecret: paymentIntent.client_secret, ticket });
+    if (paymentIntent.status === "succeeded") {
+      const ticket = await createTicket(userId, activityId, quantity);
+      return res.status(200).json({
+        success: true,
+        message: "Paiement réussi",
+        ticket,
+        paymentDetails: {
+          id: paymentIntent.id,
+          amount: paymentIntent.amount / 100,
+          currency: paymentIntent.currency,
+          status: paymentIntent.status,
+        },
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: "Échec du paiement",
+        status: paymentIntent.status,
+      });
+    }
   } catch (error) {
     console.error("Erreur Stripe:", error);
-    return res.status(500).json({ error: "Erreur lors de la création du paiement" });
+    return res.status(500).json({
+      success: false,
+      error: "Erreur lors du traitement du paiement",
+      message: error.message,
+    });
   }
 };
 
@@ -898,9 +928,11 @@ const getPaymentIntent = async (req, res) => {
     res.json(paymentIntent);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Erreur lors de la récupération du paiement" });
+    res
+      .status(500)
+      .json({ error: "Erreur lors de la récupération du paiement" });
   }
-}
+};
 
 module.exports = {
   createActivity,
