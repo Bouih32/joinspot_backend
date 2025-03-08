@@ -1,6 +1,8 @@
 const prisma = require("../utils/client");
 const { createNotification } = require("../utils/notification");
 const { stripe, TEST_CARDS } = require("../utils/stripe");
+const { createTicket } = require("../utils/ticket");
+
 const createActivity = async (req, res) => {
   try {
     const {
@@ -396,50 +398,6 @@ const deleteActivityTagBytagName = async (req, res) => {
       message: "Failed to delete tags from activity",
       error: error.message,
     });
-  }
-};
-
-const createTicket = async (userId, activityId, quantity) => {
-  try {
-    const activity = await prisma.activity.findUnique({
-      where: { activityId },
-    });
-    if (!activity) {
-      throw new Error("Activity not found");
-    }
-    if (activity.seat < quantity) {
-      throw new Error("Not enough seats available");
-    }
-    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-    const ticket = await prisma.ticket.create({
-      data: {
-        userId,
-        activityId,
-        code,
-        quantity,
-      },
-    });
-
-    await prisma.activity.update({
-      where: { activityId },
-      data: {
-        seat: activity.seat - quantity,
-      },
-    });
-    const reserver = await prisma.user.findUnique({
-      where: { userId },
-      select: { userName: true },
-    });
-
-    // await createNotification(
-    //   req.user.userId,
-    //   activity.user.userId,
-    //   `${reserver.userName} a réservé ${quantity} place(s) pour votre activité "${activity.title}"`
-    // );
-    return ticket;
-  } catch (error) {
-    console.error("Erreur lors de la réservation :", error.message);
-    throw error;
   }
 };
 
