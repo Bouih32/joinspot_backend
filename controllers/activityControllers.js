@@ -1,5 +1,6 @@
 const prisma = require("../utils/client");
 const { createNotification } = require("../utils/notification");
+const { stripe, TEST_CARDS } = require("../utils/stripe");
 const createActivity = async (req, res) => {
   try {
     const {
@@ -398,23 +399,21 @@ const deleteActivityTagBytagName = async (req, res) => {
   }
 };
 
-const reserveActivity = async (req, res) => {
+const createTicket = async (userId, activityId, quantity) => {
   try {
-    const { activityId } = req.params;
-    const { quantity } = req.body;
     const activity = await prisma.activity.findUnique({
       where: { activityId },
     });
     if (!activity) {
-      return res.status(404).json({ message: "Activity not found" });
+      throw new Error("Activity not found");
     }
     if (activity.seat < quantity) {
-      return res.status(400).json({ message: "Not enough seats available" });
+      throw new Error("Not enough seats available");
     }
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
     const ticket = await prisma.ticket.create({
       data: {
-        userId: req.user.userId,
+        userId,
         activityId,
         code,
         quantity,
@@ -428,24 +427,19 @@ const reserveActivity = async (req, res) => {
       },
     });
     const reserver = await prisma.user.findUnique({
-      where: { userId: req.user.userId },
-      select: { userName: true }
+      where: { userId },
+      select: { userName: true },
     });
 
-    await createNotification(
-      req.user.userId,
-      activity.user.userId,
-      `${reserver.userName} a réservé ${quantity} place(s) pour votre activité "${activity.title}"`
-    );
-    return res.status(201).json({
-      message: "Reservation successful",
-      ticket,
-    });
+    // await createNotification(
+    //   req.user.userId,
+    //   activity.user.userId,
+    //   `${reserver.userName} a réservé ${quantity} place(s) pour votre activité "${activity.title}"`
+    // );
+    return ticket;
   } catch (error) {
-    return res.status(500).json({
-      message: "Failed to reserve activity",
-      error: error.message,
-    });
+    console.error("Erreur lors de la réservation :", error.message);
+    throw error;
   }
 };
 
@@ -670,7 +664,9 @@ const addReview = async (req, res) => {
       activity.user.userId,
       `${reviewer.userName} has reviewed your activity "${activity.title}"`
     );
-    return res.status(201).json({ message: "Review added successfully", review });
+    return res
+      .status(201)
+      .json({ message: "Review added successfully", review });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -819,12 +815,10 @@ const getRepportedActivities = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({
-        message: "Failed to fetch repported activities",
-        error: error.message,
-      });
+    return res.status(500).json({
+      message: "Failed to fetch repported activities",
+      error: error.message,
+    });
   }
 };
 
@@ -832,13 +826,13 @@ const checkRepport = async (req, res) => {
   try {
     const { repportId } = req.params;
     const repport = await prisma.repportAct.findFirst({
-      where: { repportActId:repportId },
+      where: { repportActId: repportId },
     });
     if (!repport) {
       return res.status(404).json({ message: "Repport not found" });
     }
     const updatedRepport = await prisma.repportAct.update({
-      where: { repportActId:repportId },
+      where: { repportActId: repportId },
       data: { status: "checked" },
     });
     return res
@@ -852,6 +846,79 @@ const checkRepport = async (req, res) => {
   }
 };
 
+const payment = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const { currency, quantity } = req.body;
+    const userId = req.user.userId;
+
+    if (!currency) {
+      return res.status(400).json({ error: "Currency required" });
+    }
+    if (!quantity || quantity <= 0) {
+      return res.status(400).json({ error: "Invalid quantity" });
+    }
+
+    const activity = await prisma.activity.findUnique({
+      where: { activityId: activityId },
+    });
+
+    if (!activity) {
+      return res.status(404).json({ error: "Activity not found" });
+    }
+
+    if (activity.seat < quantity) {
+      return res.status(400).json({
+        error: "Not enough seats available",
+        availableSeats: activity.seat,
+      });
+    }
+
+    // Créer l'intention de paiement avec une carte de test prédéfinie
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: activity.price * quantity * 100,
+      currency,
+      payment_method: TEST_CARDS.success,
+      confirm: true,
+      payment_method_types: ["card"],
+      metadata: {
+        activityId,
+        userId,
+        quantity,
+      },
+    });
+
+    if (paymentIntent.status === "succeeded") {
+      const ticket = await createTicket(userId, activityId, quantity);
+      return res.status(200).json({
+        success: true,
+        message: "Paiement réussi",
+        ticket,
+        paymentDetails: {
+          id: paymentIntent.id,
+          amount: paymentIntent.amount / 100,
+          currency: paymentIntent.currency,
+          status: paymentIntent.status,
+        },
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: "Échec du paiement",
+        status: paymentIntent.status,
+      });
+    }
+  } catch (error) {
+    console.error("Erreur Stripe:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Erreur lors du traitement du paiement",
+      message: error.message,
+    });
+  }
+};
+
+
 module.exports = {
   createActivity,
   getActivities,
@@ -861,7 +928,7 @@ module.exports = {
   deleteActivity,
   addTagsToActivity,
   deleteActivityTagBytagName,
-  reserveActivity,
+  createTicket,
   getActivityTickets,
   getActivityReservations,
   getMyActivities,
@@ -876,4 +943,5 @@ module.exports = {
   repportActivity,
   getRepportedActivities,
   checkRepport,
+  payment,
 };
