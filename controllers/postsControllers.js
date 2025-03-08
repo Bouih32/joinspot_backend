@@ -1,4 +1,5 @@
 const prisma = require("../utils/client");
+const { createNotification } = require("../utils/notification");
 
 const createPost = async (req, res) => {
   try {
@@ -126,24 +127,24 @@ const getPostById = async (req, res) => {
           },
         },
         postTags: {
-            include: {
-              tag: {
-                select: {
-                  tagName: true,
-                },
+          include: {
+            tag: {
+              select: {
+                tagName: true,
               },
             },
           },
-          comments: {
-            include: {
-              user: {
-                select: {
-                  userName: true,
-                  avatar: true,
-                },
+        },
+        comments: {
+          include: {
+            user: {
+              select: {
+                userName: true,
+                avatar: true,
               },
             },
           },
+        },
         _count: {
           select: {
             likes: true,
@@ -536,6 +537,90 @@ const unSavePost = async (req, res) => {
     });
   }
 };
+
+const shareActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+      include: {
+        category: true
+      }
+    });
+    const user = await prisma.user.findUnique({
+      where: { userId: req.user.userId },
+      select: {
+        userName: true,
+        avatar: true
+      }
+    });
+
+    if (!activity) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Activity not found" 
+      });
+    }
+
+    // Créer le post
+    const post = await prisma.post.create({
+      data: {
+        description: `Partage de l'activité: ${activity.title}`,
+        bannerPic: activity.coverPic,
+        category: {
+          connect: {
+            categoryId: activity.categoryId
+          }
+        },
+        user: {
+          connect: {
+            userId: req.user.userId
+          }
+        }
+      }
+    });
+
+    // Créer l'entrée dans la table share
+    const share = await prisma.share.create({
+      data: {
+        userId: req.user.userId,
+        activityId: activityId,
+        postId: post.postId
+      },
+      include: {
+        user: {
+          select: {
+            userName: true,
+            avatar: true
+          }
+        },
+        activity: true,
+        post: true
+      }
+    });
+    if (share) {
+      await createNotification(
+        req.user.userId,
+        activity.userId,
+        `${user.userName} a partagé une activité avec vous ${activity.title}`
+      );
+    }
+    return res.status(201).json({
+      success: true,
+      message: "Activity shared successfully",
+      share,
+    });
+
+  } catch (error) {
+    console.error("Erreur lors du partage de l'activité:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Erreur lors du partage de l'activité",
+      message: error.message
+    });
+  }
+};
+
 module.exports = {
   createPost,
   addTagToPost,
@@ -552,4 +637,5 @@ module.exports = {
   unlikePost,
   addcomment,
   deleteComment,
+  shareActivity,
 };
