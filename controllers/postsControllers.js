@@ -557,7 +557,6 @@ const sharePost = async (req, res) => {
   try {
     const { postId } = req.params;
     
-    // Vérifier si le post existe
     const post = await prisma.post.findUnique({
       where: { postId },
       include: {
