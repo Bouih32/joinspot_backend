@@ -123,49 +123,118 @@ const getPosts = async (req, res) => {
   }
 };
 
-const getPostsByUser = async (req, res) => {
-  const user = req.params
-  if (!user) {
-    return res.status(400).json({ message: "User not provided" });
-  }
-  const posts = await prisma.post.findMany({
-    where: {
-      userId: user,
-    },
-    include: {
-      category: {
-        select: {
-          categoryName: true,
-        },
+const getMyPosts = async (req, res) => {
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        userId: req.user.userId,
       },
-      user: {
-        select: {
-          userName: true,
-          avatar: true,
-        },
-      },
-      _count: {
-        select: {
-          likes: true,
-          comment: true,
-          savePost: true,
-        },
-      },
-      share: {
-        include: {
-          user: {
-            select: {
-              userName: true,
-              avatar: true,
-            },
+      include: {
+        category: {
+          select: {
+            categoryName: true,
           },
-          activity : true,
+        },
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comment: true,
+            savePost: true,
+          },
+        },
+        share: {
+          include: {
+            user: {
+              select: {
+                userName: true,
+                avatar: true,
+              },
+            },
+            activity: true,
+          },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  })
-}
+      orderBy: { createdAt: "desc" },
+    });
+    if (posts.length === 0) {
+      return res.status(404).json({ message: "No posts found" });
+    }
+    return res.json({ message: "My posts fetched successfully", posts });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch my posts", error: error.message });
+  }
+};
+
+const getPostsByUser = async (req, res) => {
+  try {
+    const userId = req.params;
+    const user = await prisma.post.findFirst({
+      where: { userId: userId },
+    });
+    if (!user) {
+      return res.status(400).json({ message: "User not provided" });
+    }
+    const posts = await prisma.post.findMany({
+      where: {
+        userId: user,
+      },
+      include: {
+        category: {
+          select: {
+            categoryName: true,
+          },
+        },
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comment: true,
+            savePost: true,
+          },
+        },
+        share: {
+          include: {
+            user: {
+              select: {
+                userName: true,
+                avatar: true,
+              },
+            },
+            activity: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (posts.length === 0) {
+      return res.status(404).json({ message: "No posts found" });
+    }
+    return res.status(200).json({
+      message: "Posts fetched successfully",
+      posts,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch posts",
+      error: error.message,
+    });
+  }
+};
 
 const getPostById = async (req, res) => {
   try {
@@ -600,53 +669,66 @@ const unSavePost = async (req, res) => {
 const sharePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    
+
     const post = await prisma.post.findUnique({
       where: { postId },
       include: {
         user: {
           select: {
-            userName: true
-          }
-        }
-      }
+            userName: true,
+          },
+        },
+      },
     });
 
     if (!post) {
       return res.status(404).json({
         success: false,
-        message: "Post non trouvé"
+        message: "Post non trouvé",
       });
     }
 
     // Construire l'URL de base du frontend
-    const baseUrl = process.env.FRONTEND_URL || 'https://www.joinspots.com';
+    const baseUrl = process.env.FRONTEND_URL || "https://www.joinspots.com";
     const postUrl = `${baseUrl}/post/${postId}`;
 
     // Générer les liens de partage pour différents réseaux sociaux
     const shareLinks = {
       post_url: postUrl,
       social_links: {
-        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`,
-        twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(`Découvrez ce post de ${post.user.userName} sur JoinSpots!`)}`,
-        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`,
-        whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(`Découvrez ce post sur JoinSpots: ${postUrl}`)}`,
-        telegram: `https://t.me/share/url?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(`Découvrez ce post de ${post.user.userName} sur JoinSpots!`)}`
-      }
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          postUrl
+        )}`,
+        twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+          postUrl
+        )}&text=${encodeURIComponent(
+          `Découvrez ce post de ${post.user.userName} sur JoinSpots!`
+        )}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+          postUrl
+        )}`,
+        whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(
+          `Découvrez ce post sur JoinSpots: ${postUrl}`
+        )}`,
+        telegram: `https://t.me/share/url?url=${encodeURIComponent(
+          postUrl
+        )}&text=${encodeURIComponent(
+          `Découvrez ce post de ${post.user.userName} sur JoinSpots!`
+        )}`,
+      },
     };
 
     return res.status(200).json({
       success: true,
       message: "Liens de partage générés avec succès",
-      data: shareLinks
+      data: shareLinks,
     });
-
   } catch (error) {
     console.error("Erreur lors de la génération des liens de partage:", error);
     return res.status(500).json({
       success: false,
       message: "Erreur lors de la génération des liens de partage",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -658,57 +740,57 @@ const shareActivity = async (req, res) => {
     const activity = await prisma.activity.findUnique({
       where: { activityId },
       include: {
-        category: true
-      }
+        category: true,
+      },
     });
     const user = await prisma.user.findUnique({
       where: { userId: req.user.userId },
       select: {
         userName: true,
-        avatar: true
-      }
+        avatar: true,
+      },
     });
 
     if (!activity) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "Activity not found" 
+        message: "Activity not found",
       });
     }
 
     const post = await prisma.post.create({
       data: {
-        description: description ,
+        description: description,
         bannerPic: activity.coverPic,
         category: {
           connect: {
-            categoryId: activity.categoryId
-          }
+            categoryId: activity.categoryId,
+          },
         },
         user: {
           connect: {
-            userId: req.user.userId
-          }
-        }
-      }
+            userId: req.user.userId,
+          },
+        },
+      },
     });
 
     const share = await prisma.share.create({
       data: {
         userId: req.user.userId,
         activityId: activityId,
-        postId: post.postId
+        postId: post.postId,
       },
       include: {
         user: {
           select: {
             userName: true,
-            avatar: true
-          }
+            avatar: true,
+          },
         },
         activity: true,
-        post: true
-      }
+        post: true,
+      },
     });
     if (share) {
       await createNotification(
@@ -722,13 +804,12 @@ const shareActivity = async (req, res) => {
       message: "Activity shared successfully",
       share,
     });
-
   } catch (error) {
     console.error("Erreur lors du partage de l'activité:", error);
     return res.status(500).json({
       success: false,
       error: "Erreur lors du partage de l'activité",
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -737,6 +818,7 @@ module.exports = {
   createPost,
   addTagToPost,
   getPosts,
+  getMyPosts,
   getPostsByUser,
   getPostById,
   getPostByCategory,
