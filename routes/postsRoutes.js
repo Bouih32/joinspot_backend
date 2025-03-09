@@ -4,6 +4,7 @@ const {
     createPost,
     addTagToPost,
     getPosts,
+    getPostsByUser,
     getPostById,
     getPostByCategory,
     getPostBytags,
@@ -61,6 +62,11 @@ router.get("/",
     authenticateToken,
     validateData,
     getPosts
+  );
+router.get("/user/:userId",
+    authenticateToken,
+    validateData,
+    getPostsByUser
   );
 router.get("/tags",
     authenticateToken,

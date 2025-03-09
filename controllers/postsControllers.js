@@ -123,6 +123,50 @@ const getPosts = async (req, res) => {
   }
 };
 
+const getPostsByUser = async (req, res) => {
+  const user = req.params
+  if (!user) {
+    return res.status(400).json({ message: "User not provided" });
+  }
+  const posts = await prisma.post.findMany({
+    where: {
+      userId: user,
+    },
+    include: {
+      category: {
+        select: {
+          categoryName: true,
+        },
+      },
+      user: {
+        select: {
+          userName: true,
+          avatar: true,
+        },
+      },
+      _count: {
+        select: {
+          likes: true,
+          comment: true,
+          savePost: true,
+        },
+      },
+      share: {
+        include: {
+          user: {
+            select: {
+              userName: true,
+              avatar: true,
+            },
+          },
+          activity : true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  })
+}
+
 const getPostById = async (req, res) => {
   try {
     const post = await prisma.post.findFirst({
@@ -693,6 +737,7 @@ module.exports = {
   createPost,
   addTagToPost,
   getPosts,
+  getPostsByUser,
   getPostById,
   getPostByCategory,
   getPostBytags,
