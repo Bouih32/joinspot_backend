@@ -176,16 +176,15 @@ const getMyPosts = async (req, res) => {
 
 const getPostsByUser = async (req, res) => {
   try {
-    const userId = req.params;
     const user = await prisma.post.findFirst({
-      where: { userId: userId },
+      where: { userId: req.params.userId,},
     });
     if (!user) {
       return res.status(400).json({ message: "User not provided" });
     }
     const posts = await prisma.post.findMany({
       where: {
-        userId: user,
+        userId: req.params.userId,
       },
       include: {
         category: {
