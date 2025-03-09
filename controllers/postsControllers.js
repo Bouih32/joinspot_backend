@@ -610,6 +610,7 @@ const sharePost = async (req, res) => {
 const shareActivity = async (req, res) => {
   try {
     const { activityId } = req.params;
+    const { description } = req.body;
     const activity = await prisma.activity.findUnique({
       where: { activityId },
       include: {
@@ -633,7 +634,7 @@ const shareActivity = async (req, res) => {
 
     const post = await prisma.post.create({
       data: {
-        description: `Partage de l'activité: ${activity.title}`,
+        description: description ,
         bannerPic: activity.coverPic,
         category: {
           connect: {
@@ -669,7 +670,7 @@ const shareActivity = async (req, res) => {
       await createNotification(
         req.user.userId,
         activity.userId,
-        `${user.userName} a partagé une activité avec vous ${activity.title}`
+        `${user.userName} shared your activity ${activity.title}`
       );
     }
     return res.status(201).json({
