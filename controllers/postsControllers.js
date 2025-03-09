@@ -553,6 +553,61 @@ const unSavePost = async (req, res) => {
   }
 };
 
+const sharePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    
+    // Vérifier si le post existe
+    const post = await prisma.post.findUnique({
+      where: { postId },
+      include: {
+        user: {
+          select: {
+            userName: true
+          }
+        }
+      }
+    });
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post non trouvé"
+      });
+    }
+
+    // Construire l'URL de base du frontend
+    const baseUrl = process.env.FRONTEND_URL || 'https://www.joinspots.com';
+    const postUrl = `${baseUrl}/post/${postId}`;
+
+    // Générer les liens de partage pour différents réseaux sociaux
+    const shareLinks = {
+      post_url: postUrl,
+      social_links: {
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`,
+        twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(`Découvrez ce post de ${post.user.userName} sur JoinSpots!`)}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`,
+        whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(`Découvrez ce post sur JoinSpots: ${postUrl}`)}`,
+        telegram: `https://t.me/share/url?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(`Découvrez ce post de ${post.user.userName} sur JoinSpots!`)}`
+      }
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Liens de partage générés avec succès",
+      data: shareLinks
+    });
+
+  } catch (error) {
+    console.error("Erreur lors de la génération des liens de partage:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Erreur lors de la génération des liens de partage",
+      error: error.message
+    });
+  }
+};
+
 const shareActivity = async (req, res) => {
   try {
     const { activityId } = req.params;
@@ -651,4 +706,5 @@ module.exports = {
   addcomment,
   deleteComment,
   shareActivity,
+  sharePost,
 };

@@ -16,7 +16,8 @@ const {
     unlikePost,
     addcomment,
     deleteComment,
-    shareActivity
+    shareActivity,
+    sharePost
   } = require("../controllers/postsControllers");
   const { checkRole } = require("../middlewares/Autorization");
   const { authenticateToken } = require("../middlewares/auth");
@@ -86,6 +87,7 @@ router.get("/:id",
     validateData,
     getPostById
   );
+router.get('/:postId/share', authenticateToken, sharePost);
 
 // DELETE
 router.delete("/:postId/tags",
