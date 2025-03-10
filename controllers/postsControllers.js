@@ -262,7 +262,7 @@ const getPostById = async (req, res) => {
             },
           },
         },
-        comments: {
+        comment: {
           include: {
             user: {
               select: {
@@ -775,24 +775,9 @@ const repportPost = async (req, res) => {
 const getrepportedPost = async (req, res) => {
   try {
     const repportsPost = await prisma.repportPost.findMany({
-      include: {
-        user: {
-          select: {
-            userName: true,
-          },
-        },
-        post: {
-          select: {
-            title: true,
-          },
-        },
-      },
-      category: {
-        select: {
-          categoryName: true,
-        },
-      },
-      orderBy: { createdAt: "desc" },
+      include:{
+        post:true
+      }
     });
     if (repportsPost.length === 0) {
       return res.status(404).json({ message: "No reports found" });

@@ -107,13 +107,14 @@ router.get("/category/:id",
     validateData,
     getPostByCategory
   );
-router.get("/:id",
-    authenticateToken,
-    validateData,
-    getPostById
-  );
+
 router.get('/:postId/share', authenticateToken, sharePost);
 router.get('/repport', authenticateToken, checkRole("ADMIN"), getrepportedPost);
+router.get("/:id",
+  authenticateToken,
+  validateData,
+  getPostById
+);
 
 // DELETE
 router.delete("/:postId/tags",
