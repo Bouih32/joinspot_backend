@@ -698,14 +698,20 @@ const updateReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
     const { rating, comment } = req.body;
-    const review = await prisma.review.findUnique({
-      where: { reviewId },
+    const review = await prisma.review.findFirst({
+      where: { 
+        reviewId,
+        userId: req.user.userId,
+       },
     });
     if (!review) {
       return res.status(404).json({ message: "Review not found" });
     }
     const updatedReview = await prisma.review.update({
-      where: { reviewId },
+      where: { 
+        reviewId,
+        userId: req.user.userId,
+       },
       data: { rating, comment },
     });
     return res
