@@ -772,7 +772,7 @@ const repportPost = async (req, res) => {
   }
 };
 
-const getrepportsPost = async (req, res) => {
+const getrepportedPost = async (req, res) => {
   try {
     const repportsPost = await prisma.repportPost.findMany({
       include: {
@@ -784,14 +784,14 @@ const getrepportsPost = async (req, res) => {
         post: {
           select: {
             title: true,
-            },
           },
         },
-        category:{
-          select: {
-            categoryName: true,
-          },
+      },
+      category: {
+        select: {
+          categoryName: true,
         },
+      },
       orderBy: { createdAt: "desc" },
     });
     if (repportsPost.length === 0) {
@@ -805,6 +805,37 @@ const getrepportsPost = async (req, res) => {
     console.error(error);
     return res.status(500).json({
       message: "Failed to fetch reports",
+      error: error.message,
+    });
+  }
+};
+
+const checkrepportedPost = async (req, res) => {
+  try {
+    const repport = await prisma.repportPost.findFirst({
+      where: {
+        repportPostId: req.params.repportPostId,
+        status: "repport",
+      },
+    });
+    if (!repport) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+    await prisma.repportPost.update({
+      where: {
+        repportPostId: req.params.repportPostId,
+      },
+      data: {
+        status: "checked",
+      },
+    });
+    return res
+      .status(200)
+      .json({ message: "Report status updated successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to update report status",
       error: error.message,
     });
   }
@@ -911,6 +942,7 @@ module.exports = {
   deleteComment,
   shareActivity,
   repportPost,
-  getrepportsPost,
+  getrepportedPost,
+  checkrepportedPost,
   sharePost,
 };
