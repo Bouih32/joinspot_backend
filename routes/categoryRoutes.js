@@ -74,11 +74,10 @@ router.patch(
   validateData,
   updateCategory
 );
-router.patch("/delete/:id", deleteCategory);
 
 // Delete
 
-router.delete("/tags/:id", authenticateToken, checkRole("ADMIN"), deleteTag);
+router.delete("/delete/:id", deleteCategory);
 router.delete("/tags/:id", authenticateToken, checkRole("ADMIN"), deleteTag);
 
 module.exports = router;

@@ -16,7 +16,7 @@ const {
   getUserById,
   addTagsToUser,
   getUserTags,
-  deleteUserTagBytagName,
+  deleteUserTag,
   followUser,
   getFollowersAndFollowing,
   UnfollowUser,
@@ -46,7 +46,6 @@ const {
 // authentication
 router.post("/register", registerValidation, validateData, registerUser);
 router.post("/login", loginValidation, validateData, loginUser);
-router.post("/logout", authenticateToken, logOut);
 router.post("/forgot", forgotPswrd);
 router.post("/reset", resetForgotenPswrd);
 // userTag
@@ -58,17 +57,11 @@ router.post("/repport", authenticateToken, validateData, repportUser);
 router.post(
   "/repport/:repportId/check",
   authenticateToken,
+  checkRole("ADMIN"),
   validateData,
   checkRepport
 );
 router.post("/send-message", authenticateToken, validateData, sendMessage);
-
-router.put(
-  "/messages/:messageId/read",
-  authenticateToken,
-  validateData,
-  markAsRead
-);
 
 router.get("/cities", getCities);
 // user data
@@ -80,17 +73,11 @@ router.get(
   validateData,
   getFollowersAndFollowing
 );
-router.get(
-  "/users",
-  authenticateToken,
-  checkRole("ADMIN"),
-  validateData,
-  getAllUsers
-);
 
 router.get(
   "/repported", 
   authenticateToken, 
+  checkRole("ADMIN"),
   validateData, 
   getRepportedUsers
 );
@@ -146,14 +133,16 @@ router.put(
   validateData,
   markAsRead
 );
+
 router.put("/change-password", authenticateToken, validateData, changePassword);
 router.put("/update-cityuser", authenticateToken, updateUserCity);
 
 router.patch("/edit-profil", authenticateToken, validateData, updateUserData);
 
+router.delete("/logout", authenticateToken, logOut);
 router.delete("/unfollow", authenticateToken, validateData, UnfollowUser);
 router.delete("/cities/:cityId", authenticateToken, deleteCity);
-router.delete("/tags/:id", authenticateToken, deleteUserTagBytagName);
+router.delete("/tags/:id", authenticateToken, deleteUserTag);
 router.delete(
   "/notifications/:notificationId",
   authenticateToken,

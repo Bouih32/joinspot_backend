@@ -382,12 +382,12 @@ const getUserTags = async (req, res) => {
   }
 };
 
-const deleteUserTagBytagName = async (req, res) => {
+const deleteUserTag = async (req, res) => {
   try {
     const userTag = await prisma.userTags.findFirst({
       where: {
         userId: req.user.userId,
-        tagName: req.params.id,
+        tagId: req.params.id,
       },
     });
     if (!userTag) {
@@ -946,7 +946,7 @@ module.exports = {
   getUserById,
   addTagsToUser,
   getUserTags,
-  deleteUserTagBytagName,
+  deleteUserTag,
   followUser,
   getFollowersAndFollowing,
   UnfollowUser,
