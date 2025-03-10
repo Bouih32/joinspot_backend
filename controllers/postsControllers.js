@@ -177,7 +177,7 @@ const getMyPosts = async (req, res) => {
 const getPostsByUser = async (req, res) => {
   try {
     const user = await prisma.post.findFirst({
-      where: { userId: req.params.userId,},
+      where: { userId: req.params.userId },
     });
     if (!user) {
       return res.status(400).json({ message: "User not provided" });
@@ -732,6 +732,84 @@ const sharePost = async (req, res) => {
   }
 };
 
+const repportPost = async (req, res) => {
+  try {
+    const { description } = req.body;
+    const post = await prisma.post.findFirst({
+      where: { postId: req.params.postId },
+    });
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    const existingRepport = await prisma.repportPost.findFirst({
+      where: {
+        userId: req.user.userId,
+        postId: req.params.postId,
+      },
+    });
+    if (existingRepport) {
+      return res
+        .status(400)
+        .json({ message: "Activity report already submitted" });
+    }
+    const repportPost = await prisma.repportPost.create({
+      data: {
+        description,
+        userId: req.user.userId,
+        postId: req.params.postId,
+        status: "pending",
+      },
+    });
+    return res
+      .status(201)
+      .json({ message: "Rapport d'activité envoyé", repportPost });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to report post",
+      error: error.message,
+    });
+  }
+};
+
+const getrepportsPost = async (req, res) => {
+  try {
+    const repportsPost = await prisma.repportPost.findMany({
+      include: {
+        user: {
+          select: {
+            userName: true,
+          },
+        },
+        post: {
+          select: {
+            title: true,
+            },
+          },
+        },
+        category:{
+          select: {
+            categoryName: true,
+          },
+        },
+      orderBy: { createdAt: "desc" },
+    });
+    if (repportsPost.length === 0) {
+      return res.status(404).json({ message: "No reports found" });
+    }
+    return res.status(200).json({
+      message: "Reports fetched successfully",
+      repportsPost,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch reports",
+      error: error.message,
+    });
+  }
+};
+
 const shareActivity = async (req, res) => {
   try {
     const { activityId } = req.params;
@@ -832,5 +910,7 @@ module.exports = {
   addcomment,
   deleteComment,
   shareActivity,
+  repportPost,
+  getrepportsPost,
   sharePost,
 };
