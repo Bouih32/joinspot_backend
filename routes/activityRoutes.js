@@ -4,9 +4,10 @@ const {
   createActivity,
   getActivities,
   getActivityById,
+  updateActivity,
   deleteActivity,
   addTagsToActivity,
-  deleteActivityTagBytagName,
+  deleteActivityTag,
   getActivityTickets,
   getActivityByCategory,
   getActivityReservations,
@@ -100,20 +101,36 @@ router.get(
 );
 
 // PUT
+
 router.put(
-  "/:activityId/reviews/:reviewId",
+  "/reviews/:reviewId",
   authenticateToken,
   validateData,
   updateReview
 );
 
+// PATCH
+router.patch(
+  "/:activityId/update",
+  authenticateToken,
+  checkRole("ORGANISER"),
+  validateData,
+  updateActivity
+);
+
 // DELETE
+router.delete(
+  "/reviews/:reviewId",
+  authenticateToken,
+  validateData,
+  deleteReview
+);
 router.delete(
   "/:activityId/tags",
   authenticateToken,
   checkRole("ORGANISER"),
   validateData,
-  deleteActivityTagBytagName
+  deleteActivityTag
 );
 router.delete(
   "/:activityId/unsave",
@@ -128,10 +145,5 @@ router.delete(
   validateData,
   deleteActivity
 );
-router.delete(
-  "/:activityId/reviews/:reviewId",
-  authenticateToken,
-  validateData,
-  deleteReview
-);
+
 module.exports = router;

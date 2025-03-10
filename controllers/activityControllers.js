@@ -99,6 +99,34 @@ const getActivities = async (req, res) => {
   }
 };
 
+const updateActivity = async (req, res) => {
+  try {
+    const { description, coverPic, location }= req.body;
+    const activity = await prisma.activity.findFirst({
+      where: { 
+        activityId: req.params.activityId ,
+        userId: req.user.userId 
+      },
+    })
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+    await prisma.activity.update({
+      where: { activityId: req.params.activityId },
+      data: {
+        description,
+        coverPic,
+        location
+      }
+    })
+  } catch (error) {
+    console.error(error);
+    return res
+     .status(500)
+     .json({ message: "Failed to update activity", error: error.message });
+  }
+}
+
 const getActivityById = async (req, res) => {
   try {
     const { activityId } = req.params;
@@ -363,7 +391,7 @@ const addTagsToActivity = async (req, res) => {
   }
 };
 
-const deleteActivityTagBytagName = async (req, res) => {
+const deleteActivityTag = async (req, res) => {
   try {
     const { tagIds } = req.body;
     if (!Array.isArray(tagIds)) {
@@ -696,13 +724,19 @@ const deleteReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
     const review = await prisma.review.findFirst({
-      where: { reviewId },
+      where: { 
+        reviewId,
+        userId: req.user.userId,
+       },
     });
     if (!review) {
       return res.status(404).json({ message: "Review not found" });
     }
     await prisma.review.delete({
-      where: { reviewId },
+      where: { 
+        reviewId,
+        userId: req.user.userId,
+      },
     });
     return res
       .status(200)
@@ -880,12 +914,13 @@ const payment = async (req, res) => {
 module.exports = {
   createActivity,
   getActivities,
+  updateActivity,
   getActivityById,
   getActivityByCategory,
   getActivitiesBytags,
   deleteActivity,
   addTagsToActivity,
-  deleteActivityTagBytagName,
+  deleteActivityTag,
   createTicket,
   getActivityTickets,
   getActivityReservations,
