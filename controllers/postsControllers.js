@@ -123,6 +123,118 @@ const getPosts = async (req, res) => {
   }
 };
 
+const getMyPosts = async (req, res) => {
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+      include: {
+        category: {
+          select: {
+            categoryName: true,
+          },
+        },
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comment: true,
+            savePost: true,
+          },
+        },
+        share: {
+          include: {
+            user: {
+              select: {
+                userName: true,
+                avatar: true,
+              },
+            },
+            activity: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (posts.length === 0) {
+      return res.status(404).json({ message: "No posts found" });
+    }
+    return res.json({ message: "My posts fetched successfully", posts });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch my posts", error: error.message });
+  }
+};
+
+const getPostsByUser = async (req, res) => {
+  try {
+    const user = await prisma.post.findFirst({
+      where: { userId: req.params.userId },
+    });
+    if (!user) {
+      return res.status(400).json({ message: "User not provided" });
+    }
+    const posts = await prisma.post.findMany({
+      where: {
+        userId: req.params.userId,
+      },
+      include: {
+        category: {
+          select: {
+            categoryName: true,
+          },
+        },
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comment: true,
+            savePost: true,
+          },
+        },
+        share: {
+          include: {
+            user: {
+              select: {
+                userName: true,
+                avatar: true,
+              },
+            },
+            activity: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (posts.length === 0) {
+      return res.status(404).json({ message: "No posts found" });
+    }
+    return res.status(200).json({
+      message: "Posts fetched successfully",
+      posts,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch posts",
+      error: error.message,
+    });
+  }
+};
+
 const getPostById = async (req, res) => {
   try {
     const post = await prisma.post.findFirst({
@@ -556,53 +668,175 @@ const unSavePost = async (req, res) => {
 const sharePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    
+
     const post = await prisma.post.findUnique({
       where: { postId },
       include: {
         user: {
           select: {
-            userName: true
-          }
-        }
-      }
+            userName: true,
+          },
+        },
+      },
     });
 
     if (!post) {
       return res.status(404).json({
         success: false,
-        message: "Post non trouvé"
+        message: "Post non trouvé",
       });
     }
 
     // Construire l'URL de base du frontend
-    const baseUrl = process.env.FRONTEND_URL || 'https://www.joinspots.com';
+    const baseUrl = process.env.FRONTEND_URL || "https://www.joinspots.com";
     const postUrl = `${baseUrl}/post/${postId}`;
 
     // Générer les liens de partage pour différents réseaux sociaux
     const shareLinks = {
       post_url: postUrl,
       social_links: {
-        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`,
-        twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(`Découvrez ce post de ${post.user.userName} sur JoinSpots!`)}`,
-        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`,
-        whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(`Découvrez ce post sur JoinSpots: ${postUrl}`)}`,
-        telegram: `https://t.me/share/url?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(`Découvrez ce post de ${post.user.userName} sur JoinSpots!`)}`
-      }
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          postUrl
+        )}`,
+        twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+          postUrl
+        )}&text=${encodeURIComponent(
+          `Découvrez ce post de ${post.user.userName} sur JoinSpots!`
+        )}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+          postUrl
+        )}`,
+        whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(
+          `Découvrez ce post sur JoinSpots: ${postUrl}`
+        )}`,
+        telegram: `https://t.me/share/url?url=${encodeURIComponent(
+          postUrl
+        )}&text=${encodeURIComponent(
+          `Découvrez ce post de ${post.user.userName} sur JoinSpots!`
+        )}`,
+      },
     };
 
     return res.status(200).json({
       success: true,
       message: "Liens de partage générés avec succès",
-      data: shareLinks
+      data: shareLinks,
     });
-
   } catch (error) {
     console.error("Erreur lors de la génération des liens de partage:", error);
     return res.status(500).json({
       success: false,
       message: "Erreur lors de la génération des liens de partage",
-      error: error.message
+      error: error.message,
+    });
+  }
+};
+
+const repportPost = async (req, res) => {
+  try {
+    const { description } = req.body;
+    const post = await prisma.post.findFirst({
+      where: { postId: req.params.postId },
+    });
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    const existingRepport = await prisma.repportPost.findFirst({
+      where: {
+        userId: req.user.userId,
+        postId: req.params.postId,
+      },
+    });
+    if (existingRepport) {
+      return res
+        .status(400)
+        .json({ message: "Activity report already submitted" });
+    }
+    const repportPost = await prisma.repportPost.create({
+      data: {
+        description,
+        userId: req.user.userId,
+        postId: req.params.postId,
+        status: "pending",
+      },
+    });
+    return res
+      .status(201)
+      .json({ message: "Rapport d'activité envoyé", repportPost });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to report post",
+      error: error.message,
+    });
+  }
+};
+
+const getrepportedPost = async (req, res) => {
+  try {
+    const repportsPost = await prisma.repportPost.findMany({
+      include: {
+        user: {
+          select: {
+            userName: true,
+          },
+        },
+        post: {
+          select: {
+            title: true,
+          },
+        },
+      },
+      category: {
+        select: {
+          categoryName: true,
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (repportsPost.length === 0) {
+      return res.status(404).json({ message: "No reports found" });
+    }
+    return res.status(200).json({
+      message: "Reports fetched successfully",
+      repportsPost,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch reports",
+      error: error.message,
+    });
+  }
+};
+
+const checkrepportedPost = async (req, res) => {
+  try {
+    const repport = await prisma.repportPost.findFirst({
+      where: {
+        repportPostId: req.params.repportPostId,
+        status: "repport",
+      },
+    });
+    if (!repport) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+    await prisma.repportPost.update({
+      where: {
+        repportPostId: req.params.repportPostId,
+      },
+      data: {
+        status: "checked",
+      },
+    });
+    return res
+      .status(200)
+      .json({ message: "Report status updated successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to update report status",
+      error: error.message,
     });
   }
 };
@@ -614,57 +848,57 @@ const shareActivity = async (req, res) => {
     const activity = await prisma.activity.findUnique({
       where: { activityId },
       include: {
-        category: true
-      }
+        category: true,
+      },
     });
     const user = await prisma.user.findUnique({
       where: { userId: req.user.userId },
       select: {
         userName: true,
-        avatar: true
-      }
+        avatar: true,
+      },
     });
 
     if (!activity) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "Activity not found" 
+        message: "Activity not found",
       });
     }
 
     const post = await prisma.post.create({
       data: {
-        description: description ,
+        description: description,
         bannerPic: activity.coverPic,
         category: {
           connect: {
-            categoryId: activity.categoryId
-          }
+            categoryId: activity.categoryId,
+          },
         },
         user: {
           connect: {
-            userId: req.user.userId
-          }
-        }
-      }
+            userId: req.user.userId,
+          },
+        },
+      },
     });
 
     const share = await prisma.share.create({
       data: {
         userId: req.user.userId,
         activityId: activityId,
-        postId: post.postId
+        postId: post.postId,
       },
       include: {
         user: {
           select: {
             userName: true,
-            avatar: true
-          }
+            avatar: true,
+          },
         },
         activity: true,
-        post: true
-      }
+        post: true,
+      },
     });
     if (share) {
       await createNotification(
@@ -678,13 +912,12 @@ const shareActivity = async (req, res) => {
       message: "Activity shared successfully",
       share,
     });
-
   } catch (error) {
     console.error("Erreur lors du partage de l'activité:", error);
     return res.status(500).json({
       success: false,
       error: "Erreur lors du partage de l'activité",
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -693,6 +926,8 @@ module.exports = {
   createPost,
   addTagToPost,
   getPosts,
+  getMyPosts,
+  getPostsByUser,
   getPostById,
   getPostByCategory,
   getPostBytags,
@@ -706,5 +941,8 @@ module.exports = {
   addcomment,
   deleteComment,
   shareActivity,
+  repportPost,
+  getrepportedPost,
+  checkrepportedPost,
   sharePost,
 };

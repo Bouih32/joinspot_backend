@@ -326,7 +326,7 @@ model repportPost {
   repportPostId String @id @default(auto()) @map("_id") @db.ObjectId
   userId        String @db.ObjectId
   postId        String @db.ObjectId
-  description   String
+  description   String?
   status        String
   user          user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
   post          post   @relation(fields: [postId], references: [postId], onDelete: Cascade)

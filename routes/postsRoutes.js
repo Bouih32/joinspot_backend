@@ -4,6 +4,8 @@ const {
     createPost,
     addTagToPost,
     getPosts,
+    getMyPosts,
+    getPostsByUser,
     getPostById,
     getPostByCategory,
     getPostBytags,
@@ -17,6 +19,9 @@ const {
     addcomment,
     deleteComment,
     shareActivity,
+    repportPost,
+    getrepportedPost,
+    checkrepportedPost,
     sharePost
   } = require("../controllers/postsControllers");
   const { checkRole } = require("../middlewares/Autorization");
@@ -45,6 +50,11 @@ router.post("/:postId/save",
     validateData,
     savePost
   );
+router.post("/:postId/repport",
+  authenticateToken,
+    validateData,
+    repportPost
+  );
 router.post("/:postId/like",
     authenticateToken,
     validateData,
@@ -55,12 +65,27 @@ router.post("/:postId/comment",
     validateData,
     addcomment
   )
-
+  router.post("repport/:postId/checkRepport",
+    authenticateToken,
+    checkRole("ADMIN"),
+    validateData,
+    checkrepportedPost
+  )
 // GET
 router.get("/",
     authenticateToken,
     validateData,
     getPosts
+  );
+router.get("/myPosts",
+    authenticateToken,
+    validateData,
+    getMyPosts
+  );
+router.get("/user/:userId",
+    authenticateToken,
+    validateData,
+    getPostsByUser
   );
 router.get("/tags",
     authenticateToken,
@@ -88,6 +113,7 @@ router.get("/:id",
     getPostById
   );
 router.get('/:postId/share', authenticateToken, sharePost);
+router.get('/repport', authenticateToken, checkRole("ADMIN"), getrepportedPost);
 
 // DELETE
 router.delete("/:postId/tags",
