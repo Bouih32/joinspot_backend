@@ -28,21 +28,62 @@ const { checkRole } = require("../middlewares/Autorization");
 // post
 router.post(
   "/add",
-
+  authenticateToken,
+  checkRole("ADMIN"),
   categoryValidation,
   validateData,
   createCategory
 );
-router.post("/add-tag", tagValidation, validateData, addTag);
+router.post("/add-tag", 
+  authenticateToken,
+  checkRole("ADMIN"),
+  tagValidation, 
+  validateData, 
+  addTag
+);
 
 // Get
-router.get("/", getAllCategories);
-router.get("/tags", getTags);
-router.get("/deleted", getDeletedCategories);
-router.get("/tags/deleted", getDeletedTags);
-router.get("/tags/:id", getTagById);
-router.get("/:id/tags", getTagsByCategory);
-router.get("/:id", getCategoryById);
+router.get("/", 
+  authenticateToken,
+  checkRole("ADMIN"),
+  getAllCategories
+);
+router.get("/tags",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+   getTags
+  );
+router.get("/deleted", 
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getDeletedCategories
+);
+router.get("/tags/deleted",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getDeletedTags
+);
+router.get("/tags/:id", 
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getTagById
+);
+router.get("/:id/tags", 
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getTagsByCategory
+);
+router.get("/:id", 
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getCategoryById
+);
 
 // Patch
 
@@ -50,20 +91,22 @@ router.patch(
   "/tags/:id",
   authenticateToken,
   tagValidation,
-  validateData,
   checkRole("ADMIN"),
+  validateData,
   updateTag
 );
 router.patch(
   "/restore/:id",
   authenticateToken,
   checkRole("ADMIN"),
+  validateData,
   restoreCategory
 );
 router.patch(
   "/tags/restore/:id",
   authenticateToken,
   checkRole("ADMIN"),
+  validateData,
   restoreTag
 );
 router.patch(
@@ -77,7 +120,17 @@ router.patch(
 
 // Delete
 
-router.delete("/delete/:id", deleteCategory);
-router.delete("/tags/:id", authenticateToken, checkRole("ADMIN"), deleteTag);
+router.delete("/delete/:id", 
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  deleteCategory
+);
+router.delete("/tags/:id", 
+  authenticateToken, 
+  checkRole("ADMIN"), 
+  validateData,  
+  deleteTag
+);
 
 module.exports = router;
