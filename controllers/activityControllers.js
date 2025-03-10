@@ -927,7 +927,6 @@ module.exports = {
   deleteActivity,
   addTagsToActivity,
   deleteActivityTag,
-  createTicket,
   getActivityTickets,
   getActivityReservations,
   getMyActivities,
