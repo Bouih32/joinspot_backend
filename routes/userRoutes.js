@@ -46,6 +46,7 @@ const {
 // authentication
 router.post("/register", registerValidation, validateData, registerUser);
 router.post("/login", loginValidation, validateData, loginUser);
+router.post("/logout", authenticateToken, logOut);
 router.post("/forgot", forgotPswrd);
 router.post("/reset", resetForgotenPswrd);
 // userTag
@@ -139,7 +140,6 @@ router.put("/update-cityuser", authenticateToken, updateUserCity);
 
 router.patch("/edit-profil", authenticateToken, validateData, updateUserData);
 
-router.delete("/logout", authenticateToken, logOut);
 router.delete("/unfollow", authenticateToken, validateData, UnfollowUser);
 router.delete("/cities/:cityId", authenticateToken, deleteCity);
 router.delete("/tags/:id", authenticateToken, deleteUserTag);
