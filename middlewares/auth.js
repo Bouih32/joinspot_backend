@@ -38,20 +38,15 @@ const authenticateToken = (req, res, next) => {
 
 const optionalAuthenticateToken = (req, res, next) => {
   const token = req.cookies.token;
-
   if (!token) {
-    // Si pas de token, continuer sans authentification
     req.user = null;
     return next();
   }
-
   jwt.verify(token, SECRET, (err, user) => {
     if (err) {
-      // Si token invalide, continuer sans authentification
       req.user = null;
       return next();
     }
-
     req.user = user;
     next();
   });
