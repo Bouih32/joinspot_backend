@@ -1,5 +1,5 @@
 const express = require("express");
-const { authenticateToken } = require("../middlewares/auth");
+const { authenticateToken,optionalAuthenticateToken } = require("../middlewares/auth");
 // const { isAuthenticated } = require("../middlewares/Authentication");
 const { checkRole } = require("../middlewares/Autorization");
 const router = express.Router();
@@ -45,7 +45,7 @@ const {
 } = require("../utils/validation");
 
 // authentication
-router.post("/support", supports);
+router.post("/support",optionalAuthenticateToken, supports);
 router.post("/register", registerValidation, validateData, registerUser);
 router.post("/login", loginValidation, validateData, loginUser);
 router.post("/logout", authenticateToken, logOut);
