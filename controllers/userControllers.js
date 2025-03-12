@@ -850,7 +850,11 @@ const deleteNotification = async (req, res) => {
 const supports = async (req, res) => {
   try {
     const { firstname, lastname, email, phone, subject, message } = req.body;
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { 
+      email, 
+      userId:req.user.userId 
+    } 
+  });
     const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
 
     if (user) {
