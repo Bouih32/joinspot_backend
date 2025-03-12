@@ -83,6 +83,8 @@ const getActivities = async (req, res) => {
             },
           },
         },
+        category: { select: { categoryName: true } },
+        city: { select: { cityName: true } },
       },
     });
     if (activities.length == 0) {
@@ -101,13 +103,13 @@ const getActivities = async (req, res) => {
 
 const updateActivity = async (req, res) => {
   try {
-    const { description, coverPic, location }= req.body;
+    const { description, coverPic, location } = req.body;
     const activity = await prisma.activity.findFirst({
-      where: { 
-        activityId: req.params.activityId ,
-        userId: req.user.userId 
+      where: {
+        activityId: req.params.activityId,
+        userId: req.user.userId,
       },
-    })
+    });
     if (!activity) {
       return res.status(404).json({ message: "Activity not found" });
     }
@@ -116,16 +118,16 @@ const updateActivity = async (req, res) => {
       data: {
         description,
         coverPic,
-        location
-      }
-    })
+        location,
+      },
+    });
   } catch (error) {
     console.error(error);
     return res
-     .status(500)
-     .json({ message: "Failed to update activity", error: error.message });
+      .status(500)
+      .json({ message: "Failed to update activity", error: error.message });
   }
-}
+};
 
 const getActivityById = async (req, res) => {
   try {
@@ -699,19 +701,19 @@ const updateReview = async (req, res) => {
     const { reviewId } = req.params;
     const { rating, comment } = req.body;
     const review = await prisma.review.findFirst({
-      where: { 
+      where: {
         reviewId,
         userId: req.user.userId,
-       },
+      },
     });
     if (!review) {
       return res.status(404).json({ message: "Review not found" });
     }
     const updatedReview = await prisma.review.update({
-      where: { 
+      where: {
         reviewId,
         userId: req.user.userId,
-       },
+      },
       data: { rating, comment },
     });
     return res
@@ -730,16 +732,16 @@ const deleteReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
     const review = await prisma.review.findFirst({
-      where: { 
+      where: {
         reviewId,
         userId: req.user.userId,
-       },
+      },
     });
     if (!review) {
       return res.status(404).json({ message: "Review not found" });
     }
     await prisma.review.delete({
-      where: { 
+      where: {
         reviewId,
         userId: req.user.userId,
       },
@@ -915,7 +917,6 @@ const payment = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   createActivity,

@@ -64,7 +64,7 @@ router.post(
 );
 
 // GET
-router.get("/", authenticateToken, validateData, getActivities);
+router.get("/", getActivities);
 router.get(
   "/my-activities",
   authenticateToken,
@@ -102,12 +102,7 @@ router.get(
 
 // PUT
 
-router.put(
-  "/reviews/:reviewId",
-  authenticateToken,
-  validateData,
-  updateReview
-);
+router.put("/reviews/:reviewId", authenticateToken, validateData, updateReview);
 
 // PATCH
 router.patch(
