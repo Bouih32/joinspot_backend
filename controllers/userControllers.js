@@ -847,6 +847,70 @@ const deleteNotification = async (req, res) => {
   }
 };
 
+const supports = async (req, res) => {
+  try {
+    const { firstname, lastname, email, phone, subject, message } = req.body;
+    const user = await prisma.user.findUnique({ where: { email } });
+    const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+
+    if (user) {
+      await prisma.message.create({
+        data: {
+          fromId: user.userId,
+          toId: admin.userId,
+          content: `${subject}, ${message}`,
+          read: false,
+        }
+      });
+      
+      return res.status(200).json({ 
+        message: "Message envoyé avec succès" 
+      });
+    } else {
+      const emailContent = `
+        <h2>Nouveau message de support</h2>
+        <p><strong>De:</strong> ${firstname} ${lastname}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Téléphone:</strong> ${phone}</p>
+        <p><strong>Sujet:</strong> ${subject}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+      `;
+
+      await sendEmail(
+        process.env.SUPPORT_EMAIL || admin.email,
+        `Nouveau message de support: ${subject}`,
+        emailContent
+      );
+
+      // Envoyer un email de confirmation à l'expéditeur
+      const confirmationEmail = `
+        <h2>Confirmation de réception</h2>
+        <p>Cher(e) ${firstname} ${lastname},</p>
+        <p>Nous avons bien reçu votre message concernant "${subject}".</p>
+        <p>Notre équipe vous répondra dans les plus brefs délais.</p>
+        <p>Cordialement,<br>L'équipe JoinSpots</p>
+      `;
+
+      await sendEmail(
+        email,
+        "Confirmation de réception de votre message",
+        confirmationEmail
+      );
+
+      return res.status(200).json({ 
+        message: "Email envoyé avec succès" 
+      });
+    }
+  } catch (error) {
+    console.error("Erreur support:", error);
+    return res.status(500).json({ 
+      message: "Erreur lors de l'envoi du message", 
+      error: error.message 
+    });
+  }
+};
+
 // Create a Nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -966,4 +1030,5 @@ module.exports = {
   getUnreadMessages,
   getNotifications,
   deleteNotification,
+  supports,
 };

@@ -35,7 +35,8 @@ const {
   markAsRead,
   getUnreadMessages,
   getNotifications,
-  deleteNotification, 
+  deleteNotification,
+  supports,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -44,6 +45,7 @@ const {
 } = require("../utils/validation");
 
 // authentication
+router.post("/support", supports);
 router.post("/register", registerValidation, validateData, registerUser);
 router.post("/login", loginValidation, validateData, loginUser);
 router.post("/logout", authenticateToken, logOut);
@@ -63,6 +65,7 @@ router.post(
   checkRepport
 );
 router.post("/send-message", authenticateToken, validateData, sendMessage);
+
 
 router.get("/cities", getCities);
 // user data
