@@ -321,20 +321,28 @@ const deleteActivity = async (req, res) => {
   try {
     const { activityId } = req.params;
     const activity = await prisma.activity.findUnique({
-      where: { activityId },
+      where: { 
+        activityId, 
+      },
     });
     if (!activity) {
       return res.status(404).json({ message: "Activity not found" });
     }
+    const user = await prisma.user.findUnique({
+      where: { userId: req.user.userId }
+  });
+
+  if (activity.userId !== req.user.userId && user.role !== "ADMIN") {
+      return res.status(403).json({ 
+          message: "You are not allowed to delete this activity" 
+      });
+  }
     await prisma.activity.update({
       where: { activityId },
       data: {
         deletedAt: new Date(),
       },
     });
-    if (!activity) {
-      return res.status(404).json({ message: "Activity not found" });
-    }
     return res
       .status(200)
       .json({ message: "Activity deleted successfully", activity });
