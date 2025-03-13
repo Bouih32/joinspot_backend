@@ -20,15 +20,17 @@ const generateAcessToken = (user) => {
 // };
 
 const authenticateToken = (req, res, next) => {
-  const token = req.cookies.token;
+  // Debugging log
 
+  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+  console.log("Cookies received:", token);
   if (!token) {
-    return res.status(500).send({ message: "unautorised user" });
+    return res.status(401).json({ message: "Unauthorized user" });
   }
 
   jwt.verify(token, SECRET, (err, user) => {
     if (err) {
-      return res.status(500).send({ message: "Ooops, Something went wrong" });
+      return res.status(403).json({ message: "Invalid token" });
     }
 
     req.user = user;

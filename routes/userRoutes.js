@@ -1,5 +1,8 @@
 const express = require("express");
-const { authenticateToken,optionalAuthenticateToken } = require("../middlewares/auth");
+const {
+  authenticateToken,
+  optionalAuthenticateToken,
+} = require("../middlewares/auth");
 // const { isAuthenticated } = require("../middlewares/Authentication");
 const { checkRole } = require("../middlewares/Autorization");
 const router = express.Router();
@@ -45,7 +48,7 @@ const {
 } = require("../utils/validation");
 
 // authentication
-router.post("/support",optionalAuthenticateToken, supports);
+router.post("/support", optionalAuthenticateToken, supports);
 router.post("/register", registerValidation, validateData, registerUser);
 router.post("/login", loginValidation, validateData, loginUser);
 router.post("/logout", authenticateToken, logOut);
@@ -66,11 +69,10 @@ router.post(
 );
 router.post("/send-message", authenticateToken, validateData, sendMessage);
 
-
 router.get("/cities", getCities);
 // user data
 router.get("/tags", authenticateToken, getUserTags);
-router.get("/profil", authenticateToken, validateData, getUserData);
+router.get("/profile", authenticateToken, getUserData);
 router.get(
   "/followers",
   authenticateToken,
@@ -79,24 +81,14 @@ router.get(
 );
 
 router.get(
-  "/repported", 
-  authenticateToken, 
+  "/repported",
+  authenticateToken,
   checkRole("ADMIN"),
-  validateData, 
+  validateData,
   getRepportedUsers
 );
-router.get(
-  "/messages", 
-  authenticateToken, 
-  validateData, 
-  getMessages
-);
-router.get(
-  "/notifications",
-  authenticateToken,
-  validateData,
-  getNotifications
-);
+router.get("/messages", authenticateToken, validateData, getMessages);
+router.get("/notifications", authenticateToken, validateData, getNotifications);
 router.get(
   "/messages/:toId",
   authenticateToken,
