@@ -1,6 +1,6 @@
 const prisma = require("../utils/client");
 const { createNotification } = require("../utils/notification");
-const { stripe, TEST_CARDS } = require("../utils/stripe");
+const { stripe, TEST_CARDS } = require("../config/stripe");
 const { createTicket } = require("../utils/ticket");
 
 const createActivity = async (req, res) => {
