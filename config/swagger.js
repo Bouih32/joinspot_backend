@@ -29,7 +29,25 @@ const options = {
                     name: 'token'
                 }
             }
-        }
+        },
+        tags: [
+            {
+                name: 'Authentication',
+                description: 'Endpoints liés à l\'authentification'
+            },
+            {
+                name: 'Activities',
+                description: 'Gestion des activités'
+            },
+            {
+                name: 'Users',
+                description: 'Gestion des utilisateurs'
+            },
+            {
+                name: 'Support',
+                description: 'Support et contact'
+            }
+        ],
     },
     apis: ['./routes/*.js', './controllers/*.js'], // chemins des fichiers à documenter
 };
