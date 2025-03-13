@@ -66,7 +66,7 @@ const createActivity = async (req, res) => {
 
 const getActivities = async (req, res) => {
   try {
-    const { seats, category, date, my } = req.query;
+    const { seats, category, date, my, search } = req.query;
     let startDay = null;
     let endDay = null;
 
@@ -84,6 +84,12 @@ const getActivities = async (req, res) => {
     }
 
     const filters = {
+      ...(search && {
+        OR: [
+          { title: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+        ],
+      }),
       ...(category && { category: { categoryName: category } }),
       ...(seats && { seat: { lt: parseInt(seats) } }),
       ...(my && { userId: req.user?.id }),
