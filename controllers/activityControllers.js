@@ -92,7 +92,7 @@ const getActivities = async (req, res) => {
       }),
       ...(category && { category: { categoryName: category } }),
       ...(seats && { seat: { lt: parseInt(seats) } }),
-      ...(my && { userId: req.user?.id }),
+      ...(my === "own" && { userId: req.user?.userId }),
       ...(startDay && {
         startDay: {
           gte: startDay,

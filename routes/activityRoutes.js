@@ -27,7 +27,10 @@ const {
   payment,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
-const { authenticateToken } = require("../middlewares//auth");
+const {
+  authenticateToken,
+  optionalAuthenticateToken,
+} = require("../middlewares//auth");
 const { validateData } = require("../utils/validation");
 
 //POST
@@ -64,7 +67,7 @@ router.post(
 );
 
 // GET
-router.get("/", getActivities);
+router.get("/", optionalAuthenticateToken, getActivities);
 router.get(
   "/my-activities",
   authenticateToken,
