@@ -66,7 +66,28 @@ const createActivity = async (req, res) => {
 
 const getActivities = async (req, res) => {
   try {
+    const { seats, category, date, my } = req.query;
+    const filters = {};
+
+    if (seats) {
+      filters.seat = parseInt(seats); // Ensure seats is a number
+    }
+
+    if (category) {
+      filters.category = {
+        categoryName: category, // Assuming categoryName is the filter field
+      };
+    }
+
+    if (date) {
+      filters.date = new Date(date); // Assuming there's a date field in your DB
+    }
+
+    if (my) {
+      filters.userId = req.user?.id; // Assuming user authentication is set up
+    }
     const activities = await prisma.activity.findMany({
+      where: filters,
       include: {
         user: {
           select: {
@@ -321,22 +342,22 @@ const deleteActivity = async (req, res) => {
   try {
     const { activityId } = req.params;
     const activity = await prisma.activity.findUnique({
-      where: { 
-        activityId, 
+      where: {
+        activityId,
       },
     });
     if (!activity) {
       return res.status(404).json({ message: "Activity not found" });
     }
     const user = await prisma.user.findUnique({
-      where: { userId: req.user.userId }
-  });
+      where: { userId: req.user.userId },
+    });
 
-  if (activity.userId !== req.user.userId && user.role !== "ADMIN") {
-      return res.status(403).json({ 
-          message: "You are not allowed to delete this activity" 
+    if (activity.userId !== req.user.userId && user.role !== "ADMIN") {
+      return res.status(403).json({
+        message: "You are not allowed to delete this activity",
       });
-  }
+    }
     await prisma.activity.update({
       where: { activityId },
       data: {
