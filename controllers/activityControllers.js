@@ -67,25 +67,39 @@ const createActivity = async (req, res) => {
 const getActivities = async (req, res) => {
   try {
     const { seats, category, date, my } = req.query;
-    const filters = {};
-
-    if (seats) {
-      filters.seat = { lt: parseInt(seats) }; // Ensure seats is a number
-    }
-
-    if (category) {
-      filters.category = {
-        categoryName: category, // Assuming categoryName is the filter field
-      };
-    }
+    let startDay = null;
+    let endDay = null;
 
     if (date) {
-      filters.date = new Date(date); // Assuming there's a date field in your DB
-    }
+      const [startDayStr, endDayStr] = date.split("_");
 
-    if (my) {
-      filters.userId = req.user?.id; // Assuming user authentication is set up
+      if (startDayStr && endDayStr) {
+        startDay = new Date(parseInt(startDayStr, 10));
+        endDay = new Date(parseInt(endDayStr, 10));
+      } else {
+        return res
+          .status(400)
+          .json({ error: "Invalid date format. Expected startDay_endDay." });
+      }
     }
+    console.log(endDay);
+    // Build the filters object
+    const filters = {
+      ...(category && { category: { categoryName: category } }),
+      ...(seats && { seat: { lt: parseInt(seats) } }),
+      ...(my && { userId: req.user?.id }),
+      ...(startDay && {
+        startDay: {
+          gte: startDay,
+        },
+      }),
+      ...(endDay && {
+        endDay: {
+          lte: endDay,
+        },
+      }),
+    };
+
     const activities = await prisma.activity.findMany({
       where: filters,
       include: {
@@ -108,20 +122,21 @@ const getActivities = async (req, res) => {
         city: { select: { cityName: true } },
       },
     });
-    if (activities.length == 0) {
+
+    if (!activities) {
       return res.status(404).json({ message: "No activities found" });
     }
+
     return res
       .status(200)
       .json({ message: "Activities fetched successfully", activities });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res
       .status(500)
       .json({ message: "Failed to fetch activities", error: error.message });
   }
 };
-
 const updateActivity = async (req, res) => {
   try {
     const { description, coverPic, location } = req.body;

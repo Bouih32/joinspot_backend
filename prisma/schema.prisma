@@ -148,8 +148,8 @@ model activity {
   startTime    String
   endTime      String
   location     String
-  startDay     String
-  endDay       String
+  startDay     DateTime?
+  endDay       DateTime?
   seat         Int
   cityId       String         @db.ObjectId
   price        Float
@@ -272,7 +272,7 @@ model comment {
   commentId String @id @default(auto()) @map("_id") @db.ObjectId
   userId    String @db.ObjectId
   postId    String @db.ObjectId
-  content   String 
+  content   String
   user      user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
   post      post   @relation(fields: [postId], references: [postId], onDelete: Cascade)
 }
@@ -323,13 +323,13 @@ model notification {
 }
 
 model repportPost {
-  repportPostId String @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String @db.ObjectId
-  postId        String @db.ObjectId
+  repportPostId String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String  @db.ObjectId
+  postId        String  @db.ObjectId
   description   String?
   status        String
-  user          user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  post          post   @relation(fields: [postId], references: [postId], onDelete: Cascade)
+  user          user    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  post          post    @relation(fields: [postId], references: [postId], onDelete: Cascade)
 }
 
 model repportUser {
