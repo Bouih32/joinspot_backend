@@ -70,7 +70,7 @@ const getActivities = async (req, res) => {
     const filters = {};
 
     if (seats) {
-      filters.seat = parseInt(seats); // Ensure seats is a number
+      filters.seat = { lt: parseInt(seats) }; // Ensure seats is a number
     }
 
     if (category) {
