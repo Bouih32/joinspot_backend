@@ -34,51 +34,54 @@ router.post(
   validateData,
   createCategory
 );
-router.post("/add-tag", 
+router.post(
+  "/add-tag",
   authenticateToken,
   checkRole("ADMIN"),
-  tagValidation, 
-  validateData, 
+  tagValidation,
+  validateData,
   addTag
 );
 
 // Get
-router.get("/", 
-  authenticateToken,
-  checkRole("ADMIN"),
-  getAllCategories
-);
-router.get("/tags",
+router.get("/", getAllCategories);
+router.get(
+  "/tags",
   authenticateToken,
   checkRole("ADMIN"),
   validateData,
-   getTags
-  );
-router.get("/deleted", 
+  getTags
+);
+router.get(
+  "/deleted",
   authenticateToken,
   checkRole("ADMIN"),
   validateData,
   getDeletedCategories
 );
-router.get("/tags/deleted",
+router.get(
+  "/tags/deleted",
   authenticateToken,
   checkRole("ADMIN"),
   validateData,
   getDeletedTags
 );
-router.get("/tags/:id", 
+router.get(
+  "/tags/:id",
   authenticateToken,
   checkRole("ADMIN"),
   validateData,
   getTagById
 );
-router.get("/:id/tags", 
+router.get(
+  "/:id/tags",
   authenticateToken,
   checkRole("ADMIN"),
   validateData,
   getTagsByCategory
 );
-router.get("/:id", 
+router.get(
+  "/:id",
   authenticateToken,
   checkRole("ADMIN"),
   validateData,
@@ -120,16 +123,18 @@ router.patch(
 
 // Delete
 
-router.delete("/delete/:id", 
+router.delete(
+  "/delete/:id",
   authenticateToken,
   checkRole("ADMIN"),
   validateData,
   deleteCategory
 );
-router.delete("/tags/:id", 
-  authenticateToken, 
-  checkRole("ADMIN"), 
-  validateData,  
+router.delete(
+  "/tags/:id",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
   deleteTag
 );
 

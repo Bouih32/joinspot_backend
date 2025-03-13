@@ -12,18 +12,9 @@ const generateAcessToken = (user) => {
   return token;
 };
 
-// const generateRefreshToken = (user) => {
-//   const refreshToken = jwt.sign({ id: user.id }, SECRET, {
-//     expiresIn: "7d",
-//   });
-//   return refreshToken;
-// };
-
 const authenticateToken = (req, res, next) => {
-  // Debugging log
-
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
-  console.log("Cookies received:", token);
+
   if (!token) {
     return res.status(401).json({ message: "Unauthorized user" });
   }
