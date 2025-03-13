@@ -82,8 +82,7 @@ const getActivities = async (req, res) => {
           .json({ error: "Invalid date format. Expected startDay_endDay." });
       }
     }
-    console.log(endDay);
-    // Build the filters object
+
     const filters = {
       ...(category && { category: { categoryName: category } }),
       ...(seats && { seat: { lt: parseInt(seats) } }),
