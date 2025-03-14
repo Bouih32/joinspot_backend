@@ -11,6 +11,7 @@ const {
   loginUser,
   registerUser,
   RequestDegrees,
+  ChangeRole,
   getUserData,
   logOut,
   updateUserData,
@@ -139,7 +140,12 @@ router.put(
 
 router.put("/change-password", authenticateToken, validateData, changePassword);
 router.put("/update-cityuser", authenticateToken, updateUserCity);
-
+router.put("/ChangeRole",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  ChangeRole
+)
 router.patch("/edit-profil", authenticateToken, validateData, updateUserData);
 
 router.delete("/unfollow", authenticateToken, validateData, UnfollowUser);

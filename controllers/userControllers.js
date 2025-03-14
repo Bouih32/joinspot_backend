@@ -151,6 +151,29 @@ const RequestDegrees = async (req, res) => {
   }
 };
 
+const ChangeRole = async (req, res) => {
+  try {
+    const { userId, role } = req.body;
+    const user = await prisma.user.findUnique({ where: { userId } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.role === role) {
+      return res.status(400).json({ message: "User already has this role" });
+    }
+    await prisma.user.update({
+      where: { userId },
+      data: { role },
+    });
+    return res.status(200).json({ message: "Role updated successfully" });
+  } catch (error) {
+    console.error("Error changing role:", error);
+    return res
+     .status(500)
+     .json({ message: "Erreur serveur", error: error.message });
+  }
+}
+
 const getUserData = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -1046,6 +1069,7 @@ module.exports = {
   loginUser,
   registerUser,
   RequestDegrees,
+  ChangeRole,
   getUserData,
   logOut,
   updateUserData,
