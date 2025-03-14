@@ -10,6 +10,7 @@ const router = express.Router();
 const {
   loginUser,
   registerUser,
+  RequestDegrees,
   getUserData,
   logOut,
   updateUserData,
@@ -101,13 +102,7 @@ router.get(
   validateData,
   getUnreadMessages
 );
-router.get(
-  "/:id",
-  authenticateToken,
-  checkRole("ADMIN"),
-  validateData,
-  getUserById
-);
+
 router.get(
   "/users",
   authenticateToken,
@@ -122,7 +117,19 @@ router.get(
   validateData,
   getDeletedUsers
 );
-
+router.get("/degrees",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  RequestDegrees
+);
+router.get(
+  "/:id",
+  authenticateToken,
+  checkRole("ADMIN"),
+  validateData,
+  getUserById
+);
 router.put(
   "/messages/:messageId/read",
   authenticateToken,

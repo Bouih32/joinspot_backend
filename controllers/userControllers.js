@@ -112,6 +112,45 @@ const loginUser = async (req, res) => {
   }
 };
 
+const RequestDegrees = async (req, res) => {
+  try {
+    const { accepted, pending } = req.body;
+    const filter = {
+      ...(accepted === true && { verified: true }),
+      ...(pending === true && { verified: false }),
+    };
+    const degrees = await prisma.degree.findMany({
+      where: filter,
+      select: {
+        degreeName: true,
+        school: true,
+        year: true,
+        verified: true,
+        frontPic: true,
+        justification: true,
+        justificationPic: true,
+        user: {
+          select: {
+            userId: true,
+            email: true,
+            userName: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+    if (degrees.length === 0) {
+      return res.status(404).json({ message: "No degrees found" });
+    }
+    return res.status(200).json({ degrees });
+  } catch (error) {
+    console.error("Error getting degrees:", error);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
 const getUserData = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -1006,6 +1045,7 @@ const resetForgotenPswrd = async (req, res) => {
 module.exports = {
   loginUser,
   registerUser,
+  RequestDegrees,
   getUserData,
   logOut,
   updateUserData,
