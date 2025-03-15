@@ -73,7 +73,7 @@ const addTagToPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const posts = await prisma.post.findMany({
+    const data = await prisma.post.findMany({
       include: {
         category: {
           select: {
@@ -93,17 +93,11 @@ const getPosts = async (req, res) => {
             savePost: true,
           },
         },
-        share: {
-          include: {
-            user: {
+        postTags: {
+          select: {
+            tag: {
               select: {
-                userName: true,
-                avatar: true,
-              },
-            },
-            activity: {
-              select: {
-                title: true,
+                tagName: true,
               },
             },
           },
@@ -111,10 +105,10 @@ const getPosts = async (req, res) => {
       },
       orderBy: { createdAt: "desc" },
     });
-    if (posts.length === 0) {
+    if (data.length === 0) {
       return res.status(404).json({ message: "No posts found" });
     }
-    return res.json({ message: "Posts fetched successfully", posts });
+    return res.json({data});
   } catch (error) {
     console.error(error);
     return res

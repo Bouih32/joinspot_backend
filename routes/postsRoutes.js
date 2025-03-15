@@ -73,7 +73,6 @@ router.post("/:postId/comment",
   )
 // GET
 router.get("/",
-    authenticateToken,
     validateData,
     getPosts
   );
