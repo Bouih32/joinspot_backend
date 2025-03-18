@@ -2,6 +2,7 @@ const prisma = require("../utils/client");
 const { createNotification } = require("../utils/notification");
 const { stripe, TEST_CARDS } = require("../config/stripe");
 const { createTicket } = require("../utils/ticket");
+const { convertToISODate } = require("../utils/validation");
 
 const createActivity = async (req, res) => {
   try {
@@ -17,12 +18,21 @@ const createActivity = async (req, res) => {
       seat,
       price,
       cityId,
+      tags,
     } = req.body;
     const user = await prisma.user.findUnique({
       where: {
         userId: req.user.userId,
       },
     });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log(user.userId);
+
+    console.log(user.categoryId);
     const activity = await prisma.activity.create({
       data: {
         coverPic,
@@ -31,14 +41,14 @@ const createActivity = async (req, res) => {
         startTime,
         endTime,
         location,
-        startDay,
-        endDay,
-        seat,
-        price,
+        startDay: convertToISODate(startDay),
+        endDay: convertToISODate(endDay),
+        seat: parseInt(seat),
+        price: parseInt(price),
         score: 0,
         user: {
           connect: {
-            userId: req.user.userId,
+            userId: user.userId,
           },
         },
         category: {
@@ -48,11 +58,32 @@ const createActivity = async (req, res) => {
         },
         city: {
           connect: {
-            cityId: cityId,
+            cityId,
           },
         },
       },
     });
+
+    const tagsArray = tags.split("-");
+
+    await Promise.all(
+      tagsArray.map((tag) =>
+        prisma.activityTags.create({
+          data: {
+            activity: {
+              connect: {
+                activityId: activity.activityId,
+              },
+            },
+            tag: {
+              connect: {
+                tagId: tag,
+              },
+            },
+          },
+        })
+      )
+    );
     return res
       .status(201)
       .json({ message: "Activity created successfully", activity });

@@ -60,10 +60,61 @@ const tagValidation = [
     .withMessage("Tag must be at least 2 characters long"),
 ];
 
+const addValidation = [
+  check("coverPic").trim().notEmpty().withMessage("Cover picture is required"),
+  check("title")
+    .trim()
+    .notEmpty()
+    .withMessage("Title is required")
+    .isLength({ max: 50 })
+    .withMessage("That's too long"),
+  check("description")
+    .trim()
+    .notEmpty()
+    .withMessage("Description is required")
+    .isLength({ min: 10, max: 50 })
+    .withMessage("Description must be between 10 and 50 characters"),
+  check("tags").trim().notEmpty().withMessage("Tags are required"),
+  check("startTime")
+    .trim()
+    .notEmpty()
+    .withMessage("Time is required")
+    .matches(/^(0?[1-9]|1[0-2])(AM|PM)$/)
+    .withMessage("Invalid time format. Use format like 12PM or 5PM."),
+  check("endTime")
+    .trim()
+    .notEmpty()
+    .withMessage("Time is required")
+    .matches(/^(0?[1-9]|1[0-2])(AM|PM)$/)
+    .withMessage("Invalid time format. Use format like 12PM or 5PM."),
+  check("startDay").trim().notEmpty().withMessage("Start day is required"),
+  check("endDay").trim().notEmpty().withMessage("End day is required"),
+  check("seat").trim().notEmpty().withMessage("Seat is required"),
+  check("price").trim().notEmpty().withMessage("Price is required"),
+  check("location")
+    .trim()
+    .notEmpty()
+    .isLength({ min: 3 })
+    .withMessage("Location must be at least 3 characters"),
+  check("cityId")
+    .trim()
+    .notEmpty()
+    .isLength({ min: 3 })
+    .withMessage("City ID must be at least 3 characters"),
+];
+
+const convertToISODate = (dateString) => {
+  const [day, month, year] = dateString.split("/").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day)); // Ensure UTC time
+  return date.toISOString();
+};
+
 module.exports = {
   loginValidation,
   registerValidation,
   categoryValidation,
   tagValidation,
+  addValidation,
+  convertToISODate,
   validateData,
 };

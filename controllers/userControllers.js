@@ -95,7 +95,7 @@ const loginUser = async (req, res) => {
       role: user.role,
     });
     res.cookie("token", token, {
-      httpOnly: true,
+      httpOnly: isProduction,
       secure: isProduction, // Only require HTTPS in production
       sameSite: isProduction ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -169,10 +169,10 @@ const ChangeRole = async (req, res) => {
   } catch (error) {
     console.error("Error changing role:", error);
     return res
-     .status(500)
-     .json({ message: "Erreur serveur", error: error.message });
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
   }
-}
+};
 
 const getUserData = async (req, res) => {
   try {

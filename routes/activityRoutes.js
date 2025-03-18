@@ -31,13 +31,14 @@ const {
   authenticateToken,
   optionalAuthenticateToken,
 } = require("../middlewares//auth");
-const { validateData } = require("../utils/validation");
+const { validateData, addValidation } = require("../utils/validation");
 
 //POST
 router.post(
   "/add",
   authenticateToken,
   checkRole("ORGANISER"),
+  addValidation,
   validateData,
   createActivity
 );
