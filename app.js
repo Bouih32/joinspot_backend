@@ -20,7 +20,7 @@ app.disable("x-powered-by");
 
 const helmet = require("helmet");
 app.use(helmet());
-
+app.set("trust proxy", 1);
 const rateLimit = require("express-rate-limit");
 
 const limiter = rateLimit({
@@ -41,11 +41,11 @@ app.use("/user", userRoutes);
 app.use("/posts", postsRoutes);
 app.use("/category", categoryRoutes);
 
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpecs = require('./config/swagger');
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpecs = require("./config/swagger");
 
 // Route Swagger
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
