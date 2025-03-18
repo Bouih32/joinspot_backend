@@ -66,27 +66,9 @@ router.get(
   validateData,
   getDeletedTags
 );
-router.get(
-  "/tags/:id",
-  authenticateToken,
-  checkRole("ADMIN"),
-  validateData,
-  getTagById
-);
-router.get(
-  "/:id/tags",
-  authenticateToken,
-  checkRole("ADMIN"),
-  validateData,
-  getTagsByCategory
-);
-router.get(
-  "/:id",
-  authenticateToken,
-  checkRole("ADMIN"),
-  validateData,
-  getCategoryById
-);
+router.get("/tags/:id", validateData, getTagById);
+router.get("/:id/tags", validateData, getTagsByCategory);
+router.get("/:id", validateData, getCategoryById);
 
 // Patch
 

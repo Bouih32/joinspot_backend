@@ -242,8 +242,7 @@ const getTagsByCategory = async (req, res) => {
       },
     });
 
-    if (tags.length ===0) {
-
+    if (!tags) {
       return res.status(404).json({ message: "Tags not found" });
     }
     return res
