@@ -38,8 +38,8 @@ router.post(
   "/add",
   authenticateToken,
   checkRole("ORGANISER"),
-  // addValidation,
-  // validateData,
+  addValidation,
+  validateData,
   createActivity
 );
 router.post("/:activityId/save", authenticateToken, validateData, saveActivity);

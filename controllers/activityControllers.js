@@ -29,10 +29,6 @@ const createActivity = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
-    console.log(user.userId);
-
-    console.log(user.categoryId);
     const activity = await prisma.activity.create({
       data: {
         coverPic,
@@ -156,6 +152,9 @@ const getActivities = async (req, res) => {
         },
         category: { select: { categoryName: true } },
         city: { select: { cityName: true } },
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
