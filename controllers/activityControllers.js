@@ -927,8 +927,8 @@ const checkRepport = async (req, res) => {
 
 const payment = async (req, res) => {
   try {
-    const {activityId} = req.params
-    const { quantity, currency, CardholderName, email, Country} = req.body;
+    const { activityId } = req.params;
+    const { quantity, currency, CardholderName, email, Country } = req.body;
     const userId = req.user.userId;
 
     if (!activityId || !quantity || !currency) {
@@ -960,19 +960,12 @@ const payment = async (req, res) => {
         quantity,
         name: CardholderName,
         email,
-        Country
+        Country,
       },
     });
-    if(paymentIntent.status ==="success") {
-      await createTicket(
-        activityId,
-        userId,
-        quantity
-      )
-    }
-    return res.status(200).json({
-      clientSecret: paymentIntent.client_secret,
-    });
+      return res.status(200).json({
+        clientSecret: paymentIntent.client_secret,
+      });
   } catch (error) {
     console.error("Stripe payment error:", error);
     return res.status(500).json({
@@ -980,6 +973,40 @@ const payment = async (req, res) => {
       message: error.message,
     });
   }
+};
+
+const handleWebhook = async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    // Vérifier la signature du webhook
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error('Erreur de vérification de signature webhook:', err.message);
+    return res.status(400).send(`Erreur webhook: ${err.message}`);
+  }
+
+  // Traiter l'événement
+  if (event.type === 'payment_intent.succeeded') {
+    const paymentIntent = event.data.object;
+    const { userId, activityId, quantity } = paymentIntent.metadata;
+    
+    try {
+      // Créer les tickets après que le paiement a réussi
+      await createTicket(userId, activityId, parseInt(quantity));
+      console.log(`Création de ${quantity} tickets pour l'activité ${activityId} pour l'utilisateur ${userId}`);
+    } catch (error) {
+      console.error('Erreur lors de la création des tickets:', error);
+      // Considérez d'implémenter un mécanisme de réessai ou un système d'alerte ici
+    }
+  }
+  // Renvoyer une réponse 200 pour confirmer la réception de l'événement
+  res.status(200).json({ received: true });
 };
 
 module.exports = {
@@ -1007,4 +1034,5 @@ module.exports = {
   getRepportedActivities,
   checkRepport,
   payment,
+  handleWebhook
 };

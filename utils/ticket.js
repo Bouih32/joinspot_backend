@@ -4,16 +4,10 @@ const { createNotification } = require("./notification");
 const createTicket = async (userId, activityId, quantity) => {
   try {
     const activity = await prisma.activity.findUnique({
-      where: { activityId },
-      include: {
-        user: true,
-      },
+      where: { activityId: activityId},
     });
     if (!activity) {
       throw new Error("Activity not found");
-    }
-    if (activity.seat < quantity) {
-      throw new Error("Not enough seats available");
     }
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
     const ticket = await prisma.ticket.create({
@@ -24,13 +18,14 @@ const createTicket = async (userId, activityId, quantity) => {
         quantity,
       },
     });
-
-    await prisma.activity.update({
-      where: { activityId },
-      data: {
-        seat: activity.seat - quantity,
-      },
-    });
+    if(ticket){
+      await prisma.activity.update({
+        where: { activityId },
+        data: {
+          seat: activity.seat - quantity,
+        },
+      });
+    }
     const reserver = await prisma.user.findUnique({
       where: { userId },
       select: { userName: true },

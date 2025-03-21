@@ -25,6 +25,7 @@ const {
   getRepportedActivities,
   checkRepport,
   payment,
+  handleWebhook
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const {
@@ -32,8 +33,11 @@ const {
   optionalAuthenticateToken,
 } = require("../middlewares//auth");
 const { validateData, addValidation } = require("../utils/validation");
+const bodyParser = require("body-parser");
 
 //POST
+
+
 router.post(
   "/add",
   authenticateToken,
@@ -52,6 +56,11 @@ router.post(
 );
 
 router.post("/:activityId/payment", authenticateToken, validateData, payment);
+router.post(
+  '/stripe-webhook',
+  bodyParser.raw({ type: 'application/json' }),
+  handleWebhook
+);
 router.post("/:activityId/review", authenticateToken, validateData, addReview);
 router.post(
   "/:activityId/repport",
