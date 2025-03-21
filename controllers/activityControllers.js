@@ -960,7 +960,13 @@ const payment = async (req, res) => {
         quantity,
       },
     });
-
+    if(paymentIntent.status ==="success") {
+      await createTicket(
+        activityId,
+        userId,
+        quantity
+      )
+    }
     return res.status(200).json({
       clientSecret: paymentIntent.client_secret,
     });
