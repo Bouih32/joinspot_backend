@@ -1,6 +1,6 @@
 const prisma = require("../utils/client");
 const { createNotification } = require("../utils/notification");
-const { stripe, TEST_CARDS } = require("../config/stripe");
+const { stripe } = require("../config/stripe");
 const { createTicket } = require("../utils/ticket");
 const { convertToISODate } = require("../utils/validation");
 
@@ -927,19 +927,16 @@ const checkRepport = async (req, res) => {
 
 const payment = async (req, res) => {
   try {
-    const { activityId } = req.params;
-    const { currency, quantity } = req.body;
+    const {activityId} = req.params
+    const { quantity, currency } = req.body;
     const userId = req.user.userId;
 
-    if (!currency) {
-      return res.status(400).json({ error: "Currency required" });
-    }
-    if (!quantity || quantity <= 0) {
-      return res.status(400).json({ error: "Invalid quantity" });
+    if (!activityId || !quantity || !currency) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
     const activity = await prisma.activity.findUnique({
-      where: { activityId: activityId },
+      where: { activityId },
     });
 
     if (!activity) {
@@ -953,12 +950,9 @@ const payment = async (req, res) => {
       });
     }
 
-    // Créer l'intention de paiement avec une carte de test prédéfinie
     const paymentIntent = await stripe.paymentIntents.create({
       amount: activity.price * quantity * 100,
       currency,
-      payment_method: TEST_CARDS.success,
-      confirm: true,
       payment_method_types: ["card"],
       metadata: {
         activityId,
@@ -967,31 +961,13 @@ const payment = async (req, res) => {
       },
     });
 
-    if (paymentIntent.status === "succeeded") {
-      const ticket = await createTicket(userId, activityId, quantity);
-      return res.status(200).json({
-        success: true,
-        message: "Paiement réussi",
-        ticket,
-        paymentDetails: {
-          id: paymentIntent.id,
-          amount: paymentIntent.amount / 100,
-          currency: paymentIntent.currency,
-          status: paymentIntent.status,
-        },
-      });
-    } else {
-      return res.status(400).json({
-        success: false,
-        error: "Échec du paiement",
-        status: paymentIntent.status,
-      });
-    }
+    return res.status(200).json({
+      clientSecret: paymentIntent.client_secret,
+    });
   } catch (error) {
-    console.error("Erreur Stripe:", error);
+    console.error("Stripe payment error:", error);
     return res.status(500).json({
-      success: false,
-      error: "Erreur lors du traitement du paiement",
+      error: "Payment processing failed",
       message: error.message,
     });
   }
