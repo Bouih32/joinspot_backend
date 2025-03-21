@@ -928,7 +928,7 @@ const checkRepport = async (req, res) => {
 const payment = async (req, res) => {
   try {
     const {activityId} = req.params
-    const { quantity, currency } = req.body;
+    const { quantity, currency, CardholderName, email, Country} = req.body;
     const userId = req.user.userId;
 
     if (!activityId || !quantity || !currency) {
@@ -958,6 +958,9 @@ const payment = async (req, res) => {
         activityId,
         userId,
         quantity,
+        name: CardholderName,
+        email,
+        Country
       },
     });
     if(paymentIntent.status ==="success") {
