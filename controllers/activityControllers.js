@@ -93,7 +93,7 @@ const createActivity = async (req, res) => {
 
 const getActivities = async (req, res) => {
   try {
-    const { seats, category, date, my, search } = req.query;
+    const { seats, category, date, my, search, page = 1 } = req.query;
     let startDay = null;
     let endDay = null;
 
@@ -109,6 +109,8 @@ const getActivities = async (req, res) => {
           .json({ error: "Invalid date format. Expected startDay_endDay." });
       }
     }
+
+    const numberToTake = 2;
 
     const filters = {
       ...(search && {
@@ -134,6 +136,8 @@ const getActivities = async (req, res) => {
 
     const activities = await prisma.activity.findMany({
       where: filters,
+      take: numberToTake,
+      skip: (page - 1) * numberToTake,
       include: {
         user: {
           select: {
@@ -158,13 +162,20 @@ const getActivities = async (req, res) => {
       },
     });
 
+    const totalActivities = await prisma.activity.count({ where: filters });
+    const totalPages = Math.ceil(totalActivities / numberToTake);
+
     if (!activities) {
       return res.status(404).json({ message: "No activities found" });
     }
 
     return res
       .status(200)
-      .json({ message: "Activities fetched successfully", activities });
+      .json({
+        message: "Activities fetched successfully",
+        activities,
+        pages: totalPages,
+      });
   } catch (error) {
     console.error(error);
     return res
@@ -965,7 +976,7 @@ const payment = async (req, res) => {
     });
     return res.status(200).json({
       clientSecret: paymentIntent.client_secret,
-      paymentIntentId : paymentIntent.id
+      paymentIntentId: paymentIntent.id,
     });
   } catch (error) {
     console.error("Stripe payment error:", error);
@@ -978,7 +989,7 @@ const payment = async (req, res) => {
 
 const paymentIntent = async (req, res) => {
   try {
-    const paymentIntentId = req.params.paymentIntentId
+    const paymentIntentId = req.params.paymentIntentId;
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     const userId = paymentIntent.metadata.userId;
     const activityId = paymentIntent.metadata.activityId;
