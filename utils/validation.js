@@ -75,18 +75,8 @@ const addValidation = [
     .isLength({ min: 10, max: 50 })
     .withMessage("Description must be between 10 and 50 characters"),
   check("tags").trim().notEmpty().withMessage("Tags are required"),
-  check("startTime")
-    .trim()
-    .notEmpty()
-    .withMessage("Time is required")
-    .matches(/^(0?[1-9]|1[0-2])(AM|PM)$/)
-    .withMessage("Invalid time format. Use format like 12PM or 5PM."),
-  check("endTime")
-    .trim()
-    .notEmpty()
-    .withMessage("Time is required")
-    .matches(/^(0?[1-9]|1[0-2])(AM|PM)$/)
-    .withMessage("Invalid time format. Use format like 12PM or 5PM."),
+  check("startTime").trim().notEmpty().withMessage("Time is required"),
+  check("endTime").trim().notEmpty().withMessage("Time is required"),
   check("startDay").trim().notEmpty().withMessage("Start day is required"),
   check("endDay").trim().notEmpty().withMessage("End day is required"),
   check("seat").trim().notEmpty().withMessage("Seat is required"),
