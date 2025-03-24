@@ -963,9 +963,10 @@ const payment = async (req, res) => {
         Country,
       },
     });
-      return res.status(200).json({
-        clientSecret: paymentIntent.client_secret,
-      });
+    return res.status(200).json({
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId : paymentIntent.id
+    });
   } catch (error) {
     console.error("Stripe payment error:", error);
     return res.status(500).json({
@@ -975,8 +976,28 @@ const payment = async (req, res) => {
   }
 };
 
+const paymentIntent = async (req, res) => {
+  try {
+    const paymentIntentId = req.params.paymentIntentId
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const userId = paymentIntent.metadata.userId;
+    const activityId = paymentIntent.metadata.activityId;
+    const quantity = paymentIntent.metadata.quantity;
+
+    if (paymentIntent.status === "succeeded") {
+      const ticket = await createTicket(userId, activityId, parseInt(quantity));
+      return res.status(200).json({ ticket });
+    } else {
+      return res.status(400).json({ message: "Payment failed" });
+    }
+  } catch (error) {
+    console.error("Failed to retrieve payment intent:", error.message);
+    return res.status(500).json({ message: "Failed to process payment" });
+  }
+};
+
 const handleWebhook = async (req, res) => {
-  const sig = req.headers['stripe-signature'];
+  const sig = req.headers["stripe-signature"];
   let event;
 
   try {
@@ -987,21 +1008,23 @@ const handleWebhook = async (req, res) => {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error('Erreur de vérification de signature webhook:', err.message);
+    console.error("Erreur de vérification de signature webhook:", err.message);
     return res.status(400).send(`Erreur webhook: ${err.message}`);
   }
 
   // Traiter l'événement
-  if (event.type === 'payment_intent.succeeded') {
+  if (event.type === "payment_intent.succeeded") {
     const paymentIntent = event.data.object;
     const { userId, activityId, quantity } = paymentIntent.metadata;
-    
+
     try {
       // Créer les tickets après que le paiement a réussi
       await createTicket(userId, activityId, parseInt(quantity));
-      console.log(`Création de ${quantity} tickets pour l'activité ${activityId} pour l'utilisateur ${userId}`);
+      console.log(
+        `Création de ${quantity} tickets pour l'activité ${activityId} pour l'utilisateur ${userId}`
+      );
     } catch (error) {
-      console.error('Erreur lors de la création des tickets:', error);
+      console.error("Erreur lors de la création des tickets:", error);
       // Considérez d'implémenter un mécanisme de réessai ou un système d'alerte ici
     }
   }
@@ -1034,5 +1057,6 @@ module.exports = {
   getRepportedActivities,
   checkRepport,
   payment,
-  handleWebhook
+  handleWebhook,
+  paymentIntent,
 };

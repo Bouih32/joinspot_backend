@@ -25,7 +25,8 @@ const {
   getRepportedActivities,
   checkRepport,
   payment,
-  handleWebhook
+  handleWebhook,
+  paymentIntent
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const {
@@ -85,6 +86,7 @@ router.get(
   validateData,
   getMyActivities
 );
+router.get("/paymentIntent/:paymentIntentId",authenticateToken,paymentIntent)
 router.get("/tickets", authenticateToken, validateData, getActivityTickets);
 router.get(
   "/reservations",
