@@ -110,7 +110,7 @@ const getActivities = async (req, res) => {
       }
     }
 
-    const numberToTake = 2;
+    const numberToTake = 10;
 
     const filters = {
       ...(search && {
@@ -169,13 +169,11 @@ const getActivities = async (req, res) => {
       return res.status(404).json({ message: "No activities found" });
     }
 
-    return res
-      .status(200)
-      .json({
-        message: "Activities fetched successfully",
-        activities,
-        pages: totalPages,
-      });
+    return res.status(200).json({
+      message: "Activities fetched successfully",
+      activities,
+      pages: totalPages,
+    });
   } catch (error) {
     console.error(error);
     return res
