@@ -26,18 +26,21 @@ const {
   checkRepport,
   payment,
   handleWebhook,
-  paymentIntent
+  paymentIntent,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const {
   authenticateToken,
   optionalAuthenticateToken,
 } = require("../middlewares//auth");
-const { validateData, addValidation } = require("../utils/validation");
+const {
+  validateData,
+  addValidation,
+  reviewValidation,
+} = require("../utils/validation");
 const bodyParser = require("body-parser");
 
 //POST
-
 
 router.post(
   "/add",
@@ -58,11 +61,17 @@ router.post(
 
 router.post("/:activityId/payment", authenticateToken, validateData, payment);
 router.post(
-  '/stripe-webhook',
-  bodyParser.raw({ type: 'application/json' }),
+  "/stripe-webhook",
+  bodyParser.raw({ type: "application/json" }),
   handleWebhook
 );
-router.post("/:activityId/review", authenticateToken, validateData, addReview);
+router.post(
+  "/:activityId/review",
+  authenticateToken,
+  reviewValidation,
+  validateData,
+  addReview
+);
 router.post(
   "/:activityId/repport",
   authenticateToken,
@@ -86,7 +95,7 @@ router.get(
   validateData,
   getMyActivities
 );
-router.get("/paymentIntent/:paymentIntentId",authenticateToken,paymentIntent)
+router.get("/paymentIntent/:paymentIntentId", authenticateToken, paymentIntent);
 router.get("/tickets", authenticateToken, validateData, getActivityTickets);
 router.get(
   "/reservations",

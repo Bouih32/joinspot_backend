@@ -99,12 +99,24 @@ const convertToISODate = (dateString) => {
   return date.toISOString();
 };
 
+const reviewValidation = [
+  check("comment")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter your comment")
+    .isLength({ max: 100 })
+    .withMessage("Heey! that's too long"),
+
+  check("stars").trim().notEmpty().withMessage("Please enter your rating"),
+];
+
 module.exports = {
   loginValidation,
   registerValidation,
   categoryValidation,
   tagValidation,
   addValidation,
+  reviewValidation,
   convertToISODate,
   validateData,
 };

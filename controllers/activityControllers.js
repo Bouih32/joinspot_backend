@@ -729,40 +729,66 @@ const addReview = async (req, res) => {
   try {
     const { activityId } = req.params;
     const { stars, comment } = req.body;
-    const existedreview = await prisma.review.findFirst({
-      where: {
-        userId: req.user.userId,
-        activityId,
-      },
-    });
-    if (existedreview) {
-      return res
-        .status(400)
-        .json({ message: "You have already reviewed this activity" });
-    }
+    const { userId } = req.user;
+
     const activity = await prisma.activity.findFirst({
       where: { activityId },
     });
     if (!activity) {
       return res.status(404).json({ message: "Activity not found" });
     }
+
+    const existedreview = await prisma.review.findFirst({
+      where: {
+        userId,
+        activityId,
+      },
+    });
+    if (existedreview) {
+      await prisma.review.delete({
+        where: { reviewId: existedreview.reviewId },
+      });
+    }
+
     const review = await prisma.review.create({
       data: {
-        userId: req.user.userId,
+        userId,
         activityId,
-        stars,
+        stars: parseInt(stars),
         comment,
       },
     });
-    const reviewer = await prisma.user.findUnique({
-      where: { userId: req.user.userId },
-      select: { userName: true },
+
+    const currentReviews = await prisma.review.findMany({
+      where: { activityId },
+      select: { stars: true },
     });
-    await createNotification(
-      req.user.userId,
-      activity.user.userId,
-      `${reviewer.userName} has reviewed your activity "${activity.title}"`
-    );
+
+    if (currentReviews.length > 0) {
+      const totalScore = currentReviews.reduce(
+        (sum, review) => sum + review.stars,
+        0
+      );
+      const averageScore = totalScore / currentReviews.length;
+
+      // Round the average score to the nearest integer
+      await prisma.activity.update({
+        where: { activityId },
+        data: {
+          score: Math.round(averageScore), // Ensure score is passed as an integer
+        },
+      });
+    }
+
+    // const reviewer = await prisma.user.findUnique({
+    //   where: { userId: req.user.userId },
+    //   select: { userName: true },
+    // });
+    // await createNotification(
+    //   userId,
+    //   activity.user.userId,
+    //   `${reviewer.userName} has reviewed your activity "${activity.title}"`
+    // );
     return res
       .status(201)
       .json({ message: "Review added successfully", review });
