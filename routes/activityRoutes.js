@@ -113,9 +113,9 @@ router.get(
   validateData,
   getActivityByCategory
 );
-router.get("/city/:cityId", authenticateToken, validateData, getActivityByCity);
-router.get("/:activityId", authenticateToken, validateData, getActivityById);
-router.get("/:activityId/reviews", authenticateToken, validateData, getReviews);
+router.get("/city/:cityId", authenticateToken, getActivityByCity);
+router.get("/:activityId", authenticateToken, getActivityById);
+router.get("/:activityId/reviews", authenticateToken, getReviews);
 router.get(
   "/repported",
   authenticateToken,

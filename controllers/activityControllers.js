@@ -247,9 +247,6 @@ const getActivityById = async (req, res) => {
       return res.status(404).json({ message: "Activity not found" });
     }
 
-    const reviews = await prisma.review.findMany({
-      where: { activityId: activity.activityId },
-    });
     return res.status(200).json({
       message: "Activity fetched successfully",
       activity: {
@@ -259,7 +256,6 @@ const getActivityById = async (req, res) => {
           0
         ),
       },
-      reviews,
     });
   } catch (error) {
     return res
