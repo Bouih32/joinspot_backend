@@ -156,6 +156,7 @@ const getActivities = async (req, res) => {
         },
         category: { select: { categoryName: true } },
         city: { select: { cityName: true } },
+        ticket: { select: { quantity: true } },
       },
       orderBy: {
         createdAt: "desc",
@@ -171,7 +172,13 @@ const getActivities = async (req, res) => {
 
     return res.status(200).json({
       message: "Activities fetched successfully",
-      activities,
+      activities: activities.map((activity) => ({
+        ...activity,
+        joined: activity.ticket.reduce(
+          (sum, ticket) => sum + ticket.quantity,
+          0
+        ), // Sum all ticket quantities
+      })),
       pages: totalPages,
     });
   } catch (error) {
@@ -181,6 +188,7 @@ const getActivities = async (req, res) => {
       .json({ message: "Failed to fetch activities", error: error.message });
   }
 };
+
 const updateActivity = async (req, res) => {
   try {
     const { description, coverPic, location } = req.body;
@@ -230,14 +238,29 @@ const getActivityById = async (req, res) => {
             },
           },
         },
+        category: { select: { categoryName: true } },
+        city: { select: { cityName: true } },
+        ticket: { select: { quantity: true } },
       },
     });
     if (!activity) {
       return res.status(404).json({ message: "Activity not found" });
     }
-    return res
-      .status(200)
-      .json({ message: "Activity fetched successfully", activity });
+
+    const reviews = await prisma.review.findMany({
+      where: { activityId: activity.activityId },
+    });
+    return res.status(200).json({
+      message: "Activity fetched successfully",
+      activity: {
+        ...activity,
+        joined: activity.ticket.reduce(
+          (sum, ticket) => sum + ticket.quantity,
+          0
+        ),
+      },
+      reviews,
+    });
   } catch (error) {
     return res
       .status(500)
