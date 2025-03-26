@@ -106,16 +106,11 @@ router.get(
   validateData,
   getActivityReservations
 );
-router.get("/tags", authenticateToken, validateData, getActivitiesBytags);
+router.get("/tags", getActivitiesBytags);
 router.get("/saved", authenticateToken, validateData, getSavedActivities);
 
-router.get(
-  "/category/:id",
-  authenticateToken,
-  validateData,
-  getActivityByCategory
-);
-router.get("/city/:cityId", authenticateToken, getActivityByCity);
+router.get("/category/:id", validateData, getActivityByCategory);
+router.get("/city/:cityId", getActivityByCity);
 router.get("/:activityId", getActivityById);
 router.get("/:activityId/reviews", getReviews);
 router.get(
