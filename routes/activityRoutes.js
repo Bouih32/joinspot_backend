@@ -116,7 +116,7 @@ router.get(
   getActivityByCategory
 );
 router.get("/city/:cityId", authenticateToken, getActivityByCity);
-router.get("/:activityId", authenticateToken, getActivityById);
+router.get("/:activityId", getActivityById);
 router.get("/:activityId/reviews", getReviews);
 router.get(
   "/repported",
