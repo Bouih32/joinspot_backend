@@ -127,11 +127,10 @@ const getActivities = async (req, res) => {
           gte: startDay,
         },
       }),
-      ...(endDay && {
-        endDay: {
-          lte: endDay,
-        },
-      }),
+      endDay: {
+        gt: new Date(), // Ensures endDay is greater than today
+        ...(endDay && { lte: endDay }), // Retains existing endDay filter if provided
+      },
     };
 
     const activities = await prisma.activity.findMany({
