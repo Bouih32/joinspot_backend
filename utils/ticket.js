@@ -1,7 +1,7 @@
 const prisma = require("./client");
 const { createNotification } = require("./notification");
 
-const createTicket = async (userId, activityId, quantity) => {
+const createTicket = async (userId, activityId, quantity,paymentIntentId) => {
   try {
     const activity = await prisma.activity.findUnique({
       where: { activityId: activityId},
@@ -16,6 +16,7 @@ const createTicket = async (userId, activityId, quantity) => {
         activityId,
         code,
         quantity,
+        paymentIntentId
       },
     });
     if(ticket){

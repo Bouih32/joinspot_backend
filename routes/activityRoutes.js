@@ -27,6 +27,7 @@ const {
   payment,
   handleWebhook,
   paymentIntent,
+  getTicketById,
   getUserActivities,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
@@ -51,6 +52,7 @@ router.post(
   validateData,
   createActivity
 );
+router.post("/paymentIntent/:paymentIntentId", paymentIntent);
 router.post("/:activityId/save", authenticateToken, validateData, saveActivity);
 router.post(
   "/:activityId/tags",
@@ -96,9 +98,9 @@ router.get(
   validateData,
   getMyActivities
 );
-router.get("/user/:id", getUserActivities);
-router.get("/paymentIntent/:paymentIntentId", authenticateToken, paymentIntent);
+router.get("/user/:id", getUserActivities)
 router.get("/tickets", authenticateToken, validateData, getActivityTickets);
+router.get("/ticket/:ticketId", authenticateToken, validateData, getTicketById)
 router.get(
   "/reservations",
   authenticateToken,
