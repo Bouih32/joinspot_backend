@@ -72,8 +72,8 @@ const addValidation = [
     .trim()
     .notEmpty()
     .withMessage("Description is required")
-    .isLength({ min: 10, max: 50 })
-    .withMessage("Description must be between 10 and 50 characters"),
+    .isLength({ min: 10, max: 500 })
+    .withMessage("Description must be between 10 and 500 characters"),
   check("tags").trim().notEmpty().withMessage("Tags are required"),
   check("startTime").trim().notEmpty().withMessage("Time is required"),
   check("endTime").trim().notEmpty().withMessage("Time is required"),
