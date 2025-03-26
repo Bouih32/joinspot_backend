@@ -813,7 +813,7 @@ const getReviews = async (req, res) => {
         stars: true,
       },
     });
-    if (reviews.length === 0) {
+    if (!reviews) {
       return res.status(404).json({ message: "No reviews found" });
     }
     return res
