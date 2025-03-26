@@ -807,7 +807,6 @@ const getReviews = async (req, res) => {
         user: {
           select: {
             userName: true,
-            avatar: true,
           },
         },
         comment: true,
@@ -820,6 +819,46 @@ const getReviews = async (req, res) => {
     return res
       .status(200)
       .json({ message: "Reviews fetched successfully", reviews });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to fetch reviews",
+      error: error.message,
+    });
+  }
+};
+
+const getUserActivities = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const activities = await prisma.activity.findMany({
+      where: { userId: id },
+      include: {
+        user: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        activityTags: {
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
+          },
+        },
+        category: { select: { categoryName: true } },
+        city: { select: { cityName: true } },
+        ticket: { select: { quantity: true } },
+      },
+    });
+    if (activities.length < 0)
+      return res.status(404).json({ message: "Review not found" });
+    return res
+      .status(200)
+      .json({ message: "Review updated successfully", activities });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -1113,4 +1152,5 @@ module.exports = {
   payment,
   handleWebhook,
   paymentIntent,
+  getUserActivities,
 };

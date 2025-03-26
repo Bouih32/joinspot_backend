@@ -27,6 +27,7 @@ const {
   payment,
   handleWebhook,
   paymentIntent,
+  getUserActivities,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const {
@@ -95,6 +96,7 @@ router.get(
   validateData,
   getMyActivities
 );
+router.get("/user/:id", getUserActivities);
 router.get("/paymentIntent/:paymentIntentId", authenticateToken, paymentIntent);
 router.get("/tickets", authenticateToken, validateData, getActivityTickets);
 router.get(
@@ -115,7 +117,7 @@ router.get(
 );
 router.get("/city/:cityId", authenticateToken, getActivityByCity);
 router.get("/:activityId", authenticateToken, getActivityById);
-router.get("/:activityId/reviews", authenticateToken, getReviews);
+router.get("/:activityId/reviews", getReviews);
 router.get(
   "/repported",
   authenticateToken,
