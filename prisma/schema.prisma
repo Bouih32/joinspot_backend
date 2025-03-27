@@ -219,6 +219,7 @@ model ticket {
   activityId String   @db.ObjectId
   code       String
   quantity   Int
+  paymentIntentId String 
   user       user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
   activity   activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
   createdAt  DateTime @default(now())

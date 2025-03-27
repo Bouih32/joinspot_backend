@@ -1075,10 +1075,30 @@ const paymentIntent = async (req, res) => {
     const userId = paymentIntent.metadata.userId;
     const activityId = paymentIntent.metadata.activityId;
     const quantity = paymentIntent.metadata.quantity;
-
+    const existingTicket = await prisma.ticket.findFirst({
+      where: {
+        paymentIntentId,
+      },
+    });
+    if (existingTicket) {
+      return res.status(400).json({
+        error: "Payment has already been processed for this intent",
+      });
+    }
     if (paymentIntent.status === "succeeded") {
-      const ticket = await createTicket(userId, activityId, parseInt(quantity));
-      return res.status(200).json({ ticket });
+      const ticket = await createTicket(
+        userId,
+        activityId,
+        parseInt(quantity),
+        paymentIntentId
+      );
+      console.log(
+        `Création de ${quantity} tickets pour l'activité ${activityId} pour l'utilisateur ${userId}`
+      );
+      console.log(ticket);
+      return res.status(200).json({ ticket,
+        ticketId:ticket.ticketId
+       });
     } else {
       return res.status(400).json({ message: "Payment failed" });
     }
@@ -1087,6 +1107,22 @@ const paymentIntent = async (req, res) => {
     return res.status(500).json({ message: "Failed to process payment" });
   }
 };
+
+const getTicketById = async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+    const ticket = await prisma.ticket.findUnique({
+      where: { ticketId },
+    });
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+    return res.status(200).json({ ticket });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed to fetch ticket", error: error.message });
+  }
+}
 
 const handleWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
@@ -1151,5 +1187,6 @@ module.exports = {
   payment,
   handleWebhook,
   paymentIntent,
+  getTicketById,
   getUserActivities,
 };
