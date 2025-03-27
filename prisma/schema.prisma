@@ -214,15 +214,15 @@ model userTags {
 }
 
 model ticket {
-  ticketId   String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
-  activityId String   @db.ObjectId
-  code       String
-  quantity   Int
-  paymentIntentId String 
-  user       user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  activity   activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
-  createdAt  DateTime @default(now())
+  ticketId        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  activityId      String   @db.ObjectId
+  code            String
+  quantity        Int
+  paymentIntentId String?
+  user            user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  activity        activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
+  createdAt       DateTime @default(now())
 }
 
 model saveAct {

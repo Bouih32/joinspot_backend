@@ -110,6 +110,15 @@ const reviewValidation = [
   check("stars").trim().notEmpty().withMessage("Please enter your rating"),
 ];
 
+const joinValidation = [
+  check("quantity")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter your quantity")
+    .isLength({ max: 100 })
+    .withMessage("Heey! that's too long"),
+];
+
 module.exports = {
   loginValidation,
   registerValidation,
@@ -117,6 +126,7 @@ module.exports = {
   tagValidation,
   addValidation,
   reviewValidation,
+  joinValidation,
   convertToISODate,
   validateData,
 };

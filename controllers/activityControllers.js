@@ -1017,6 +1017,35 @@ const checkRepport = async (req, res) => {
   }
 };
 
+const joinActivity = async (req, res) => {
+  const { userId } = req.user;
+  const { activityId } = req.params;
+  const { quantity } = req.body;
+  try {
+    const hasTicket = await prisma.ticket.findFirst({
+      where: { userId, activityId },
+    });
+
+    if (hasTicket)
+      return res.status(400).json({ message: "You have already joined" });
+
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const quantityN = Number(quantity);
+    const ticket = await prisma.ticket.create({
+      data: { userId, activityId, quantity: quantityN, code },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Joined successfully", code: ticket.code });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Failed to Join", error: error.message });
+  }
+};
+
 const payment = async (req, res) => {
   try {
     const { activityId } = req.params;
@@ -1096,9 +1125,7 @@ const paymentIntent = async (req, res) => {
         `Création de ${quantity} tickets pour l'activité ${activityId} pour l'utilisateur ${userId}`
       );
       console.log(ticket);
-      return res.status(200).json({ ticket,
-        ticketId:ticket.ticketId
-       });
+      return res.status(200).json({ ticket, ticketId: ticket.ticketId });
     } else {
       return res.status(400).json({ message: "Payment failed" });
     }
@@ -1120,9 +1147,11 @@ const getTicketById = async (req, res) => {
     return res.status(200).json({ ticket });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Failed to fetch ticket", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch ticket", error: error.message });
   }
-}
+};
 
 const handleWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
@@ -1189,4 +1218,5 @@ module.exports = {
   paymentIntent,
   getTicketById,
   getUserActivities,
+  joinActivity,
 };
