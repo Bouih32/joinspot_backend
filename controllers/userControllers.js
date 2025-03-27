@@ -176,15 +176,17 @@ const ChangeRole = async (req, res) => {
 
 const getUserData = async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
+    const userFull = await prisma.user.findUnique({
       where: {
         userId: req.user.userId,
       },
     });
-    if (!user) {
+    if (!userFull) {
       return res.status(404).json({ message: "User not found" });
     }
-    return res.status(200).json({ user });
+
+    const { password, ...user } = userFull;
+    return res.status(200).json({ user: user });
   } catch (error) {
     console.error("Error getting profil:", error);
     return res
