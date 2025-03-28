@@ -1036,10 +1036,12 @@ const joinActivity = async (req, res) => {
 
     if (hasTicket) {
       await prisma.ticket.update({
-        where: { activityId },
+        where: { ticketId: hasTicket.ticketId },
         data: { quantity: hasTicket.quantity + quantityN },
       });
-      return res.status(200).json({ message: "More places added" });
+      return res
+        .status(200)
+        .json({ message: "More places added", code: hasTicket.code });
     }
 
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
