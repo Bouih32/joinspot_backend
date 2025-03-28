@@ -110,7 +110,7 @@ const getActivities = async (req, res) => {
       }
     }
 
-    const numberToTake = 10;
+    const numberToTake = 4;
 
     const filters = {
       ...(search && {
