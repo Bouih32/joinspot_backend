@@ -855,9 +855,16 @@ const getUserActivities = async (req, res) => {
     });
     if (activities.length < 0)
       return res.status(404).json({ message: "Review not found" });
-    return res
-      .status(200)
-      .json({ message: "Review updated successfully", activities });
+    return res.status(200).json({
+      message: "Review updated successfully",
+      activities: activities.map((activity) => ({
+        ...activity,
+        joined: activity.ticket.reduce(
+          (sum, ticket) => sum + ticket.quantity,
+          0
+        ), // Sum all ticket quantities
+      })),
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -1025,12 +1032,18 @@ const joinActivity = async (req, res) => {
     const hasTicket = await prisma.ticket.findFirst({
       where: { userId, activityId },
     });
+    const quantityN = Number(quantity);
 
-    if (hasTicket)
-      return res.status(400).json({ message: "You have already joined" });
+    if (hasTicket) {
+      await prisma.ticket.update({
+        where: { activityId },
+        data: { quantity: hasTicket.quantity + quantityN },
+      });
+      return res.status(200).json({ message: "More places added" });
+    }
 
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-    const quantityN = Number(quantity);
+
     const ticket = await prisma.ticket.create({
       data: { userId, activityId, quantity: quantityN, code },
     });
