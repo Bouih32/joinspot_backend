@@ -130,6 +130,27 @@ const getProfileData = async (req, res) => {
       where: { followingId: userId },
     });
 
+    const joinedActivitiesNum = await prisma.ticket.findMany({
+      where: { activity: { userId } },
+      select: {
+        quantity: true,
+        activity: {
+          select: { price: true },
+        },
+      },
+    });
+
+    const totalRevenue = joinedActivitiesNum.reduce((acc, ticket) => {
+      const quantity = ticket.quantity ?? 0;
+      const price = ticket.activity?.price ?? 0;
+      return acc + quantity * price;
+    }, 0);
+
+    const joinedNum = joinedActivitiesNum.reduce(
+      (acc, ticket) => acc + (ticket.quantity ?? 0),
+      0
+    );
+
     const following = await prisma.follow.count({
       where: { followerId: userId },
     });
@@ -141,6 +162,8 @@ const getProfileData = async (req, res) => {
         activityNumber: activities,
         followersNum: followers,
         followingNum: following,
+        totalRevenue: totalRevenue,
+        joinedNum: joinedNum,
       },
     });
   } catch (error) {
