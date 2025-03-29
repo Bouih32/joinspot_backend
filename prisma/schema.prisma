@@ -36,6 +36,7 @@ model user {
   userId            String         @id @default(auto()) @map("_id") @db.ObjectId
   userName          String?
   fullName          String?
+  bgId              String?        @db.ObjectId
   email             String         @unique
   cityId            String?        @db.ObjectId
   role              Role           @default(VISITOR)
@@ -52,6 +53,7 @@ model user {
   categoryId        String?        @db.ObjectId
   city              city?          @relation(fields: [cityId], references: [cityId])
   category          category?      @relation(fields: [categoryId], references: [categoryId])
+  background        background?    @relation(fields: [bgId], references: [bgId])
   degree            degree[]
   bank              bank[]
   userTags          userTags[]
@@ -73,9 +75,9 @@ model user {
   repportPost       repportPost[]
   repport_from      repportUser[]  @relation("repport_from")
   repport_to        repportUser[]  @relation("repport_to")
-  userBg            userBg[]
-  reset             reset[]
-  share             share[]
+
+  reset reset[]
+  share share[]
 
   @@index([userName])
 }
@@ -191,10 +193,10 @@ model post {
 }
 
 model background {
-  bgId   String   @id @default(auto()) @map("_id") @db.ObjectId
-  link   String
-  type   String
-  userBg userBg[]
+  bgId String @id @default(auto()) @map("_id") @db.ObjectId
+  link String
+  type String
+  user user[]
 }
 
 model reset {
@@ -343,13 +345,13 @@ model repportUser {
   repport_to    user   @relation("repport_to", fields: [repportingId], references: [userId], onDelete: Cascade)
 }
 
-model userBg {
-  userBgId   String     @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String     @db.ObjectId
-  bgId       String     @db.ObjectId
-  user       user       @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  background background @relation(fields: [bgId], references: [bgId], onDelete: Cascade)
-}
+// model userBg {
+//   userBgId   String     @id @default(auto()) @map("_id") @db.ObjectId
+//   userId     String     @db.ObjectId
+//   bgId       String     @db.ObjectId
+//   user       user       @relation(fields: [userId], references: [userId], onDelete: Cascade)
+//   background background @relation(fields: [bgId], references: [bgId], onDelete: Cascade)
+// }
 
 model share {
   shareId    String   @id @default(auto()) @map("_id") @db.ObjectId

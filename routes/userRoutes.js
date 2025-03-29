@@ -42,6 +42,7 @@ const {
   getNotifications,
   deleteNotification,
   supports,
+  getProfileData,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -75,6 +76,7 @@ router.get("/cities", getCities);
 // user data
 router.get("/tags", authenticateToken, getUserTags);
 router.get("/profile", authenticateToken, getUserData);
+router.get("/profile/header", authenticateToken, getProfileData);
 router.get(
   "/followers",
   authenticateToken,
@@ -118,7 +120,8 @@ router.get(
   validateData,
   getDeletedUsers
 );
-router.get("/degrees",
+router.get(
+  "/degrees",
   authenticateToken,
   checkRole("ADMIN"),
   validateData,
@@ -140,12 +143,13 @@ router.put(
 
 router.put("/change-password", authenticateToken, validateData, changePassword);
 router.put("/update-cityuser", authenticateToken, updateUserCity);
-router.put("/ChangeRole",
+router.put(
+  "/ChangeRole",
   authenticateToken,
   checkRole("ADMIN"),
   validateData,
   ChangeRole
-)
+);
 router.patch("/edit-profil", authenticateToken, validateData, updateUserData);
 
 router.delete("/unfollow", authenticateToken, validateData, UnfollowUser);

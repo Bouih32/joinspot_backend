@@ -112,6 +112,45 @@ const loginUser = async (req, res) => {
   }
 };
 
+const getProfileData = async (req, res) => {
+  try {
+    const { userId } = req.user;
+
+    const userData = await prisma.user.findUnique({
+      where: { userId },
+      select: {
+        userName: true,
+        avatar: true,
+        background: { select: { link: true } },
+      },
+    });
+
+    const activities = await prisma.activity.count({ where: { userId } });
+    const followers = await prisma.follow.count({
+      where: { followingId: userId },
+    });
+
+    const following = await prisma.follow.count({
+      where: { followerId: userId },
+    });
+
+    return res.status(200).json({
+      message: "data recieved successfully",
+      data: {
+        user: userData,
+        activityNumber: activities,
+        followersNum: followers,
+        followingNum: following,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error server",
+      error: error.message,
+    });
+  }
+};
+
 const RequestDegrees = async (req, res) => {
   try {
     const { accepted, pending } = req.body;
@@ -1102,4 +1141,5 @@ module.exports = {
   getNotifications,
   deleteNotification,
   supports,
+  getProfileData,
 };
