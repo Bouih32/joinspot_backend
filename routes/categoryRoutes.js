@@ -45,13 +45,7 @@ router.post(
 
 // Get
 router.get("/", getAllCategories);
-router.get(
-  "/tags",
-  authenticateToken,
-  checkRole("ADMIN"),
-  validateData,
-  getTags
-);
+router.get("/tags", getTags);
 router.get(
   "/deleted",
   authenticateToken,

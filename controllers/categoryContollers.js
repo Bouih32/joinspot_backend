@@ -224,7 +224,7 @@ const getTags = async (req, res) => {
       return res.status(404).send({ message: "No tag found" });
     return res
       .status(200)
-      .json({ message: "Tags retrieved successfully", data: tags });
+      .json({ message: "Tags retrieved successfully", tags });
   } catch (error) {
     return res
       .status(500)
