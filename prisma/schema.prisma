@@ -75,6 +75,7 @@ model user {
   repportPost       repportPost[]
   repport_from      repportUser[]  @relation("repport_from")
   repport_to        repportUser[]  @relation("repport_to")
+  socials           socials[]
 
   reset reset[]
   share share[]
@@ -86,6 +87,8 @@ model socials {
   socialId String         @id @default(auto()) @map("_id") @db.ObjectId
   link     String
   platform SocialPlatform
+  userId   String         @db.ObjectId
+  user     user?          @relation(fields: [userId], references: [userId])
 }
 
 model degree {
