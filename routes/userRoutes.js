@@ -43,6 +43,7 @@ const {
   deleteNotification,
   supports,
   getProfileData,
+  getUserTickets,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -77,6 +78,7 @@ router.get("/cities", getCities);
 router.get("/tags", authenticateToken, getUserTags);
 router.get("/profile", authenticateToken, getUserData);
 router.get("/profile/header", authenticateToken, getProfileData);
+router.get("/profile/ticket", authenticateToken, getUserTickets);
 router.get(
   "/followers",
   authenticateToken,

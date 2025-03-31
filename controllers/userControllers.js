@@ -236,6 +236,45 @@ const ChangeRole = async (req, res) => {
   }
 };
 
+const getUserTickets = async (req, res) => {
+  try {
+    const tickets = await prisma.ticket.findMany({
+      where: { userId: req.user.userId },
+      include: {
+        activity: {
+          select: { title: true, price: true, endDay: true, startDay: true },
+        },
+      },
+    });
+
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }).format(date);
+    };
+
+    const strucuredData = tickets.map((ele) => ({
+      code: ele.code,
+      quantity: ele.quantity,
+      title: ele.activity.title,
+      date: formatDate(ele.activity.startDay),
+      ended: Date.now() > new Date(ele.activity.endDay),
+      totalPaid: ele.quantity * ele.activity.price,
+    }));
+    return res
+      .status(200)
+      .json({ message: "recieved successfully", strucuredData });
+  } catch (error) {
+    console.error("Error :", error);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
 const getUserData = async (req, res) => {
   try {
     const userFull = await prisma.user.findUnique({
@@ -1129,4 +1168,5 @@ module.exports = {
   deleteNotification,
   supports,
   getProfileData,
+  getUserTickets,
 };
