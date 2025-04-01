@@ -242,7 +242,19 @@ const getUserTickets = async (req, res) => {
       where: { userId: req.user.userId },
       include: {
         activity: {
-          select: { title: true, price: true, endDay: true, startDay: true },
+          select: {
+            location: true,
+            seat: true,
+            title: true,
+            price: true,
+            endDay: true,
+            startDay: true,
+            user: {
+              select: { userName: true }, // Select the owner's name
+            },
+            category: { select: { categoryName: true } },
+            city: { select: { cityName: true } },
+          },
         },
       },
     });
@@ -257,12 +269,19 @@ const getUserTickets = async (req, res) => {
     };
 
     const strucuredData = tickets.map((ele) => ({
+      activityId: ele.activityId,
+      category: ele.activity.category.categoryName,
+      seats: ele.activity.seat,
+      location: ele.activity.location,
+      city: ele.activity.city.cityName,
+      organizer: ele.activity.user.userName,
       code: ele.code,
       quantity: ele.quantity,
       title: ele.activity.title,
       date: formatDate(ele.activity.startDay),
       ended: Date.now() > new Date(ele.activity.endDay),
       totalPaid: ele.quantity * ele.activity.price,
+      ticketDate: formatDate(ele.createdAt),
     }));
     return res
       .status(200)
