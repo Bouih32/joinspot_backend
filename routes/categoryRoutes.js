@@ -60,9 +60,9 @@ router.get(
   validateData,
   getDeletedTags
 );
-router.get("/tags/:id", validateData, getTagById);
-router.get("/:id/tags", validateData, getTagsByCategory);
-router.get("/:id", validateData, getCategoryById);
+router.get("/tags/:id", getTagById);
+router.get("/:id/tags", getTagsByCategory);
+router.get("/:id", getCategoryById);
 
 // Patch
 
