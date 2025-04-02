@@ -159,6 +159,32 @@ const pswrdValidation = [
     .withMessage("Heey! that's too long"),
 ];
 
+const socialsValidation = [
+  check("facebook")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Heey! that's too long"),
+
+  check("instagram")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Heey! that's too long"),
+
+  check("youtube")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Heey! that's too long"),
+
+  check("website")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Heey! that's too long"),
+];
+
 module.exports = {
   loginValidation,
   registerValidation,
@@ -169,6 +195,7 @@ module.exports = {
   joinValidation,
   updateValidation,
   pswrdValidation,
+  socialsValidation,
   convertToISODate,
   validateData,
 };

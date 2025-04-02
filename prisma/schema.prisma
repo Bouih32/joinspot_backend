@@ -26,9 +26,8 @@ enum Sex {
 
 enum SocialPlatform {
   FACEBOOK
-  TWITTER
   INSTAGRAM
-  SNAPCHAT
+  YOUTUBE
   WEBSITE
 }
 
@@ -89,6 +88,8 @@ model socials {
   platform SocialPlatform
   userId   String         @db.ObjectId
   user     user?          @relation(fields: [userId], references: [userId])
+
+  @@unique([userId, platform])
 }
 
 model degree {

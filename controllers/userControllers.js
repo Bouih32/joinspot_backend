@@ -356,6 +356,45 @@ const updateUserData = async (req, res) => {
   }
 };
 
+const updateSocials = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: req.user.userId,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const updates = req.body;
+
+    await Promise.all(
+      updates.map((ele) =>
+        prisma.socials.upsert({
+          where: {
+            userId_platform: {
+              userId: req.user.userId,
+              platform: ele.platform, // Ensure platform is unique
+            },
+          },
+          update: ele, // Update existing entry
+          create: {
+            userId: req.user.userId,
+            ...ele, // Create new entry if not found
+          },
+        })
+      )
+    );
+
+    return res.status(200).json({ message: "socials updated successfully" });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
 const changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
@@ -1182,4 +1221,5 @@ module.exports = {
   supports,
   getProfileData,
   getUserTickets,
+  updateSocials,
 };

@@ -44,6 +44,7 @@ const {
   supports,
   getProfileData,
   getUserTickets,
+  updateSocials,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -52,6 +53,7 @@ const {
   infoValidation,
   updateValidation,
   pswrdValidation,
+  socialsValidation,
 } = require("../utils/validation");
 
 // authentication
@@ -167,6 +169,14 @@ router.patch(
   updateValidation,
   validateData,
   updateUserData
+);
+
+router.patch(
+  "/edit-profil/socials",
+  authenticateToken,
+  socialsValidation,
+  validateData,
+  updateSocials
 );
 
 router.delete("/unfollow", authenticateToken, validateData, UnfollowUser);
