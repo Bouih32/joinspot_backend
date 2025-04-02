@@ -119,6 +119,38 @@ const joinValidation = [
     .withMessage("Heey! that's too long"),
 ];
 
+const updateValidation = [
+  check("userName")
+    .optional()
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage("Please enter your userName")
+    .isLength({ max: 20 })
+    .withMessage("Heey! that's too long"),
+
+  check("email")
+    .optional()
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage("Please enter your email")
+    .isLength({ max: 50 })
+    .withMessage("Heey! that's too long"),
+
+  check("bio")
+    .optional()
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage("Please enter your bio")
+    .isLength({ max: 500 })
+    .withMessage("Heey! that's too long"),
+
+  check("password")
+    .optional()
+    .isLength({ min: 1 })
+    .withMessage("Please confirm your password")
+    .optional(),
+];
+
 module.exports = {
   loginValidation,
   registerValidation,
@@ -127,6 +159,7 @@ module.exports = {
   addValidation,
   reviewValidation,
   joinValidation,
+  updateValidation,
   convertToISODate,
   validateData,
 };

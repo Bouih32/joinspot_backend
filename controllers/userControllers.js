@@ -346,14 +346,8 @@ const updateUserData = async (req, res) => {
       },
       data: updates,
     });
-    const updatedUser = await prisma.user.findUnique({
-      where: {
-        userId: req.user.userId,
-      },
-    });
-    return res
-      .status(200)
-      .json({ message: "User updated successfully", user: updatedUser });
+
+    return res.status(200).json({ message: "User updated successfully" });
   } catch (err) {
     console.error(err);
     return res

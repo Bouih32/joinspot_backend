@@ -49,6 +49,8 @@ const {
   loginValidation,
   registerValidation,
   validateData,
+  infoValidation,
+  updateValidation,
 } = require("../utils/validation");
 
 // authentication
@@ -152,7 +154,13 @@ router.put(
   validateData,
   ChangeRole
 );
-router.patch("/edit-profil", authenticateToken, validateData, updateUserData);
+router.patch(
+  "/edit-profil",
+  authenticateToken,
+  updateValidation,
+  validateData,
+  updateUserData
+);
 
 router.delete("/unfollow", authenticateToken, validateData, UnfollowUser);
 router.delete("/cities/:cityId", authenticateToken, deleteCity);
