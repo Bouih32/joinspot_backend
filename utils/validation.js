@@ -139,16 +139,24 @@ const updateValidation = [
   check("bio")
     .optional()
     .trim()
-    .isLength({ min: 2 })
-    .withMessage("Please enter your bio")
     .isLength({ max: 500 })
     .withMessage("Heey! that's too long"),
+];
 
-  check("password")
-    .optional()
+const pswrdValidation = [
+  check("newPassword")
+    .trim()
     .isLength({ min: 1 })
-    .withMessage("Please confirm your password")
-    .optional(),
+    .withMessage("Please enter your new password")
+    .isLength({ max: 20 })
+    .withMessage("Heey! that's too long"),
+
+  check("oldPassword")
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage("Please enter your old password")
+    .isLength({ max: 50 })
+    .withMessage("Heey! that's too long"),
 ];
 
 module.exports = {
@@ -160,6 +168,7 @@ module.exports = {
   reviewValidation,
   joinValidation,
   updateValidation,
+  pswrdValidation,
   convertToISODate,
   validateData,
 };

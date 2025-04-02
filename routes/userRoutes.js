@@ -51,6 +51,7 @@ const {
   validateData,
   infoValidation,
   updateValidation,
+  pswrdValidation,
 } = require("../utils/validation");
 
 // authentication
@@ -145,7 +146,13 @@ router.put(
   markAsRead
 );
 
-router.put("/change-password", authenticateToken, validateData, changePassword);
+router.patch(
+  "/change-password",
+  authenticateToken,
+  pswrdValidation,
+  validateData,
+  changePassword
+);
 router.put("/update-cityuser", authenticateToken, updateUserCity);
 router.put(
   "/ChangeRole",
