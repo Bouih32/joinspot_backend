@@ -896,6 +896,8 @@ const getMessages = async (req, res) => {
         },
         content: true,
         createdAt: true,
+        messageId: true,
+        read: true,
       },
       orderBy: {
         createdAt: "asc",
@@ -905,6 +907,38 @@ const getMessages = async (req, res) => {
       return res.status(404).json({ message: "No messages found" });
     }
     return res.status(200).json({ messages });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const getMessageDetails = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const message = await prisma.message.findUnique({
+      where: {
+        messageId,
+      },
+      select: {
+        message_from: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        content: true,
+        createdAt: true,
+        messageId: true,
+        read: true,
+      },
+    });
+    if (!message) {
+      return res.status(404).json({ message: "No message found" });
+    }
+    return res.status(200).json({ message });
   } catch (error) {
     console.error(error);
     return res
@@ -1232,4 +1266,5 @@ module.exports = {
   getProfileData,
   getUserTickets,
   updateSocials,
+  getMessageDetails,
 };

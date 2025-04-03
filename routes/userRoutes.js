@@ -45,6 +45,7 @@ const {
   getProfileData,
   getUserTickets,
   updateSocials,
+  getMessageDetails,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -100,11 +101,12 @@ router.get(
 );
 router.get("/messages", authenticateToken, getMessages);
 router.get("/notifications", authenticateToken, getNotifications);
+router.get("/messages/:toId", authenticateToken, getMessagesByUser);
+
 router.get(
-  "/messages/:toId",
+  "/messages/details/:messageId",
   authenticateToken,
-  validateData,
-  getMessagesByUser
+  getMessageDetails
 );
 router.get(
   "/unread-messages",
@@ -141,12 +143,7 @@ router.get(
   validateData,
   getUserById
 );
-router.put(
-  "/messages/:messageId/read",
-  authenticateToken,
-  validateData,
-  markAsRead
-);
+router.patch("/messages/:messageId/read", authenticateToken, markAsRead);
 
 router.patch(
   "/change-password",
