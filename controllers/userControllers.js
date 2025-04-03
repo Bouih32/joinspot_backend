@@ -886,6 +886,7 @@ const getMessages = async (req, res) => {
     const messages = await prisma.message.findMany({
       where: {
         toId: req.user.userId,
+        deletedAt: null,
       },
       select: {
         message_from: {
@@ -1015,6 +1016,28 @@ const markAsRead = async (req, res) => {
     await prisma.message.update({
       where: { messageId },
       data: { read: true },
+    });
+    return res.status(200).json({ message: "Message marked as read" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const deleteMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const message = await prisma.message.findUnique({
+      where: { messageId },
+    });
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+    await prisma.message.update({
+      where: { messageId },
+      data: { deletedAt: new Date() },
     });
     return res.status(200).json({ message: "Message marked as read" });
   } catch (error) {
@@ -1267,4 +1290,5 @@ module.exports = {
   getUserTickets,
   updateSocials,
   getMessageDetails,
+  deleteMessage,
 };

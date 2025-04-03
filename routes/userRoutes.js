@@ -46,6 +46,7 @@ const {
   getUserTickets,
   updateSocials,
   getMessageDetails,
+  deleteMessage,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -144,6 +145,7 @@ router.get(
   getUserById
 );
 router.patch("/messages/:messageId/read", authenticateToken, markAsRead);
+router.patch("/messages/:messageId/delete", authenticateToken, deleteMessage);
 
 router.patch(
   "/change-password",
