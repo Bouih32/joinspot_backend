@@ -127,14 +127,6 @@ const updateValidation = [
     .withMessage("Please enter your userName")
     .isLength({ max: 20 })
     .withMessage("Heey! that's too long"),
-  check("phone")
-    .optional()
-    .trim()
-    .isLength({ min: 1 })
-    .withMessage("Please enter your userName")
-    .isLength({ max: 20 })
-    .withMessage("Heey! that's too long"),
-
   check("email")
     .optional()
     .trim()
@@ -148,6 +140,9 @@ const updateValidation = [
     .trim()
     .isLength({ max: 500 })
     .withMessage("Heey! that's too long"),
+  check("phone").optional().trim(),
+
+  check("avatar").optional().trim(),
 ];
 
 const pswrdValidation = [
