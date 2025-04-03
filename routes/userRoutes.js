@@ -47,6 +47,8 @@ const {
   updateSocials,
   getMessageDetails,
   deleteMessage,
+  getUserRevenue,
+  getActiveActivities,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -86,6 +88,9 @@ router.get("/tags", authenticateToken, getUserTags);
 router.get("/profile", authenticateToken, getUserData);
 router.get("/profile/header", authenticateToken, getProfileData);
 router.get("/profile/ticket", authenticateToken, getUserTickets);
+router.get("/profile/revenue", authenticateToken, getUserRevenue);
+router.get("/profile/active", authenticateToken, getActiveActivities);
+
 router.get(
   "/followers",
   authenticateToken,

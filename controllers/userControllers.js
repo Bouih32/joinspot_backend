@@ -126,6 +126,12 @@ const getProfileData = async (req, res) => {
     });
 
     const activities = await prisma.activity.count({ where: { userId } });
+    const activeActivities = await prisma.activity.count({
+      where: {
+        userId: userId,
+        endDay: { gte: new Date() },
+      },
+    });
     const followers = await prisma.follow.count({
       where: { followingId: userId },
     });
@@ -163,6 +169,7 @@ const getProfileData = async (req, res) => {
         followersNum: followers,
         followingNum: following,
         totalRevenue: totalRevenue,
+        activeActivities: activeActivities,
         joinedNum: joinedNum,
       },
     });
@@ -313,6 +320,90 @@ const getUserData = async (req, res) => {
     const { password, ...user } = userFull;
     const userData = { ...user, userSocials };
     return res.status(200).json({ user: userData });
+  } catch (error) {
+    console.error("Error getting profil:", error);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+const getActiveActivities = async (req, res) => {
+  try {
+    const activities = await prisma.activity.findMany({
+      where: {
+        userId: req.user.userId,
+        endDay: { gte: new Date() },
+      },
+      select: {
+        title: true,
+        price: true,
+        endDay: true,
+        ticket: {
+          select: {
+            quantity: true,
+          },
+        },
+      },
+    });
+
+    // Process the data to compute total revenue per activity
+    const activeActivities = activities.map((activity) => ({
+      title: activity.title,
+      endDay: activity.endDay,
+      totalTickets: activity.ticket.reduce(
+        (sum, ticket) => sum + ticket.quantity,
+        0
+      ),
+      totalRevenue:
+        activity.ticket.reduce((sum, ticket) => sum + ticket.quantity, 0) *
+        (activity.price || 0),
+    }));
+
+    if (activeActivities.length === 0) {
+      return res.status(404).json({ message: "no active activitiesfound" });
+    }
+
+    return res.status(200).json({ activeActivities });
+  } catch (error) {
+    console.error("Error getting profil:", error);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+const getUserRevenue = async (req, res) => {
+  try {
+    const tickets = await prisma.ticket.groupBy({
+      by: ["activityId"],
+      _sum: {
+        quantity: true,
+      },
+      where: {
+        activity: { userId: req.user.userId },
+      },
+    });
+
+    const activityRevenue = await Promise.all(
+      tickets.map(async (ticket) => {
+        const activity = await prisma.activity.findUnique({
+          where: { activityId: ticket.activityId },
+          select: { title: true, price: true },
+        });
+
+        return {
+          title: activity?.title,
+          totalRevenue: (activity?.price || 0) * (ticket._sum.quantity || 0),
+        };
+      })
+    );
+
+    if (tickets.length === 0) {
+      return res.status(404).json({ message: "No tickets found" });
+    }
+
+    return res.status(200).json({ activityRevenue });
   } catch (error) {
     console.error("Error getting profil:", error);
     return res
@@ -1291,4 +1382,6 @@ module.exports = {
   updateSocials,
   getMessageDetails,
   deleteMessage,
+  getUserRevenue,
+  getActiveActivities,
 };
