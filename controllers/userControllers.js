@@ -887,6 +887,16 @@ const getMessages = async (req, res) => {
       where: {
         toId: req.user.userId,
       },
+      select: {
+        message_from: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        content: true,
+        createdAt: true,
+      },
       orderBy: {
         createdAt: "asc",
       },

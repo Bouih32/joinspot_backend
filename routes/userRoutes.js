@@ -98,8 +98,8 @@ router.get(
   validateData,
   getRepportedUsers
 );
-router.get("/messages", authenticateToken, validateData, getMessages);
-router.get("/notifications", authenticateToken, validateData, getNotifications);
+router.get("/messages", authenticateToken, getMessages);
+router.get("/notifications", authenticateToken, getNotifications);
 router.get(
   "/messages/:toId",
   authenticateToken,
