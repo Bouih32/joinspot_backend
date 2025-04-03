@@ -309,14 +309,15 @@ model follow {
 }
 
 model message {
-  messageId    String   @id @default(auto()) @map("_id") @db.ObjectId
-  fromId       String   @db.ObjectId
-  toId         String   @db.ObjectId
+  messageId    String    @id @default(auto()) @map("_id") @db.ObjectId
+  fromId       String    @db.ObjectId
+  toId         String    @db.ObjectId
   content      String
-  createdAt    DateTime @default(now())
-  message_from user     @relation("message_from", fields: [fromId], references: [userId], onDelete: Cascade)
-  message_to   user     @relation("message_to", fields: [toId], references: [userId], onDelete: Cascade)
-  read         Boolean  @default(false)
+  createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
+  message_from user      @relation("message_from", fields: [fromId], references: [userId], onDelete: Cascade)
+  message_to   user      @relation("message_to", fields: [toId], references: [userId], onDelete: Cascade)
+  read         Boolean   @default(false)
 }
 
 model notification {
