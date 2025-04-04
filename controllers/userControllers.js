@@ -41,6 +41,11 @@ const registerUser = async (req, res) => {
     if (existingUser)
       return res.status(400).send({ message: "Email is already in use." });
     const hashedPassword = await bcrypt.hash(password, 10);
+    const bgs = await prisma.background.findMany({});
+    const userBg = bgs.filter((ele) => ele.type === "VISITOR")[
+      Math.floor(Math.random() * bgs.length)
+    ];
+
     const newUser = await prisma.user.create({
       data: {
         userName: username,
@@ -52,6 +57,7 @@ const registerUser = async (req, res) => {
         categoryId: role === "organiser" ? isCategory.categoryId : null,
         idFrontPic: role === "organiser" ? idFrontPic : null,
         idBackPic: role === "organiser" ? idBackPic : null,
+        bgId: userBg.bgId,
       },
     });
 

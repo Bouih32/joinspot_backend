@@ -41,7 +41,7 @@ model user {
   userId            String         @id @default(auto()) @map("_id") @db.ObjectId
   userName          String?
   fullName          String?
-  bgId              String?        @db.ObjectId
+  bgId              String         @db.ObjectId
   email             String         @unique
   cityId            String?        @db.ObjectId
   role              Role           @default(VISITOR)
@@ -58,7 +58,7 @@ model user {
   categoryId        String?        @db.ObjectId
   city              city?          @relation(fields: [cityId], references: [cityId])
   category          category?      @relation(fields: [categoryId], references: [categoryId])
-  background        background?    @relation(fields: [bgId], references: [bgId])
+  background        background     @relation(fields: [bgId], references: [bgId])
   degree            degree[]
   bank              bank[]
   userTags          userTags[]
