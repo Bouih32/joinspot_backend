@@ -995,7 +995,7 @@ const getMessages = async (req, res) => {
         createdAt: "asc",
       },
     });
-    if (messages.length === 0) {
+    if (!messages) {
       return res.status(404).json({ message: "No messages found" });
     }
     return res.status(200).json({ messages });
