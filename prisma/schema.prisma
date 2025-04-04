@@ -202,10 +202,15 @@ model post {
   share       share[]
 }
 
+enum bgT {
+  PRO
+  VISITOR
+}
+
 model background {
   bgId String @id @default(auto()) @map("_id") @db.ObjectId
   link String
-  type String
+  type bgT
   user user[]
 }
 
