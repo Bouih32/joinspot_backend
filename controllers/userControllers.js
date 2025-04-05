@@ -366,7 +366,7 @@ const getActiveActivities = async (req, res) => {
         (activity.price || 0),
     }));
 
-    if (activeActivities.length === 0) {
+    if (!activeActivities) {
       return res.status(404).json({ message: "no active activitiesfound" });
     }
 
@@ -405,7 +405,7 @@ const getUserRevenue = async (req, res) => {
       })
     );
 
-    if (tickets.length === 0) {
+    if (!tickets) {
       return res.status(404).json({ message: "No tickets found" });
     }
 
@@ -1089,7 +1089,7 @@ const getMessagesByUser = async (req, res) => {
     });
     const messages = [...receivedMessages, ...sentMessages];
     messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    if (messages.length === 0) {
+    if (!messages) {
       return res.status(404).json({ message: "No messages found" });
     }
     return res.status(200).json({ messages });

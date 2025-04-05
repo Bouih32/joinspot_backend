@@ -109,8 +109,8 @@ router.get(
   getMyActivities
 );
 router.get("/user/:id", getUserActivities);
-router.get("/tickets", authenticateToken, validateData, getActivityTickets);
-router.get("/ticket/:ticketId", authenticateToken, validateData, getTicketById);
+router.get("/tickets", authenticateToken, getActivityTickets);
+router.get("/ticket/:ticketId", authenticateToken, getTicketById);
 router.get(
   "/reservations",
   authenticateToken,

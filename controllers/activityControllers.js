@@ -557,8 +557,8 @@ const getActivityTickets = async (req, res) => {
         },
       },
     });
-    if (reservations.length === 0) {
-      return res.status(404).json({ message: "No reservations found" });
+    if (!reservations) {
+      res.status(404).json({ message: "No reservations found" });
     }
     return res.status(200).json({
       message: "Activity reservations fetched successfully",
