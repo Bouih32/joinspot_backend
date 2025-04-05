@@ -49,6 +49,7 @@ const {
   deleteMessage,
   getUserRevenue,
   getActiveActivities,
+  getJoined,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -90,6 +91,7 @@ router.get("/profile/header", authenticateToken, getProfileData);
 router.get("/profile/ticket", authenticateToken, getUserTickets);
 router.get("/profile/revenue", authenticateToken, getUserRevenue);
 router.get("/profile/active", authenticateToken, getActiveActivities);
+router.get("/profile/joined", authenticateToken, getJoined);
 
 router.get(
   "/followers",

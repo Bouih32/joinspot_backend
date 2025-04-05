@@ -307,6 +307,51 @@ const getUserTickets = async (req, res) => {
   }
 };
 
+const getJoined = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const tickets = await prisma.ticket.findMany({
+      where: { activity: { userId } },
+      select: {
+        ticketId: true,
+        code: true,
+        quantity: true,
+        user: {
+          select: {
+            avatar: true,
+            userName: true,
+          },
+        },
+
+        activity: {
+          select: {
+            title: true,
+            price: true,
+          },
+        },
+      },
+    });
+
+    const strucuredData = tickets.map((ele) => ({
+      avatar: ele.user.avatar,
+      userName: ele.user.userName,
+      id: ele.ticketId,
+      payed: ele.activity.price * ele.quantity,
+      quantity: ele.quantity,
+      code: ele.code,
+      title: ele.activity.title,
+    }));
+    return res
+      .status(200)
+      .json({ message: "recieved successfully", strucuredData });
+  } catch (error) {
+    console.error("Error :", error);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
 const getUserData = async (req, res) => {
   try {
     const userFull = await prisma.user.findUnique({
@@ -1390,4 +1435,5 @@ module.exports = {
   deleteMessage,
   getUserRevenue,
   getActiveActivities,
+  getJoined,
 };
