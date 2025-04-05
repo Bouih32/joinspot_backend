@@ -93,7 +93,7 @@ const createActivity = async (req, res) => {
 
 const getActivities = async (req, res) => {
   try {
-    const { seats, category, date, my, search, page = 1 } = req.query;
+    const { seats, category, date, search, page = 1 } = req.query;
     let startDay = null;
     let endDay = null;
 
@@ -121,7 +121,6 @@ const getActivities = async (req, res) => {
       }),
       ...(category && { category: { categoryName: category } }),
       ...(seats && { seat: { lt: parseInt(seats) } }),
-      ...(my === "own" && { userId: req.user?.userId }),
       ...(startDay && {
         startDay: {
           gte: startDay,
