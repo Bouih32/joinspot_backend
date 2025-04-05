@@ -187,6 +187,21 @@ const socialsValidation = [
     .withMessage("Heey! that's too long"),
 ];
 
+const messageValidation = [
+  check("content")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter your message")
+    .isLength({ max: 600 })
+    .withMessage("Heey! that's too long"),
+  check("toId")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter your sender")
+    .isLength({ max: 100 })
+    .withMessage("Heey! that's too long"),
+];
+
 module.exports = {
   loginValidation,
   registerValidation,
@@ -198,6 +213,7 @@ module.exports = {
   updateValidation,
   pswrdValidation,
   socialsValidation,
+  messageValidation,
   convertToISODate,
   validateData,
 };

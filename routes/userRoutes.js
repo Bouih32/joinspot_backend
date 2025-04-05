@@ -51,6 +51,7 @@ const {
   getActiveActivities,
   getJoined,
   markAsUsed,
+  getUserProfile,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -60,6 +61,7 @@ const {
   updateValidation,
   pswrdValidation,
   socialsValidation,
+  messageValidation,
 } = require("../utils/validation");
 
 // authentication
@@ -82,7 +84,13 @@ router.post(
   validateData,
   checkRepport
 );
-router.post("/send-message", authenticateToken, validateData, sendMessage);
+router.post(
+  "/send-message",
+  authenticateToken,
+  messageValidation,
+  validateData,
+  sendMessage
+);
 
 router.get("/cities", getCities);
 // user data
@@ -93,6 +101,7 @@ router.get("/profile/ticket", authenticateToken, getUserTickets);
 router.get("/profile/revenue", authenticateToken, getUserRevenue);
 router.get("/profile/active", authenticateToken, getActiveActivities);
 router.get("/profile/joined", authenticateToken, getJoined);
+router.get("/profile/:userId", getUserProfile);
 
 router.get(
   "/followers",
@@ -124,20 +133,8 @@ router.get(
   getUnreadMessages
 );
 
-router.get(
-  "/users",
-  authenticateToken,
-  checkRole("ADMIN"),
-  validateData,
-  getAllUsers
-);
-router.get(
-  "/deleted",
-  authenticateToken,
-  checkRole("ADMIN"),
-  validateData,
-  getDeletedUsers
-);
+router.get("/users", authenticateToken, checkRole("ADMIN"), getAllUsers);
+router.get("/deleted", authenticateToken, checkRole("ADMIN"), getDeletedUsers);
 router.get(
   "/degrees",
   authenticateToken,

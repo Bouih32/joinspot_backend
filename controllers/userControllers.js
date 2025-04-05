@@ -319,6 +319,7 @@ const getJoined = async (req, res) => {
         used: true,
         user: {
           select: {
+            userId: true,
             avatar: true,
             userName: true,
           },
@@ -342,6 +343,7 @@ const getJoined = async (req, res) => {
       code: ele.code,
       used: ele.used,
       title: ele.activity.title,
+      userId: ele.user.userId,
     }));
     return res
       .status(200)
@@ -378,6 +380,61 @@ const getUserData = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+const getUserProfile = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const userData = await prisma.user.findUnique({
+      where: { userId },
+      select: {
+        userName: true,
+        role: true,
+        avatar: true,
+        background: { select: { link: true } },
+        bio: true,
+        city: { select: { cityName: true } },
+        socials: {
+          select: { link: true, platform: true },
+        },
+      },
+    });
+
+    const tags = await prisma.userTags.findMany({
+      where: { userId },
+      select: {
+        tag: {
+          select: { tagName: true },
+        },
+      },
+    });
+
+    const activities = await prisma.activity.count({ where: { userId } });
+
+    const followers = await prisma.follow.count({
+      where: { followingId: userId },
+    });
+
+    const following = await prisma.follow.count({
+      where: { followerId: userId },
+    });
+
+    return res.status(200).json({
+      message: "data recieved successfully",
+      data: {
+        user: userData,
+        activityNumber: activities,
+        followersNum: followers,
+        followingNum: following,
+        tags: tags.map((ele) => ele.tag.tagName),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error server",
+      error: error.message,
+    });
   }
 };
 
@@ -1461,6 +1518,7 @@ module.exports = {
   deleteMessage,
   getUserRevenue,
   getActiveActivities,
+  getUserProfile,
   getJoined,
   markAsUsed,
 };

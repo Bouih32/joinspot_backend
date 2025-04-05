@@ -139,6 +139,7 @@ const getActivities = async (req, res) => {
       include: {
         user: {
           select: {
+            userId: true,
             userName: true,
             avatar: true,
           },
@@ -223,6 +224,7 @@ const getActivityById = async (req, res) => {
       include: {
         user: {
           select: {
+            userId: true,
             userName: true,
             avatar: true,
           },
@@ -834,6 +836,7 @@ const getUserActivities = async (req, res) => {
       include: {
         user: {
           select: {
+            userId: true,
             userName: true,
             avatar: true,
           },
