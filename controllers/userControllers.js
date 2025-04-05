@@ -316,6 +316,7 @@ const getJoined = async (req, res) => {
         ticketId: true,
         code: true,
         quantity: true,
+        used: true,
         user: {
           select: {
             avatar: true,
@@ -339,6 +340,7 @@ const getJoined = async (req, res) => {
       payed: ele.activity.price * ele.quantity,
       quantity: ele.quantity,
       code: ele.code,
+      used: ele.used,
       title: ele.activity.title,
     }));
     return res
@@ -1168,6 +1170,30 @@ const markAsRead = async (req, res) => {
   }
 };
 
+const markAsUsed = async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+    const ticket = await prisma.ticket.findUnique({
+      where: { ticketId },
+    });
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    await prisma.ticket.update({
+      where: { ticketId },
+      data: { used: !ticket.used },
+    });
+
+    return res.status(200).json({ message: "Message marked as read" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 const deleteMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
@@ -1436,4 +1462,5 @@ module.exports = {
   getUserRevenue,
   getActiveActivities,
   getJoined,
+  markAsUsed,
 };
