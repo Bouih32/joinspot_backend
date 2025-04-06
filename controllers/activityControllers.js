@@ -264,98 +264,6 @@ const getActivityById = async (req, res) => {
   }
 };
 
-const getActivityByCategory = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const activities = await prisma.activity.findMany({
-      where: {
-        categoryId: id,
-      },
-      include: {
-        user: {
-          select: {
-            userName: true,
-            avatar: true,
-          },
-        },
-        activityTags: {
-          include: {
-            tag: {
-              select: {
-                tagName: true,
-              },
-            },
-          },
-        },
-      },
-    });
-    if (activities.length == 0) {
-      return res.status(404).json({ message: "No activities found" });
-    }
-    return res
-      .status(200)
-      .json({ message: "Activities fetched successfully", activities });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Failed to fetch activities by category",
-      error: error.message,
-    });
-  }
-};
-
-const getActivitiesBytags = async (req, res) => {
-  try {
-    const { tagIds } = req.body;
-    const existingTags = await prisma.tag.findMany({
-      where: {
-        tagId: {
-          in: tagIds,
-        },
-      },
-    });
-    if (existingTags.length === 0) {
-      return res.status(400).json({ message: "Some tags do not exist" });
-    }
-    const activities = await prisma.activity.findMany({
-      where: {
-        activityTags: {
-          some: {
-            tagId: {
-              in: tagIds,
-            },
-          },
-        },
-      },
-      include: {
-        user: {
-          select: {
-            userName: true,
-            avatar: true,
-          },
-        },
-        activityTags: {
-          include: {
-            tag: {
-              select: {
-                tagName: true,
-              },
-            },
-          },
-        },
-      },
-    });
-    return res
-      .status(200)
-      .json({ message: "Activities fetched successfully", activities });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Failed to fetch activities by tags",
-      error: error.message,
-    });
-  }
-};
-
 const getActivityByCity = async (req, res) => {
   try {
     const { cityId } = req.params;
@@ -373,44 +281,6 @@ const getActivityByCity = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Failed to fetch activities by city",
-      error: error.message,
-    });
-  }
-};
-
-const getMyActivities = async (req, res) => {
-  try {
-    const activities = await prisma.activity.findMany({
-      where: {
-        userId: req.user.userId,
-      },
-      include: {
-        user: {
-          select: {
-            userName: true,
-            avatar: true,
-          },
-        },
-        activityTags: {
-          include: {
-            tag: {
-              select: {
-                tagName: true,
-              },
-            },
-          },
-        },
-      },
-    });
-    if (activities.length === 0) {
-      return res.status(404).json({ message: "No activities found" });
-    }
-    return res
-      .status(200)
-      .json({ message: "Activities fetched successfully", activities });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Failed to fetch activities",
       error: error.message,
     });
   }
@@ -1211,14 +1081,11 @@ module.exports = {
   getActivities,
   updateActivity,
   getActivityById,
-  getActivityByCategory,
-  getActivitiesBytags,
   deleteActivity,
   addTagsToActivity,
   deleteActivityTag,
   getActivityTickets,
   getActivityReservations,
-  getMyActivities,
   getActivityByCity,
   saveActivity,
   getSavedActivities,
