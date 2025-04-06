@@ -901,6 +901,10 @@ const joinActivity = async (req, res) => {
   const { activityId } = req.params;
   const { quantity } = req.body;
   try {
+    const user = await prisma.user.findUnique({
+      where: { userId },
+      select: { userName: true },
+    });
     const hasTicket = await prisma.ticket.findFirst({
       where: { userId, activityId },
     });
@@ -932,7 +936,7 @@ const joinActivity = async (req, res) => {
     await createNotification(
       userId,
       activityOwner.user.userId,
-      `${activityOwner.user.userName} joined ${activityOwner.title} `
+      `${user.userName} joined ${activityOwner.title} `
     );
 
     return res
