@@ -1060,16 +1060,7 @@ const sendMessage = async (req, res) => {
         read: false,
       },
     });
-    const sender = await prisma.user.findUnique({
-      where: { userId: req.user.userId },
-      select: { userName: true },
-    });
-    await createNotification(
-      req.user.userId,
-      toId,
-      `${sender.userName} a send you a message ${toUser.userName}`
-    );
-    console.log(message, "message");
+
     return res.status(201).json({
       message: "Message sent successfully",
       data: message,
@@ -1087,7 +1078,7 @@ const getMessages = async (req, res) => {
     const messages = await prisma.message.findMany({
       where: {
         toId: req.user.userId,
-        deletedAt: null,
+        deletedAt: { not: null },
       },
       select: {
         message_from: {
@@ -1105,6 +1096,8 @@ const getMessages = async (req, res) => {
         createdAt: "asc",
       },
     });
+
+    console.log(messages);
     if (!messages) {
       return res.status(404).json({ message: "No messages found" });
     }
