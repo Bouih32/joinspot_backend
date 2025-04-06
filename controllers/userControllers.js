@@ -385,8 +385,8 @@ const getUserData = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const userData = await prisma.user.findUnique({
+    const { userId } = req.params.userId;
+    const userData = await prisma.user.findFirst({
       where: { userId },
       select: {
         userName: true,

@@ -9,10 +9,7 @@ const {
   addTagsToActivity,
   deleteActivityTag,
   getActivityTickets,
-  getActivityByCategory,
   getActivityReservations,
-  getMyActivities,
-  getActivitiesBytags,
   getActivityByCity,
   saveActivity,
   getSavedActivities,
@@ -25,7 +22,6 @@ const {
   getRepportedActivities,
   checkRepport,
   payment,
-  handleWebhook,
   paymentIntent,
   getTicketById,
   getUserActivities,
@@ -45,7 +41,6 @@ const {
 const bodyParser = require("body-parser");
 
 //POST
-
 router.post(
   "/add",
   authenticateToken,
@@ -74,11 +69,6 @@ router.post(
 
 router.post("/:activityId/payment", authenticateToken, validateData, payment);
 router.post(
-  "/stripe-webhook",
-  bodyParser.raw({ type: "application/json" }),
-  handleWebhook
-);
-router.post(
   "/:activityId/review",
   authenticateToken,
   reviewValidation,
@@ -101,13 +91,6 @@ router.post(
 
 // GET
 router.get("/", optionalAuthenticateToken, getActivities);
-router.get(
-  "/my-activities",
-  authenticateToken,
-  checkRole("ORGANISER"),
-  validateData,
-  getMyActivities
-);
 router.get("/user/:id", getUserActivities);
 router.get("/tickets", authenticateToken, getActivityTickets);
 router.get("/ticket/:ticketId", authenticateToken, getTicketById);
@@ -118,10 +101,7 @@ router.get(
   validateData,
   getActivityReservations
 );
-router.get("/tags", getActivitiesBytags);
 router.get("/saved", authenticateToken, validateData, getSavedActivities);
-
-router.get("/category/:id", validateData, getActivityByCategory);
 router.get("/city/:cityId", getActivityByCity);
 router.get("/:activityId", getActivityById);
 router.get("/:activityId/reviews", getReviews);
