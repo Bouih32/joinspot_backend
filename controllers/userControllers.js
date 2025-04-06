@@ -385,7 +385,7 @@ const getUserData = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
   try {
-    const { userId } = req.params.userId;
+    const { userId } = req.params;
     const userData = await prisma.user.findFirst({
       where: { userId },
       select: {
@@ -848,6 +848,24 @@ const getFollowersAndFollowing = async (req, res) => {
       followingCount: following.length,
       following: following.map((f) => f.following),
     });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+const getUserFollowing = async (req, res) => {
+  try {
+    const following = await prisma.follow.findMany({
+      where: { followerId: req.user.userId },
+      select: { following: { select: { userId: true } } },
+    });
+
+    return res
+      .status(200)
+      .json({ ids: following.map((ele) => ele.following.userId) });
   } catch (error) {
     console.error(error);
     return res
@@ -1514,4 +1532,5 @@ module.exports = {
   getUserProfile,
   getJoined,
   markAsUsed,
+  getUserFollowing,
 };

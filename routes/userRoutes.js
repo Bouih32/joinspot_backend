@@ -52,6 +52,7 @@ const {
   getJoined,
   markAsUsed,
   getUserProfile,
+  getUserFollowing,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -109,6 +110,8 @@ router.get(
   validateData,
   getFollowersAndFollowing
 );
+
+router.get("/following", authenticateToken, validateData, getUserFollowing);
 
 router.get(
   "/repported",
