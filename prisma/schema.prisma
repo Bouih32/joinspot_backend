@@ -19,12 +19,6 @@ enum Role {
   ORGANISER
 }
 
-enum NotificationT {
-  JOIN
-  SUB
-  VERFICATION
-}
-
 enum Sex {
   MALE
   FEMALE
@@ -333,14 +327,13 @@ model message {
 }
 
 model notification {
-  notificationId    String        @id @default(auto()) @map("_id") @db.ObjectId
-  fromId            String        @db.ObjectId
-  toId              String        @db.ObjectId
+  notificationId    String   @id @default(auto()) @map("_id") @db.ObjectId
+  fromId            String   @db.ObjectId
+  toId              String   @db.ObjectId
   content           String
-  type              NotificationT
-  createdAt         DateTime      @default(now())
-  notification_from user          @relation("notification_from", fields: [fromId], references: [userId], onDelete: Cascade)
-  notification_to   user          @relation("notification_to", fields: [toId], references: [userId], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  notification_from user     @relation("notification_from", fields: [fromId], references: [userId], onDelete: Cascade)
+  notification_to   user     @relation("notification_to", fields: [toId], references: [userId], onDelete: Cascade)
 }
 
 model repportPost {

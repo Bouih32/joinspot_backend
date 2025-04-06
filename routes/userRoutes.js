@@ -63,6 +63,7 @@ const {
   pswrdValidation,
   socialsValidation,
   messageValidation,
+  followValidation,
 } = require("../utils/validation");
 
 // authentication
@@ -75,7 +76,13 @@ router.post("/reset", resetForgotenPswrd);
 // userTag
 router.post("/tags", authenticateToken, addTagsToUser);
 // userFollow
-router.post("/follow", authenticateToken, validateData, followUser);
+router.post(
+  "/follow",
+  authenticateToken,
+  followValidation,
+  validateData,
+  followUser
+);
 router.post("/add-city", addCity);
 router.post("/repport", authenticateToken, validateData, repportUser);
 router.post(

@@ -796,7 +796,7 @@ const followUser = async (req, res) => {
     if (req.user.userId === following) {
       return res.status(400).json({ message: "You can't follow yourself." });
     }
-    console.log(following, "userid", req.user.userId);
+
     const existingFollow = await prisma.follow.findFirst({
       where: {
         followerId: req.user.userId,
@@ -804,9 +804,12 @@ const followUser = async (req, res) => {
       },
     });
     if (existingFollow) {
-      return res.status(400).json({ message: "You already follow this user." });
+      await prisma.follow.delete({
+        where: { followId: existingFollow.followId },
+      });
+      return res.status(201).json({ message: "unfollow successfull." });
     }
-    const follow = await prisma.follow.create({
+    await prisma.follow.create({
       data: {
         followerId: req.user.userId,
         followingId: following,
@@ -819,9 +822,9 @@ const followUser = async (req, res) => {
     await createNotification(
       req.user.userId,
       following,
-      `${follower.userName} a follow you`
+      `${follower.userName} just followed you`
     );
-    return res.status(201).json({ message: "Follow-up successful.", follow });
+    return res.status(201).json({ message: "Follow-up successful." });
   } catch (error) {
     console.error(error);
     return res
@@ -841,7 +844,7 @@ const getFollowersAndFollowing = async (req, res) => {
       where: { followerId: req.user.userId },
       include: { following: { select: { userId: true, userName: true } } },
     });
-    console.log(followers, following);
+
     return res.status(200).json({
       followersCount: followers.length,
       followers: followers.map((f) => f.follower),
@@ -1076,6 +1079,7 @@ const sendMessage = async (req, res) => {
         toId,
         content: content,
         read: false,
+        deletedAt: null,
       },
     });
 
@@ -1096,7 +1100,6 @@ const getMessages = async (req, res) => {
     const messages = await prisma.message.findMany({
       where: {
         toId: req.user.userId,
-        deletedAt: { not: null },
       },
       select: {
         message_from: {
@@ -1107,6 +1110,7 @@ const getMessages = async (req, res) => {
         },
         content: true,
         createdAt: true,
+        deletedAt: true,
         messageId: true,
         read: true,
       },
@@ -1115,7 +1119,6 @@ const getMessages = async (req, res) => {
       },
     });
 
-    console.log(messages);
     if (!messages) {
       return res.status(404).json({ message: "No messages found" });
     }

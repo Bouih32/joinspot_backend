@@ -202,6 +202,13 @@ const messageValidation = [
     .withMessage("Heey! that's too long"),
 ];
 
+const followValidation = [
+  check("following")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter the user id you want to follow"),
+];
+
 module.exports = {
   loginValidation,
   registerValidation,
@@ -213,6 +220,7 @@ module.exports = {
   updateValidation,
   pswrdValidation,
   socialsValidation,
+  followValidation,
   messageValidation,
   convertToISODate,
   validateData,
