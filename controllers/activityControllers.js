@@ -904,6 +904,14 @@ const joinActivity = async (req, res) => {
     const hasTicket = await prisma.ticket.findFirst({
       where: { userId, activityId },
     });
+
+    const activityOwner = await prisma.activity.findUnique({
+      where: { activityId },
+      select: {
+        user: { select: { userId: true, userName: true } },
+        title: true,
+      },
+    });
     const quantityN = Number(quantity);
 
     if (hasTicket) {
@@ -921,6 +929,11 @@ const joinActivity = async (req, res) => {
     const ticket = await prisma.ticket.create({
       data: { userId, activityId, quantity: quantityN, code },
     });
+    await createNotification(
+      userId,
+      activityOwner.user.userId,
+      `${activityOwner.user.userName} joined ${activityOwner.title} `
+    );
 
     return res
       .status(200)
