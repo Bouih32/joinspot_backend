@@ -165,7 +165,6 @@ const getActivities = async (req, res) => {
     });
 
     const totalActivities = await prisma.activity.count({ where: filters });
-    console.log(totalActivities);
     const totalPages = Math.ceil(totalActivities / numberToTake);
 
     if (!activities) {
