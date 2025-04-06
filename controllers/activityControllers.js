@@ -93,7 +93,7 @@ const createActivity = async (req, res) => {
 
 const getActivities = async (req, res) => {
   try {
-    const { seats, category, date, search, page = 1 } = req.query;
+    const { seats, category, date, search, page = 1, my } = req.query;
     let startDay = null;
     let endDay = null;
 
@@ -110,7 +110,7 @@ const getActivities = async (req, res) => {
       }
     }
 
-    const numberToTake = 4;
+    const numberToTake = 10;
 
     const filters = {
       ...(search && {
@@ -121,6 +121,8 @@ const getActivities = async (req, res) => {
       }),
       ...(category && { category: { categoryName: category } }),
       ...(seats && { seat: { lt: parseInt(seats) } }),
+      ...(my === "own" ? { userId: req.user.userId } : {}),
+
       ...(startDay && {
         startDay: {
           gte: startDay,
@@ -135,7 +137,7 @@ const getActivities = async (req, res) => {
     const activities = await prisma.activity.findMany({
       where: filters,
       take: numberToTake,
-      skip: (page - 1) * numberToTake,
+      skip: (parseInt(page) - 1) * numberToTake,
       include: {
         user: {
           select: {
@@ -163,6 +165,7 @@ const getActivities = async (req, res) => {
     });
 
     const totalActivities = await prisma.activity.count({ where: filters });
+    console.log(totalActivities);
     const totalPages = Math.ceil(totalActivities / numberToTake);
 
     if (!activities) {

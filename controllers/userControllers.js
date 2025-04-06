@@ -1306,11 +1306,29 @@ const getUnreadMessages = async (req, res) => {
 
 const getNotifications = async (req, res) => {
   try {
-    const notifications = await prisma.notification.findMany({
-      where: { toId: req.user.userId },
-      orderBy: { createdAt: "desc" },
+    const notif = await prisma.notification.findMany({
+      where: {
+        toId: req.user.userId,
+      },
+      select: {
+        notification_from: {
+          select: {
+            userName: true,
+            avatar: true,
+          },
+        },
+        content: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
     });
-    return res.status(200).json({ notifications });
+
+    if (!notif) {
+      return res.status(404).json({ message: "No messages found" });
+    }
+    return res.status(200).json({ notif });
   } catch (error) {
     console.error(error);
     return res
@@ -1318,7 +1336,6 @@ const getNotifications = async (req, res) => {
       .json({ message: "Internal server error", error: error.message });
   }
 };
-
 const deleteNotification = async (req, res) => {
   try {
     const { notificationId } = req.params;
