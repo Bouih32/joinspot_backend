@@ -118,7 +118,7 @@ router.get(
   getFollowersAndFollowing
 );
 
-router.get("/following", authenticateToken, validateData, getUserFollowing);
+router.get("/following/:userId", getUserFollowing);
 
 router.get(
   "/repported",

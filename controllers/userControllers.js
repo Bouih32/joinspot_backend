@@ -864,7 +864,7 @@ const getFollowersAndFollowing = async (req, res) => {
 const getUserFollowing = async (req, res) => {
   try {
     const following = await prisma.follow.findMany({
-      where: { followerId: req.user.userId },
+      where: { followerId: req.params.userId },
       select: { following: { select: { userId: true } } },
     });
 
