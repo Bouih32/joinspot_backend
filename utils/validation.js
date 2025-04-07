@@ -202,6 +202,18 @@ const messageValidation = [
     .withMessage("Heey! that's too long"),
 ];
 
+const editValidation = [
+  check("coverPic").trim().notEmpty().withMessage("Please enter coverPic"),
+
+  check("description")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter description")
+    .isLength({ max: 600 })
+    .withMessage("Heey! that's too long"),
+  check("tags").trim().notEmpty().withMessage("Please enter your tags"),
+];
+
 const followValidation = [
   check("following")
     .trim()
@@ -222,6 +234,7 @@ module.exports = {
   socialsValidation,
   followValidation,
   messageValidation,
+  editValidation,
   convertToISODate,
   validateData,
 };

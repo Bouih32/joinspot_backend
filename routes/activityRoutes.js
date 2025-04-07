@@ -38,6 +38,7 @@ const {
   addValidation,
   reviewValidation,
   joinValidation,
+  editValidation,
 } = require("../utils/validation");
 const bodyParser = require("body-parser");
 
@@ -124,7 +125,7 @@ router.put("/reviews/:reviewId", authenticateToken, validateData, updateReview);
 router.patch(
   "/:activityId/update",
   authenticateToken,
-  checkRole("ORGANISER"),
+  editValidation,
   validateData,
   updateActivity
 );

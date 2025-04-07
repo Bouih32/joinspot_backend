@@ -192,7 +192,7 @@ const getActivities = async (req, res) => {
 
 const updateActivity = async (req, res) => {
   try {
-    const { description, coverPic, location } = req.body;
+    const { description, coverPic, tags } = req.body;
     const activity = await prisma.activity.findFirst({
       where: {
         activityId: req.params.activityId,
@@ -207,9 +207,30 @@ const updateActivity = async (req, res) => {
       data: {
         description,
         coverPic,
-        location,
       },
     });
+
+    const tagsArray = tags?.split("-") ?? [];
+
+    if (tagsArray.length > 0) {
+      // Delete old tags
+      await prisma.activityTags.deleteMany({
+        where: { activityId: activity.activityId },
+      }); // Add new tags
+
+      await Promise.all(
+        tagsArray.map((tagId) =>
+          prisma.activityTags.create({
+            data: {
+              activityId: activity.activityId,
+              tagId,
+            },
+          })
+        )
+      );
+    }
+
+    return res.status(200).json({ message: "Activities updated successfully" });
   } catch (error) {
     console.error(error);
     return res
