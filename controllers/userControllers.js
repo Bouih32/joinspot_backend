@@ -334,6 +334,8 @@ const getJoined = async (req, res) => {
       },
     });
 
+    if (!tickets) return res.status(404).json({ message: "No tickets found" });
+
     const strucuredData = tickets.map((ele) => ({
       avatar: ele.user.avatar,
       userName: ele.user.userName,

@@ -235,6 +235,7 @@ const getActivityById = async (req, res) => {
           include: {
             tag: {
               select: {
+                tagId: true,
                 tagName: true,
               },
             },
@@ -407,6 +408,43 @@ const deleteActivityTag = async (req, res) => {
       message: "Failed to delete tags from activity",
       error: error.message,
     });
+  }
+};
+const getTicketsByActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const tickets = await prisma.ticket.findMany({
+      where: { activity: { activityId } },
+      select: {
+        code: true,
+        quantity: true,
+        user: {
+          select: {
+            userId: true,
+            avatar: true,
+            userName: true,
+          },
+        },
+      },
+    });
+
+    if (!tickets) return res.status(404).json({ message: "No tickets found" });
+
+    const strucuredData = tickets.map((ele) => ({
+      avatar: ele.user.avatar,
+      userName: ele.user.userName,
+      quantity: ele.quantity,
+      code: ele.code,
+      userId: ele.user.userId,
+    }));
+    return res
+      .status(200)
+      .json({ message: "recieved successfully", strucuredData });
+  } catch (error) {
+    console.error("Error :", error);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
   }
 };
 
@@ -1122,4 +1160,5 @@ module.exports = {
   getTicketById,
   getUserActivities,
   joinActivity,
+  getTicketsByActivity,
 };

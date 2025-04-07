@@ -26,6 +26,7 @@ const {
   getTicketById,
   getUserActivities,
   joinActivity,
+  getTicketsByActivity,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const {
@@ -94,6 +95,7 @@ router.get("/", optionalAuthenticateToken, getActivities);
 router.get("/user/:id", getUserActivities);
 router.get("/tickets", authenticateToken, getActivityTickets);
 router.get("/ticket/:ticketId", authenticateToken, getTicketById);
+
 router.get(
   "/reservations",
   authenticateToken,
@@ -105,6 +107,7 @@ router.get("/saved", authenticateToken, validateData, getSavedActivities);
 router.get("/city/:cityId", getActivityByCity);
 router.get("/:activityId", getActivityById);
 router.get("/:activityId/reviews", getReviews);
+router.get("/:activityId/ticket", authenticateToken, getTicketsByActivity);
 router.get(
   "/repported",
   authenticateToken,
