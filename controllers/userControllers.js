@@ -249,6 +249,23 @@ const ChangeRole = async (req, res) => {
   }
 };
 
+const getStatusUpdate = async (req, res) => {
+  try {
+    const { userId } = req.user.userId;
+    const status = await prisma.degree.findFirst({
+      where: { userId, verified: false },
+      select: { verified: true },
+    });
+
+    return res.status(200).json({ message: "upgrade status", status });
+  } catch (error) {
+    console.error("Error changing role:", error);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
 const getUserTickets = async (req, res) => {
   try {
     const tickets = await prisma.ticket.findMany({
@@ -1603,4 +1620,5 @@ module.exports = {
   markAsUsed,
   getUserFollowing,
   upgradeRequest,
+  getStatusUpdate,
 };
