@@ -917,7 +917,7 @@ const upgradeRequest = async (req, res) => {
 
     const isCategory = prisma.category.findUnique({ where: { categoryName } });
 
-    await prisma.user.patch({
+    await prisma.user.update({
       where: { userId: req.user.userId },
       data: {
         categoryId: isCategory.categoryId,
@@ -938,9 +938,7 @@ const upgradeRequest = async (req, res) => {
       },
     });
 
-    return res
-      .status(200)
-      .json({ message: "resuest added successfully", city });
+    return res.status(200).json({ message: "resuest added successfully" });
   } catch (error) {
     console.error(error);
     return res
