@@ -900,6 +900,55 @@ const UnfollowUser = async (req, res) => {
   }
 };
 
+const upgradeRequest = async (req, res) => {
+  try {
+    const {
+      proveBy,
+      categoryName,
+      degreeName,
+      schoolName,
+      year,
+      frontPic,
+      justification,
+      justificationPic,
+      idFrontPic,
+      idBackPic,
+    } = req.body;
+
+    const isCategory = prisma.category.findUnique({ where: { categoryName } });
+
+    await prisma.user.patch({
+      where: { userId: req.user.userId },
+      data: {
+        categoryId: isCategory.categoryId,
+        idFrontPic: idFrontPic,
+        idBackPic: idBackPic,
+      },
+    });
+
+    await prisma.degree.create({
+      data: {
+        userId: req.user.userId,
+        degreeName: proveBy === "degree" ? degreeName : null,
+        school: proveBy === "degree" ? schoolName : null,
+        year: proveBy === "degree" ? Number(year) : null,
+        frontPic: proveBy === "degree" ? frontPic : null,
+        justification: proveBy === "business" ? justification : null,
+        justificationPic: proveBy === "business" ? justificationPic : null,
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "resuest added successfully", city });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 // management City
 const addCity = async (req, res) => {
   try {
@@ -1555,4 +1604,5 @@ module.exports = {
   getJoined,
   markAsUsed,
   getUserFollowing,
+  upgradeRequest,
 };

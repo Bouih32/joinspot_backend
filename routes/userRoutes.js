@@ -53,6 +53,7 @@ const {
   markAsUsed,
   getUserProfile,
   getUserFollowing,
+  upgradeRequest,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -100,6 +101,8 @@ router.post(
   sendMessage
 );
 
+router.post("/profile/upgrade", authenticateToken, upgradeRequest);
+
 router.get("/cities", getCities);
 // user data
 router.get("/tags", authenticateToken, getUserTags);
@@ -109,6 +112,7 @@ router.get("/profile/ticket", authenticateToken, getUserTickets);
 router.get("/profile/revenue", authenticateToken, getUserRevenue);
 router.get("/profile/active", authenticateToken, getActiveActivities);
 router.get("/profile/joined", authenticateToken, getJoined);
+
 router.get("/profile/:userId", getUserProfile);
 
 router.get(
