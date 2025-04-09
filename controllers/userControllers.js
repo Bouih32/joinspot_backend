@@ -95,6 +95,10 @@ const loginUser = async (req, res) => {
       return res.status(401).send({ message: "Uncorect password" });
     }
 
+    if (user.deletedAt !== null) {
+      return res.status(403).send({ message: "You are baned" });
+    }
+
     const token = generateAcessToken({
       userId: user.userId,
       email: user.email,
@@ -745,6 +749,27 @@ const getAllUsers = async (req, res) => {
     return res.status(200).json({ users: users });
   } catch (error) {
     return res.status(500).json({ message: "Error fetching users" });
+  }
+};
+
+const banUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await prisma.user.findUnique({
+      where: { userId },
+    });
+
+    if (!user) return res.status(404).json({ message: "No users found" });
+
+    await prisma.user.update({
+      where: {
+        userId: user.userId,
+      },
+      data: { deletedAt: !user.deletedAt ? new Date() : null },
+    });
+    return res.status(200).json({ message: "User baned seccessfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error baning users", error });
   }
 };
 
@@ -1703,4 +1728,5 @@ module.exports = {
   getStatusUpdate,
   getAdminStats,
   getAdminRevenue,
+  banUser,
 };
