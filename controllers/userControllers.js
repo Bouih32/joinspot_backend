@@ -187,6 +187,42 @@ const getProfileData = async (req, res) => {
   }
 };
 
+const getAdminStats = async (req, res) => {
+  try {
+    const activities = await prisma.activity.count();
+    const joinedActivitiesNum = await prisma.ticket.findMany({
+      select: {
+        quantity: true,
+        activity: {
+          select: { price: true },
+        },
+      },
+    });
+
+    const totalRevenue = joinedActivitiesNum.reduce((acc, ticket) => {
+      const quantity = ticket.quantity ?? 0;
+      const price = ticket.activity?.price ?? 0;
+      return acc + quantity * price * 0.2;
+    }, 0);
+
+    const usersNum = await prisma.user.count();
+
+    return res.status(200).json({
+      message: "data recieved successfully",
+      data: {
+        totalRevenue: totalRevenue,
+        activeActivities: activities,
+        joinedNum: usersNum,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error server",
+      error: error.message,
+    });
+  }
+};
+
 const RequestDegrees = async (req, res) => {
   try {
     const { accepted, pending } = req.body;
@@ -1621,4 +1657,5 @@ module.exports = {
   getUserFollowing,
   upgradeRequest,
   getStatusUpdate,
+  getAdminStats,
 };
