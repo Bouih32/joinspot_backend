@@ -542,6 +542,49 @@ const getActiveActivities = async (req, res) => {
   }
 };
 
+const getAdminActivities = async (req, res) => {
+  try {
+    const activities = await prisma.activity.findMany({
+      select: {
+        activityId: true,
+        title: true,
+        price: true,
+        endDay: true,
+        deletedAt: true,
+        ticket: {
+          select: {
+            quantity: true,
+          },
+        },
+      },
+    });
+
+    // Process the data to compute total revenue per activity
+    const activeActivities = activities.map((activity) => ({
+      title: activity.title,
+      endDay: activity.endDay,
+      totalTickets: activity.ticket.reduce(
+        (sum, ticket) => sum + ticket.quantity,
+        0
+      ),
+      totalRevenue:
+        activity.ticket.reduce((sum, ticket) => sum + ticket.quantity, 0) *
+        (activity.price || 0),
+    }));
+
+    if (!activeActivities) {
+      return res.status(404).json({ message: "no active activitiesfound" });
+    }
+
+    return res.status(200).json({ activeActivities });
+  } catch (error) {
+    console.error("Error getting profil:", error);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
 const getUserRevenue = async (req, res) => {
   try {
     const tickets = await prisma.ticket.groupBy({
@@ -1729,4 +1772,5 @@ module.exports = {
   getAdminStats,
   getAdminRevenue,
   banUser,
+  getAdminActivities,
 };

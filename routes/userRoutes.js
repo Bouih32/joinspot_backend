@@ -58,6 +58,7 @@ const {
   getAdminStats,
   getAdminRevenue,
   banUser,
+  getAdminActivities,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -128,9 +129,14 @@ router.get(
 router.get("/profile/ticket", authenticateToken, getUserTickets);
 router.get("/profile/revenue", authenticateToken, getUserRevenue);
 router.get("/profile/active", authenticateToken, getActiveActivities);
+router.get(
+  "/admin/active",
+  authenticateToken,
+  checkRole("ADMIN"),
+  getAdminActivities
+);
 router.get("/profile/joined", authenticateToken, getJoined);
 router.get("/profile/upgrade-status", authenticateToken, getStatusUpdate);
-
 router.get("/profile/:userId", getUserProfile);
 
 router.get(
