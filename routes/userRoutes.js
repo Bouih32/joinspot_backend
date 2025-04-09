@@ -56,6 +56,7 @@ const {
   upgradeRequest,
   getStatusUpdate,
   getAdminStats,
+  getAdminRevenue,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -115,6 +116,13 @@ router.get(
   authenticateToken,
   checkRole("ADMIN"),
   getAdminStats
+);
+
+router.get(
+  "/admin/revenue",
+  authenticateToken,
+  checkRole("ADMIN"),
+  getAdminRevenue
 );
 router.get("/profile/ticket", authenticateToken, getUserTickets);
 router.get("/profile/revenue", authenticateToken, getUserRevenue);

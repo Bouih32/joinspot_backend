@@ -577,6 +577,43 @@ const getUserRevenue = async (req, res) => {
   }
 };
 
+const getAdminRevenue = async (req, res) => {
+  try {
+    const tickets = await prisma.ticket.groupBy({
+      by: ["activityId"],
+      _sum: {
+        quantity: true,
+      },
+    });
+
+    const activityRevenue = await Promise.all(
+      tickets.map(async (ticket) => {
+        const activity = await prisma.activity.findUnique({
+          where: { activityId: ticket.activityId },
+          select: { title: true, price: true },
+        });
+
+        return {
+          title: activity?.title,
+          totalRevenue:
+            (activity?.price * 0.2 || 0) * (ticket._sum.quantity || 0),
+        };
+      })
+    );
+
+    if (!tickets) {
+      return res.status(404).json({ message: "No tickets found" });
+    }
+
+    return res.status(200).json({ activityRevenue });
+  } catch (error) {
+    console.error("Error getting profil:", error);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
 const updateUserData = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -1658,4 +1695,5 @@ module.exports = {
   upgradeRequest,
   getStatusUpdate,
   getAdminStats,
+  getAdminRevenue,
 };
