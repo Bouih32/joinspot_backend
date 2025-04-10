@@ -505,6 +505,7 @@ const getActiveActivities = async (req, res) => {
         endDay: { gte: new Date() },
       },
       select: {
+        deletedAt: true,
         title: true,
         price: true,
         endDay: true,
@@ -518,6 +519,7 @@ const getActiveActivities = async (req, res) => {
 
     // Process the data to compute total revenue per activity
     const activeActivities = activities.map((activity) => ({
+      deletedAt: activity.deletedAt,
       title: activity.title,
       endDay: activity.endDay,
       totalTickets: activity.ticket.reduce(

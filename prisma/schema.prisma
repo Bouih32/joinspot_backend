@@ -358,14 +358,6 @@ model repportUser {
   repport_to    user   @relation("repport_to", fields: [repportingId], references: [userId], onDelete: Cascade)
 }
 
-// model userBg {
-//   userBgId   String     @id @default(auto()) @map("_id") @db.ObjectId
-//   userId     String     @db.ObjectId
-//   bgId       String     @db.ObjectId
-//   user       user       @relation(fields: [userId], references: [userId], onDelete: Cascade)
-//   background background @relation(fields: [bgId], references: [bgId], onDelete: Cascade)
-// }
-
 model share {
   shareId    String   @id @default(auto()) @map("_id") @db.ObjectId
   userId     String   @db.ObjectId
@@ -375,5 +367,3 @@ model share {
   activity   activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
   post       post     @relation(fields: [postId], references: [postId], onDelete: Cascade)
 }
-
-//test younes branch
