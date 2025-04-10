@@ -1154,6 +1154,29 @@ const handleWebhook = async (req, res) => {
   res.status(200).json({ received: true });
 };
 
+const banActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    console.log(activityId);
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+    });
+
+    if (!activity)
+      return res.status(404).json({ message: "No activity found" });
+
+    await prisma.activity.update({
+      where: {
+        activityId: activity.activityId,
+      },
+      data: { deletedAt: !activity.deletedAt ? new Date() : null },
+    });
+    return res.status(200).json({ message: "Activity baned seccessfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error baning users", error });
+  }
+};
+
 module.exports = {
   createActivity,
   getActivities,
@@ -1182,4 +1205,5 @@ module.exports = {
   getUserActivities,
   joinActivity,
   getTicketsByActivity,
+  banActivity,
 };

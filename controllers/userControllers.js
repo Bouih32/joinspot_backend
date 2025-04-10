@@ -561,6 +561,8 @@ const getAdminActivities = async (req, res) => {
 
     // Process the data to compute total revenue per activity
     const activeActivities = activities.map((activity) => ({
+      deletedAt: activity.deletedAt,
+      activityId: activity.activityId,
       title: activity.title,
       endDay: activity.endDay,
       totalTickets: activity.ticket.reduce(

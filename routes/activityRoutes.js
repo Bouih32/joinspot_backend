@@ -27,6 +27,7 @@ const {
   getUserActivities,
   joinActivity,
   getTicketsByActivity,
+  banActivity,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const {
@@ -120,6 +121,12 @@ router.get(
 // PUT
 
 router.put("/reviews/:reviewId", authenticateToken, validateData, updateReview);
+router.patch(
+  "/ban/:activityId",
+  authenticateToken,
+  checkRole("ADMIN"),
+  banActivity
+);
 
 // PATCH
 router.patch(
