@@ -909,6 +909,8 @@ const getUserTags = async (req, res) => {
           select: {
             tagId: true,
             tagName: true,
+            categoryId: true,
+            deletedAt: true,
           },
         },
       },
@@ -919,8 +921,10 @@ const getUserTags = async (req, res) => {
     }
 
     const tags = userTags.map((userTag) => ({
-      id: userTag.tag.tagId,
-      name: userTag.tag.tagName,
+      categoryId: userTag.tag.categoryId,
+      tagId: userTag.tag.tagId,
+      tagName: userTag.tag.tagName,
+      deletedAt: userTag.tag.deletedAt,
     }));
 
     return res.status(200).json({
