@@ -159,6 +159,7 @@ model activity {
   seat         Int
   cityId       String         @db.ObjectId
   price        Float
+  featured     Boolean?       @default(false)
   score        Int
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -331,6 +332,7 @@ model notification {
   fromId            String   @db.ObjectId
   toId              String   @db.ObjectId
   content           String
+  seen              Boolean? @default(false)
   createdAt         DateTime @default(now())
   notification_from user     @relation("notification_from", fields: [fromId], references: [userId], onDelete: Cascade)
   notification_to   user     @relation("notification_to", fields: [toId], references: [userId], onDelete: Cascade)

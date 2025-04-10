@@ -1157,7 +1157,6 @@ const handleWebhook = async (req, res) => {
 const banActivity = async (req, res) => {
   try {
     const { activityId } = req.params;
-    console.log(activityId);
     const activity = await prisma.activity.findUnique({
       where: { activityId },
     });
