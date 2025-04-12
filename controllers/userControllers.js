@@ -1575,10 +1575,9 @@ const deleteNotification = async (req, res) => {
 
 const supports = async (req, res) => {
   try {
-    const { firstname, lastname, email, phone, subject, message } = req.body;
+    const { firstName, lastName, email, phone, subject, message } = req.body;
     const user = await prisma.user.findUnique({
       where: {
-        email,
         userId: req.user.userId,
       },
     });
@@ -1600,7 +1599,7 @@ const supports = async (req, res) => {
     } else {
       const emailContent = `
         <h2>Nouveau message de support</h2>
-        <p><strong>De:</strong> ${firstname} ${lastname}</p>
+        <p><strong>De:</strong> ${firstName} ${lastName}</p>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Téléphone:</strong> ${phone}</p>
         <p><strong>Sujet:</strong> ${subject}</p>
@@ -1617,7 +1616,7 @@ const supports = async (req, res) => {
       // Envoyer un email de confirmation à l'expéditeur
       const confirmationEmail = `
         <h2>Confirmation de réception</h2>
-        <p>Cher(e) ${firstname} ${lastname},</p>
+        <p>Cher(e) ${firstName} ${lastName},</p>
         <p>Nous avons bien reçu votre message concernant "${subject}".</p>
         <p>Notre équipe vous répondra dans les plus brefs délais.</p>
         <p>Cordialement,<br>L'équipe JoinSpots</p>
@@ -1628,11 +1627,10 @@ const supports = async (req, res) => {
         "Confirmation de réception de votre message",
         confirmationEmail
       );
-
-      return res.status(200).json({
-        message: "Email envoyé avec succès",
-      });
     }
+    return res.status(200).json({
+      message: "Email envoyé avec succès",
+    });
   } catch (error) {
     console.error("Erreur support:", error);
     return res.status(500).json({
