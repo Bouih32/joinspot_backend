@@ -221,6 +221,15 @@ const followValidation = [
     .withMessage("Please enter the user id you want to follow"),
 ];
 
+const supportValidation = [
+  check("firstName").trim().notEmpty().withMessage("Please enter coverPic"),
+  check("lastName").trim().notEmpty().withMessage("Please enter coverPic"),
+  check("email").trim().notEmpty().withMessage("Please enter coverPic"),
+  check("phone").trim().notEmpty().withMessage("Please enter coverPic"),
+  check("subject").trim().notEmpty().withMessage("Please enter coverPic"),
+  check("message").trim().notEmpty().withMessage("Please enter coverPic"),
+];
+
 module.exports = {
   loginValidation,
   registerValidation,
@@ -235,6 +244,7 @@ module.exports = {
   followValidation,
   messageValidation,
   editValidation,
+  supportValidation,
   convertToISODate,
   validateData,
 };

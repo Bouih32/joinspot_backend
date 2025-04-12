@@ -70,10 +70,17 @@ const {
   socialsValidation,
   messageValidation,
   followValidation,
+  supportValidation,
 } = require("../utils/validation");
 
 // authentication
-router.post("/support", optionalAuthenticateToken, supports);
+router.post(
+  "/support",
+  supportValidation,
+  validateData,
+  optionalAuthenticateToken,
+  supports
+);
 router.post("/register", registerValidation, validateData, registerUser);
 router.post("/login", loginValidation, validateData, loginUser);
 router.post("/logout", authenticateToken, logOut);
