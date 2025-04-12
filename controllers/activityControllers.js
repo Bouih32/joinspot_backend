@@ -192,15 +192,16 @@ const getActivities = async (req, res) => {
 
 const getLandingActivities = async (req, res) => {
   try {
-    const { category, city } = req.query;
+    const { category, city = "agadir" } = req.query;
 
     const filters = {
       ...(category && { category: { categoryName: category } }),
       ...(city && { city: { cityName: city } }),
+      featured: true,
     };
 
     const activities = await prisma.activity.findMany({
-      where: { ...filters, featured: true },
+      where: filters,
       include: {
         user: {
           select: {

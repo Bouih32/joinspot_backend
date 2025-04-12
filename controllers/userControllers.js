@@ -814,6 +814,12 @@ const banUser = async (req, res) => {
       },
       data: { deletedAt: !user.deletedAt ? new Date() : null },
     });
+
+    await prisma.activity.updateMany({
+      where: { userId },
+      data: { deletedAt: !user.deletedAt ? new Date() : null },
+    });
+
     return res.status(200).json({ message: "User baned seccessfully" });
   } catch (error) {
     return res.status(500).json({ message: "Error baning users", error });
@@ -870,7 +876,7 @@ const addTagsToUser = async (req, res) => {
     }
 
     // Vérifier les doublons existants
-    const existingUserTags = await prisma.userTags.deleteMany({
+    await prisma.userTags.deleteMany({
       where: {
         userId: req.user.userId,
       },
