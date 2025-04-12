@@ -190,6 +190,65 @@ const getActivities = async (req, res) => {
   }
 };
 
+const getLandingActivities = async (req, res) => {
+  try {
+    const { category, city } = req.query;
+
+    const filters = {
+      ...(category && { category: { categoryName: category } }),
+      ...(city && { city: { cityName: city } }),
+    };
+
+    const activities = await prisma.activity.findMany({
+      where: { ...filters, featured: true },
+      include: {
+        user: {
+          select: {
+            userId: true,
+            userName: true,
+            avatar: true,
+          },
+        },
+        activityTags: {
+          include: {
+            tag: {
+              select: {
+                tagName: true,
+              },
+            },
+          },
+        },
+        category: { select: { categoryName: true } },
+        city: { select: { cityName: true } },
+        ticket: { select: { quantity: true } },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (!activities) {
+      return res.status(404).json({ message: "No activities found" });
+    }
+
+    return res.status(200).json({
+      message: "Activities fetched successfully",
+      activities: activities.map((activity) => ({
+        ...activity,
+        joined: activity.ticket.reduce(
+          (sum, ticket) => sum + ticket.quantity,
+          0
+        ), // Sum all ticket quantities
+      })),
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch activities", error: error.message });
+  }
+};
+
 const updateActivity = async (req, res) => {
   try {
     const { description, coverPic, tags } = req.body;
@@ -1205,4 +1264,5 @@ module.exports = {
   joinActivity,
   getTicketsByActivity,
   banActivity,
+  getLandingActivities,
 };

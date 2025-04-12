@@ -1588,7 +1588,7 @@ const supports = async (req, res) => {
         data: {
           fromId: user.userId,
           toId: admin.userId,
-          content: `${subject}, ${message}`,
+          content: `I am contacting support for :${subject}, ${message}`,
           read: false,
         },
       });

@@ -28,6 +28,7 @@ const {
   joinActivity,
   getTicketsByActivity,
   banActivity,
+  getLandingActivities,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const {
@@ -94,6 +95,7 @@ router.post(
 
 // GET
 router.get("/", optionalAuthenticateToken, getActivities);
+router.get("/landing", optionalAuthenticateToken, getLandingActivities);
 router.get("/user/:id", getUserActivities);
 router.get("/tickets", authenticateToken, getActivityTickets);
 router.get("/ticket/:ticketId", authenticateToken, getTicketById);
