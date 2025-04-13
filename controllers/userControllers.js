@@ -230,6 +230,7 @@ const getAdminStats = async (req, res) => {
 const RequestDegrees = async (req, res) => {
   try {
     const degrees = await prisma.degree.findMany({
+      where: { status: "PENDING" },
       select: {
         degreeName: true,
         school: true,
@@ -252,7 +253,7 @@ const RequestDegrees = async (req, res) => {
         },
       },
     });
-    if (degrees.length === 0) {
+    if (!degrees) {
       return res.status(404).json({ message: "No degrees found" });
     }
     return res.status(200).json({ degrees });
@@ -291,8 +292,8 @@ const getStatusUpdate = async (req, res) => {
   try {
     const { userId } = req.user.userId;
     const status = await prisma.degree.findFirst({
-      where: { userId, verified: "PENDING" },
-      select: { verified: true },
+      where: { userId, status: "PENDING" },
+      select: { status: true },
     });
 
     return res.status(200).json({ message: "upgrade status", status });
