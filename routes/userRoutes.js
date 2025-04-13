@@ -171,22 +171,11 @@ router.get(
   authenticateToken,
   getMessageDetails
 );
-router.get(
-  "/unread-messages",
-  authenticateToken,
-  validateData,
-  getUnreadMessages
-);
+router.get("/unread-messages", authenticateToken, getUnreadMessages);
 
 router.get("/users", authenticateToken, checkRole("ADMIN"), getAllUsers);
 router.get("/deleted", authenticateToken, checkRole("ADMIN"), getDeletedUsers);
-router.get(
-  "/degrees",
-  authenticateToken,
-  checkRole("ADMIN"),
-  validateData,
-  RequestDegrees
-);
+router.get("/degrees", authenticateToken, checkRole("ADMIN"), RequestDegrees);
 router.get(
   "/:id",
   authenticateToken,

@@ -229,27 +229,25 @@ const getAdminStats = async (req, res) => {
 
 const RequestDegrees = async (req, res) => {
   try {
-    const { accepted, pending } = req.body;
-    const filter = {
-      ...(accepted === true && { verified: true }),
-      ...(pending === true && { verified: false }),
-    };
     const degrees = await prisma.degree.findMany({
-      where: filter,
       select: {
         degreeName: true,
         school: true,
         year: true,
-        verified: true,
         frontPic: true,
+        backPic: true,
         justification: true,
         justificationPic: true,
+
         user: {
           select: {
             userId: true,
             email: true,
             userName: true,
             avatar: true,
+            idBackPic: true,
+            idFrontPic: true,
+            category: { select: { categoryName: true } },
           },
         },
       },
