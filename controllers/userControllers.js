@@ -291,7 +291,7 @@ const getStatusUpdate = async (req, res) => {
   try {
     const { userId } = req.user.userId;
     const status = await prisma.degree.findFirst({
-      where: { userId, verified: false },
+      where: { userId, verified: "PENDING" },
       select: { verified: true },
     });
 

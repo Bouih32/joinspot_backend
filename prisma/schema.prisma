@@ -92,18 +92,24 @@ model socials {
   @@unique([userId, platform])
 }
 
+enum Verification {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 model degree {
-  degreeId         String  @id @default(auto()) @map("_id") @db.ObjectId
+  degreeId         String       @id @default(auto()) @map("_id") @db.ObjectId
   degreeName       String?
   school           String?
   year             Int?
   frontPic         String?
   backPic          String?
-  verified         Boolean @default(false)
+  status           Verification @default(PENDING)
   justification    String?
   justificationPic String?
-  userId           String  @db.ObjectId
-  user             user    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId           String       @db.ObjectId
+  user             user         @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 model bank {
