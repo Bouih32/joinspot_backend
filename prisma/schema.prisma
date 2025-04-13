@@ -200,6 +200,7 @@ model post {
 enum bgT {
   PRO
   VISITOR
+  ADMIN
 }
 
 model background {
