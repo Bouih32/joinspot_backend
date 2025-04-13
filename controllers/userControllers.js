@@ -232,6 +232,7 @@ const RequestDegrees = async (req, res) => {
     const degrees = await prisma.degree.findMany({
       where: { status: "PENDING" },
       select: {
+        degreeId: true,
         degreeName: true,
         school: true,
         year: true,
