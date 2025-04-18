@@ -1016,11 +1016,7 @@ const followUser = async (req, res) => {
       where: { userId: req.user.userId },
       select: { userName: true },
     });
-    await createNotification(
-      req.user.userId,
-      following,
-      `${follower.userName} just followed you`
-    );
+    await createNotification(req.user.userId, following, `just followed you`);
     return res.status(201).json({ message: "Follow-up successful." });
   } catch (error) {
     console.error(error);
