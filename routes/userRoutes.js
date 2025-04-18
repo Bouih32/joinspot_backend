@@ -196,7 +196,7 @@ router.patch(
   changePassword
 );
 router.put("/update-cityuser", authenticateToken, updateUserCity);
-router.put(
+router.patch(
   "/ChangeRole",
   authenticateToken,
   checkRole("ADMIN"),
