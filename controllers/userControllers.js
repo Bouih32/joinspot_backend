@@ -268,27 +268,29 @@ const RequestDegrees = async (req, res) => {
 
 const ChangeRole = async (req, res) => {
   try {
-    const { userId, status } = req.body;
+    const { userId, status, degreeId } = req.body;
     const user = await prisma.user.findUnique({ where: { userId } });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    await prisma.degree.update({ where: { userId }, data: { status } });
+    await prisma.degree.update({ where: { degreeId }, data: { status } });
 
     if (status === "VERIFIED") {
+      const bgs = await prisma.background.findMany({
+        where: { type: "PRO" },
+      });
+      const userBg = bgs[Math.floor(Math.random() * bgs.length)];
       await prisma.user.update({
         where: { userId },
-        data: { role: "ORGANISER" },
+        data: { role: "ORGANISER", bgId: userBg.bgId },
       });
-
-      return res.status(200).json({ message: "Role updated successfully" });
     }
 
     await createNotification(
       req.user.userId,
       user.userId,
-      `Your request to become an Organiser has been ${
+      `Your request has been ${
         status === "VERIFIED" ? "Accepted." : "Declined."
       }`
     );
@@ -1108,7 +1110,9 @@ const upgradeRequest = async (req, res) => {
       idBackPic,
     } = req.body;
 
-    const isCategory = prisma.category.findUnique({ where: { categoryName } });
+    const isCategory = await prisma.category.findUnique({
+      where: { categoryName },
+    });
 
     await prisma.user.update({
       where: { userId: req.user.userId },
