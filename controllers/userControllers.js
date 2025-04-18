@@ -39,12 +39,12 @@ const registerUser = async (req, res) => {
     ]);
 
     if (existingUser)
-      return res.status(400).send({ message: "Email is already in use." });
+      return res.status(409).send({ message: "Email is already in use." });
     const hashedPassword = await bcrypt.hash(password, 10);
-    const bgs = await prisma.background.findMany({});
-    const userBg = bgs.filter((ele) => ele.type === "VISITOR")[
-      Math.floor(Math.random() * bgs.length)
-    ];
+    const bgs = await prisma.background.findMany({
+      where: { type: "VISITOR" },
+    });
+    const userBg = bgs[Math.floor(Math.random() * bgs.length)];
 
     const newUser = await prisma.user.create({
       data: {
@@ -304,7 +304,8 @@ const ChangeRole = async (req, res) => {
 
 const getStatusUpdate = async (req, res) => {
   try {
-    const { userId } = req.user.userId;
+    const { userId } = req.user;
+
     const status = await prisma.degree.findFirst({
       where: { userId, status: "PENDING" },
       select: { status: true },
