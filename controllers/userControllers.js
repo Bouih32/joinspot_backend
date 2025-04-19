@@ -716,6 +716,74 @@ const updateUserData = async (req, res) => {
   }
 };
 
+const updateBank = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const user = await prisma.user.findFirst({
+      where: {
+        userId,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const { rib, fullName, bankName } = req.body;
+    const hashedRIB = await bcrypt.hash(rib, 10);
+
+    const bank = await prisma.bank.findFirst({ where: { userId } });
+    if (!bank) {
+      await prisma.bank.create({
+        data: {
+          userId,
+          fullName,
+          bankName,
+          rib: hashedRIB,
+        },
+      });
+    } else {
+      await prisma.bank.update({
+        where: {
+          bankId: bank.bankId,
+        },
+        data: { fullName, bankName, rib: hashedRIB },
+      });
+    }
+
+    return res.status(200).json({ message: "bank updated successfully" });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
+const getUserBank = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const user = await prisma.user.findFirst({
+      where: {
+        userId,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const bank = await prisma.bank.findFirst({ where: { userId } });
+    if (!bank) {
+      return res.status(404).json({ message: "bank Info not found" });
+    }
+
+    return res.status(200).json({ message: "Fetch successfull", bank });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
 const updateSocials = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -1799,4 +1867,6 @@ module.exports = {
   getAdminRevenue,
   banUser,
   getAdminActivities,
+  updateBank,
+  getUserBank,
 };

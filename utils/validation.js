@@ -145,6 +145,30 @@ const updateValidation = [
   check("avatar").optional().trim(),
 ];
 
+const bankValidation = [
+  check("fullName")
+    .optional()
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage("Please enter your fullname")
+    .isLength({ max: 50 })
+    .withMessage("Heey! that's too long"),
+  check("rib")
+    .optional()
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage("Please enter your email")
+    .isLength({ max: 24 })
+    .withMessage("Heey! that's too long"),
+  check("bankName")
+    .optional()
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage("Please enter your email")
+    .isLength({ max: 24 })
+    .withMessage("Heey! that's too long"),
+];
+
 const pswrdValidation = [
   check("newPassword")
     .trim()
@@ -245,6 +269,7 @@ module.exports = {
   messageValidation,
   editValidation,
   supportValidation,
+  bankValidation,
   convertToISODate,
   validateData,
 };

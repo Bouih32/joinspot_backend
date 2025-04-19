@@ -113,13 +113,12 @@ model degree {
 }
 
 model bank {
-  bankId         String @id @default(auto()) @map("_id") @db.ObjectId
-  fullName       String
-  cardNumber     String @unique
-  expDate        String
-  cvvlast4Digits String
-  userId         String @db.ObjectId
-  user           user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  bankId   String @id @default(auto()) @map("_id") @db.ObjectId
+  fullName String
+  rib      String @unique
+  bankName String
+  userId   String @db.ObjectId
+  user     user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 model category {

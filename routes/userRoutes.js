@@ -59,6 +59,7 @@ const {
   getAdminRevenue,
   banUser,
   getAdminActivities,
+  updateBank,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -71,6 +72,7 @@ const {
   messageValidation,
   followValidation,
   supportValidation,
+  bankValidation,
 } = require("../utils/validation");
 
 // authentication
@@ -217,6 +219,14 @@ router.patch(
   socialsValidation,
   validateData,
   updateSocials
+);
+
+router.patch(
+  "/edit-profil/bank",
+  authenticateToken,
+  bankValidation,
+  validateData,
+  updateBank
 );
 
 router.delete("/unfollow", authenticateToken, validateData, UnfollowUser);
