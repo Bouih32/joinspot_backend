@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const { createNotification } = require("../utils/notification");
 
 const nodemailer = require("nodemailer");
+const { encrypt, decrypt } = require("../utils/encryption");
 require("dotenv").config();
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -728,7 +729,7 @@ const updateBank = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     const { rib, fullName, bankName } = req.body;
-    const hashedRIB = await bcrypt.hash(rib, 10);
+    const hashedRIB = encrypt(rib);
 
     const bank = await prisma.bank.findFirst({ where: { userId } });
     if (!bank) {
@@ -770,12 +771,21 @@ const getUserBank = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const bank = await prisma.bank.findFirst({ where: { userId } });
+    const bank = await prisma.bank.findFirst({
+      where: { userId },
+      select: { bankName: true, rib: true, fullName: true },
+    });
     if (!bank) {
       return res.status(404).json({ message: "bank Info not found" });
     }
 
-    return res.status(200).json({ message: "Fetch successfull", bank });
+    const info = {
+      bankName: bank.bankName,
+      rib: decrypt(bank.rib),
+      fullName: bank.fullName,
+    };
+
+    return res.status(200).json({ message: "Fetch successfull", info });
   } catch (err) {
     console.error(err);
     return res

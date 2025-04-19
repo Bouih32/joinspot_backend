@@ -60,6 +60,7 @@ const {
   banUser,
   getAdminActivities,
   updateBank,
+  getUserBank,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -120,6 +121,7 @@ router.post("/profile/upgrade", authenticateToken, upgradeRequest);
 router.get("/cities", getCities);
 // user data
 router.get("/tags", authenticateToken, getUserTags);
+router.get("/bank", authenticateToken, getUserBank);
 router.get("/profile", authenticateToken, getUserData);
 router.get("/profile/header", authenticateToken, getProfileData);
 router.get(
