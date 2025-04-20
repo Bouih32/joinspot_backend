@@ -563,7 +563,18 @@ const getActiveActivities = async (req, res) => {
 
 const getAdminActivities = async (req, res) => {
   try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
     const activities = await prisma.activity.findMany({
+      where: {
+        title: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      take: limit,
+      skip,
+
       select: {
         activityId: true,
         title: true,
@@ -597,7 +608,18 @@ const getAdminActivities = async (req, res) => {
       return res.status(404).json({ message: "no active activitiesfound" });
     }
 
-    return res.status(200).json({ activeActivities });
+    const pagesCounte = await prisma.activity.count({
+      where: {
+        title: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    const pages = Math.ceil(pagesCounte / limit);
+
+    return res.status(200).json({ activeActivities, pages });
   } catch (error) {
     console.error("Error getting profil:", error);
     return res
