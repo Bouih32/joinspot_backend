@@ -860,6 +860,7 @@ const getUserBank = async (req, res) => {
         userId,
       },
     });
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -868,14 +869,11 @@ const getUserBank = async (req, res) => {
       where: { userId },
       select: { bankName: true, rib: true, fullName: true },
     });
-    if (!bank) {
-      return res.status(404).json({ message: "bank Info not found" });
-    }
 
     const info = {
-      bankName: bank.bankName,
-      rib: decrypt(bank.rib),
-      fullName: bank.fullName,
+      bankName: bank ? bank.bankName : "",
+      rib: bank ? decrypt(bank.rib) : "",
+      fullName: bank ? bank.fullName : "",
     };
 
     return res.status(200).json({ message: "Fetch successfull", info });
