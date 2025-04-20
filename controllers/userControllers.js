@@ -645,37 +645,108 @@ const getUserRevenue = async (req, res) => {
   }
 };
 
+// const getAdminRevenue = async (req, res) => {
+//   try {
+//     const tickets = await prisma.ticket.groupBy({
+//       by: ["activityId"],
+//       _sum: {
+//         quantity: true,
+//       },
+//     });
+
+//     const activityRevenue = await Promise.all(
+//       tickets.map(async (ticket) => {
+//         const activity = await prisma.activity.findUnique({
+//           where: {
+//             activityId: ticket.activityId,
+//           },
+//           select: { title: true, price: true },
+//         });
+
+//         return {
+//           title: activity?.title,
+//           totalRevenue:
+//             (activity?.price * 0.2 || 0) * (ticket._sum.quantity || 0),
+//         };
+//       })
+//     );
+
+//     if (!tickets) {
+//       return res.status(404).json({ message: "No tickets found" });
+//     }
+
+//     return res.status(200).json({ activityRevenue });
+//   } catch (error) {
+//     console.error("Error getting profil:", error);
+//     return res
+//       .status(500)
+//       .json({ message: "Erreur serveur", error: error.message });
+//   }
+// };
+
 const getAdminRevenue = async (req, res) => {
   try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+
+    // First, get all activities that match the search term (if any)
+    const activities = await prisma.activity.findMany({
+      where: {
+        title: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        activityId: true,
+        title: true,
+        price: true,
+      },
+    });
+
+    if (!activities) {
+      return res.status(404).json({ message: "No activities found" });
+    }
+
+    // Then get ticket quantities for these activities
     const tickets = await prisma.ticket.groupBy({
       by: ["activityId"],
+      where: {
+        activityId: {
+          in: activities.map((a) => a.activityId),
+        },
+      },
       _sum: {
         quantity: true,
       },
     });
 
-    const activityRevenue = await Promise.all(
-      tickets.map(async (ticket) => {
-        const activity = await prisma.activity.findUnique({
-          where: { activityId: ticket.activityId },
-          select: { title: true, price: true },
-        });
+    // Combine the data and calculate revenue
+    const activityRevenue = activities.map((activity) => {
+      const ticket = tickets.find((t) => t.activityId === activity.activityId);
+      const quantity = ticket?._sum.quantity || 0;
 
-        return {
-          title: activity?.title,
-          totalRevenue:
-            (activity?.price * 0.2 || 0) * (ticket._sum.quantity || 0),
-        };
-      })
-    );
+      return {
+        title: activity.title,
+        totalRevenue: activity.price * 0.2 * quantity,
+      };
+    });
 
-    if (!tickets) {
-      return res.status(404).json({ message: "No tickets found" });
-    }
+    // Apply pagination
+    const paginatedRevenue = activityRevenue.slice(skip, skip + limit);
+    const total = activityRevenue.length;
 
-    return res.status(200).json({ activityRevenue });
+    return res.status(200).json({
+      activityRevenue: paginatedRevenue,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
-    console.error("Error getting profil:", error);
+    console.error("Error getting revenue:", error);
     return res
       .status(500)
       .json({ message: "Erreur serveur", error: error.message });
