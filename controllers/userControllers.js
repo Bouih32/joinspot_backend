@@ -948,7 +948,17 @@ const logOut = async (req, res) => {
 // User management
 const getAllUsers = async (req, res) => {
   try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
     const users = await prisma.user.findMany({
+      where: {
+        userName: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      take: limit,
+      skip,
       select: {
         userId: true,
         userName: true,
@@ -956,9 +966,18 @@ const getAllUsers = async (req, res) => {
         deletedAt: true,
       },
     });
-    if (users.length == 0)
-      return res.status(404).json({ message: "No users found" });
-    return res.status(200).json({ users: users });
+    if (!users) return res.status(404).json({ message: "No users found" });
+    const totalUsers = await prisma.user.count({
+      where: {
+        userName: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+    });
+    const pages = Math.ceil(totalUsers / limit);
+
+    return res.status(200).json({ users: users, pages });
   } catch (error) {
     return res.status(500).json({ message: "Error fetching users" });
   }
