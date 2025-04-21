@@ -238,7 +238,6 @@ const RequestDegrees = async (req, res) => {
         school: true,
         year: true,
         frontPic: true,
-        backPic: true,
         justification: true,
         justificationPic: true,
 
