@@ -1611,7 +1611,7 @@ const getMessagesByUser = async (req, res) => {
         read: true,
       },
       orderBy: {
-        createdAt: "asc",
+        createdAt: "desc",
       },
     });
     const sentMessages = await prisma.message.findMany({
@@ -1750,7 +1750,7 @@ const getNotifications = async (req, res) => {
         createdAt: true,
       },
       orderBy: {
-        createdAt: "asc",
+        createdAt: "desc",
       },
     });
 
