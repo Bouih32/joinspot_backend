@@ -382,9 +382,21 @@ const getUserTickets = async (req, res) => {
 
 const getJoined = async (req, res) => {
   try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
     const { userId } = req.user;
     const tickets = await prisma.ticket.findMany({
-      where: { activity: { userId } },
+      where: {
+        activity: { userId },
+        user: {
+          userName: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      },
+      take: limit,
+      skip,
       select: {
         ticketId: true,
         code: true,
@@ -420,9 +432,22 @@ const getJoined = async (req, res) => {
       title: ele.activity.title,
       userId: ele.user.userId,
     }));
+    const total = await prisma.ticket.count({
+      where: {
+        activity: { userId },
+        user: {
+          userName: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      },
+    });
+    const pages = Math.ceil(total / limit);
+
     return res
       .status(200)
-      .json({ message: "recieved successfully", strucuredData });
+      .json({ message: "recieved successfully", strucuredData, pages });
   } catch (error) {
     console.error("Error :", error);
     return res
