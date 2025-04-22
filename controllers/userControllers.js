@@ -633,6 +633,10 @@ const getAdminActivities = async (req, res) => {
           },
         },
       },
+
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     // Process the data to compute total revenue per activity
@@ -1644,10 +1648,21 @@ const sendMessage = async (req, res) => {
 
 const getMessages = async (req, res) => {
   try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+
     const messages = await prisma.message.findMany({
       where: {
         toId: req.user.userId,
+        message_from: {
+          userName: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
       },
+      take: limit,
+      skip,
       select: {
         message_from: {
           select: {
@@ -1669,7 +1684,21 @@ const getMessages = async (req, res) => {
     if (!messages) {
       return res.status(404).json({ message: "No messages found" });
     }
-    return res.status(200).json({ messages });
+
+    const total = await prisma.message.count({
+      where: {
+        toId: req.user.userId,
+        message_from: {
+          userName: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      },
+    });
+
+    const pages = Math.ceil(total / limit);
+    return res.status(200).json({ messages, pages });
   } catch (error) {
     console.error(error);
     return res
