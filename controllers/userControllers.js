@@ -230,8 +230,20 @@ const getAdminStats = async (req, res) => {
 
 const RequestDegrees = async (req, res) => {
   try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
     const degrees = await prisma.degree.findMany({
-      where: { status: "PENDING" },
+      where: {
+        status: "PENDING",
+        user: {
+          userName: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      },
+      take: limit,
+      skip,
       select: {
         degreeId: true,
         degreeName: true,
@@ -257,7 +269,21 @@ const RequestDegrees = async (req, res) => {
     if (!degrees) {
       return res.status(404).json({ message: "No degrees found" });
     }
-    return res.status(200).json({ degrees });
+
+    const count = prisma.degree.count({
+      where: {
+        status: "PENDING",
+        user: {
+          userName: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      },
+    });
+
+    const pages = Math.ceil(count / limit);
+    return res.status(200).json({ degrees, pages });
   } catch (error) {
     console.error("Error getting degrees:", error);
     return res
@@ -324,8 +350,20 @@ const getStatusUpdate = async (req, res) => {
 
 const getUserTickets = async (req, res) => {
   try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
     const tickets = await prisma.ticket.findMany({
-      where: { userId: req.user.userId },
+      where: {
+        userId: req.user.userId,
+        activity: {
+          title: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      },
+      take: limit,
+      skip,
       include: {
         activity: {
           select: {
@@ -344,6 +382,20 @@ const getUserTickets = async (req, res) => {
         },
       },
     });
+
+    const count = await prisma.ticket.count({
+      where: {
+        userId: req.user.userId,
+        activity: {
+          title: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      },
+    });
+
+    const pages = Math.ceil(count / limit);
 
     const formatDate = (dateString) => {
       const date = new Date(dateString);
@@ -371,7 +423,7 @@ const getUserTickets = async (req, res) => {
     }));
     return res
       .status(200)
-      .json({ message: "recieved successfully", strucuredData });
+      .json({ message: "recieved successfully", strucuredData, pages });
   } catch (error) {
     console.error("Error :", error);
     return res
