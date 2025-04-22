@@ -58,6 +58,7 @@ model user {
   userTags          userTags[]
   ticket            ticket[]
   activity          activity[]
+  payment           payment[]
   saveAct           saveAct[]
   review            review[]
   repportAct        repportAct[]
@@ -372,4 +373,11 @@ model share {
   user       user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
   activity   activity @relation(fields: [activityId], references: [activityId], onDelete: Cascade)
   post       post     @relation(fields: [postId], references: [postId], onDelete: Cascade)
+}
+
+model payment {
+  paymentId String @id @default(auto()) @map("_id") @db.ObjectId
+  amout     Int
+  userId    String @db.ObjectId
+  user      user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
