@@ -61,6 +61,7 @@ const {
   getAdminActivities,
   updateBank,
   getUserBank,
+  seenNotifications,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -190,6 +191,7 @@ router.get(
 router.patch("/ban/:userId", authenticateToken, checkRole("ADMIN"), banUser);
 router.patch("/messages/:messageId/read", authenticateToken, markAsRead);
 router.patch("/messages/:messageId/delete", authenticateToken, deleteMessage);
+router.patch("/notifications", authenticateToken, seenNotifications);
 router.patch("/ticket/:ticketId/used", authenticateToken, markAsUsed);
 
 router.patch(

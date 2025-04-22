@@ -1865,6 +1865,7 @@ const getNotifications = async (req, res) => {
           },
         },
         content: true,
+        seen: true,
         createdAt: true,
       },
       orderBy: {
@@ -1883,6 +1884,25 @@ const getNotifications = async (req, res) => {
       .json({ message: "Internal server error", error: error.message });
   }
 };
+
+const seenNotifications = async (req, res) => {
+  try {
+    await prisma.notification.updateMany({
+      where: {
+        toId: req.user.userId,
+      },
+      data: { seen: true },
+    });
+
+    return res.status(200).json({ message: "updated successfully" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 const deleteNotification = async (req, res) => {
   try {
     const { notificationId } = req.params;
@@ -2106,4 +2126,5 @@ module.exports = {
   getAdminActivities,
   updateBank,
   getUserBank,
+  seenNotifications,
 };
