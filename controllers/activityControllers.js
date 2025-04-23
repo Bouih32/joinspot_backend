@@ -1,8 +1,9 @@
 const prisma = require("../utils/client");
 const { createNotification } = require("../utils/notification");
-const { stripe } = require("../config/stripe");
+const { stripes } = require("../config/stripe");
 const { createTicket } = require("../utils/ticket");
 const { convertToISODate } = require("../utils/validation");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const createActivity = async (req, res) => {
   try {
@@ -1017,60 +1018,107 @@ const checkRepport = async (req, res) => {
   }
 };
 
+// const joinActivity = async (req, res) => {
+//   const { userId } = req.user;
+//   const { activityId } = req.params;
+//   const { quantity } = req.body;
+//   try {
+//     const user = await prisma.user.findUnique({
+//       where: { userId },
+//       select: { userName: true },
+//     });
+//     const hasTicket = await prisma.ticket.findFirst({
+//       where: { userId, activityId },
+//     });
+
+//     const activityOwner = await prisma.activity.findUnique({
+//       where: { activityId },
+//       select: {
+//         user: { select: { userId: true, userName: true } },
+//         title: true,
+//       },
+//     });
+//     const quantityN = Number(quantity);
+
+//     if (hasTicket) {
+//       await prisma.ticket.update({
+//         where: { ticketId: hasTicket.ticketId },
+//         data: { quantity: hasTicket.quantity + quantityN },
+//       });
+//       return res
+//         .status(200)
+//         .json({ message: "More places added", code: hasTicket.code });
+//     }
+
+//     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+//     const ticket = await prisma.ticket.create({
+//       data: { userId, activityId, quantity: quantityN, code },
+//     });
+//     await createNotification(
+//       userId,
+//       activityOwner.user.userId,
+//       `${user.userName} joined ${activityOwner.title} `
+//     );
+
+//     return res
+//       .status(200)
+//       .json({ message: "Joined successfully", code: ticket.code });
+//   } catch (error) {
+//     console.error(error);
+//     return res
+//       .status(500)
+//       .json({ message: "Failed to Join", error: error.message });
+//   }
+// };
 const joinActivity = async (req, res) => {
   const { userId } = req.user;
   const { activityId } = req.params;
-  const { quantity } = req.body;
+  const { email, fullName, quantity, paymentMethodId } = req.body;
+
   try {
-    const user = await prisma.user.findUnique({
-      where: { userId },
-      select: { userName: true },
-    });
-    const hasTicket = await prisma.ticket.findFirst({
-      where: { userId, activityId },
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+      select: { price: true, title: true, user: { select: { userId: true } } },
     });
 
-    const activityOwner = await prisma.activity.findUnique({
-      where: { activityId },
-      select: {
-        user: { select: { userId: true, userName: true } },
-        title: true,
+    const amount = activity.price * Number(quantity) * 100; // Convert to cents
+
+    // 💳 Create PaymentIntent (without confirming it)
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: "usd",
+      receipt_email: email,
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: "never", // Prevent redirects if you're not supporting them
       },
     });
-    const quantityN = Number(quantity);
 
-    if (hasTicket) {
-      await prisma.ticket.update({
-        where: { ticketId: hasTicket.ticketId },
-        data: { quantity: hasTicket.quantity + quantityN },
-      });
-      return res
-        .status(200)
-        .json({ message: "More places added", code: hasTicket.code });
-    }
-
+    // 🧾 Create Ticket
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
 
     const ticket = await prisma.ticket.create({
-      data: { userId, activityId, quantity: quantityN, code },
+      data: { userId, activityId, quantity: Number(quantity), code },
     });
+
     await createNotification(
       userId,
-      activityOwner.user.userId,
-      `${user.userName} joined ${activityOwner.title} `
+      activity.user.userId,
+      `${fullName} joined ${activity.title}`
     );
 
-    return res
-      .status(200)
-      .json({ message: "Joined successfully", code: ticket.code });
+    // Send clientSecret to frontend
+    return res.status(200).json({
+      message: "PaymentIntent created successfully",
+      clientSecret: paymentIntent.client_secret,
+      code,
+    });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Failed to Join", error: error.message });
+    console.error("Join & pay error:", error);
+    return res.status(500).json({ message: error.message });
   }
 };
-
 const payment = async (req, res) => {
   try {
     const { activityId } = req.params;
