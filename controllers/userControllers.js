@@ -270,7 +270,7 @@ const RequestDegrees = async (req, res) => {
       return res.status(404).json({ message: "No degrees found" });
     }
 
-    const count = prisma.degree.count({
+    const count = await prisma.degree.count({
       where: {
         status: "PENDING",
         user: {
@@ -283,6 +283,7 @@ const RequestDegrees = async (req, res) => {
     });
 
     const pages = Math.ceil(count / limit);
+
     return res.status(200).json({ degrees, pages });
   } catch (error) {
     console.error("Error getting degrees:", error);
