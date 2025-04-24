@@ -126,6 +126,12 @@ router.get("/bank", authenticateToken, getUserBank);
 router.get("/profile", authenticateToken, getUserData);
 router.get("/profile/header", authenticateToken, getProfileData);
 router.get(
+  "/admin/payments",
+  authenticateToken,
+  checkRole("ADMIN"),
+  getUserBank
+);
+router.get(
   "/admin/header",
   authenticateToken,
   checkRole("ADMIN"),
