@@ -1061,34 +1061,84 @@ const getUserBank = async (req, res) => {
 
 const getUserPayments = async (req, res) => {
   try {
-    const { userId } = req.user;
-    const user = await prisma.user.findFirst({
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+
+    const users = await prisma.user.findMany({
       where: {
-        userId,
+        userName: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        userId: true,
+        userName: true,
+        avatar: true,
+        bank: {
+          select: {
+            bankName: true,
+            rib: true,
+            fullName: true,
+          },
+        },
+        activity: {
+          select: {
+            price: true,
+            ticket: {
+              select: {
+                quantity: true,
+              },
+            },
+          },
+        },
+      },
+      take: Number(limit),
+      skip: Number(skip),
+    });
+
+    const data = users
+      .map((user) => {
+        const rawRevenue = user.activity.reduce((acc, act) => {
+          const activityRevenue = act.ticket.reduce(
+            (sum, ticket) => sum + ticket.quantity * act.price,
+            0
+          );
+          return acc + activityRevenue;
+        }, 0);
+
+        const userRevenue = rawRevenue * 0.8;
+
+        return {
+          userId: user.userId,
+          userName: user.userName,
+          avatar: user.avatar,
+          bankName: user.bank[0]?.bankName || null,
+          fullName: user.bank[0]?.fullName || null,
+          rib: user.bank[0]?.rib ? decrypt(user.bank[0].rib) : null,
+          revenueAmount: userRevenue,
+        };
+      })
+      .filter((user) => user.revenueAmount > 0); // Keep only users with revenue
+
+    const count = await prisma.user.count({
+      where: {
+        userName: {
+          contains: search,
+          mode: "insensitive",
+        },
       },
     });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    const pages = Math.ceil(count / limit);
 
-    const bank = await prisma.bank.findFirst({
-      where: { userId },
-      select: { bankName: true, rib: true, fullName: true },
-    });
-
-    const info = {
-      bankName: bank ? bank.bankName : "",
-      rib: bank ? decrypt(bank.rib) : "",
-      fullName: bank ? bank.fullName : "",
-    };
-
-    return res.status(200).json({ message: "Fetch successfull", info });
+    return res.status(200).json({ message: "Fetch successful", data, pages });
   } catch (err) {
     console.error(err);
-    return res
-      .status(500)
-      .json({ message: "Erreur serveur", error: err.message });
+    return res.status(500).json({
+      message: "Erreur serveur",
+      error: err.message,
+    });
   }
 };
 
