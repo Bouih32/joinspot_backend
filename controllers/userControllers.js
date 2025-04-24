@@ -1059,6 +1059,39 @@ const getUserBank = async (req, res) => {
   }
 };
 
+const getUserPayments = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const user = await prisma.user.findFirst({
+      where: {
+        userId,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const bank = await prisma.bank.findFirst({
+      where: { userId },
+      select: { bankName: true, rib: true, fullName: true },
+    });
+
+    const info = {
+      bankName: bank ? bank.bankName : "",
+      rib: bank ? decrypt(bank.rib) : "",
+      fullName: bank ? bank.fullName : "",
+    };
+
+    return res.status(200).json({ message: "Fetch successfull", info });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
 const updateSocials = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -2209,4 +2242,5 @@ module.exports = {
   updateBank,
   getUserBank,
   seenNotifications,
+  getUserPayments,
 };

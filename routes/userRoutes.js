@@ -62,6 +62,7 @@ const {
   updateBank,
   getUserBank,
   seenNotifications,
+  getUserPayments,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -129,7 +130,7 @@ router.get(
   "/admin/payments",
   authenticateToken,
   checkRole("ADMIN"),
-  getUserBank
+  getUserPayments
 );
 router.get(
   "/admin/header",
