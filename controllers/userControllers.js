@@ -1107,11 +1107,9 @@ const getUserPayments = async (req, res) => {
           },
         },
       },
-      take: Number(limit),
-      skip: Number(skip),
     });
 
-    const data = users
+    const info = users
       .map((user) => {
         const rawRevenue = user.activity.reduce((acc, act) => {
           const activityRevenue = act.ticket.reduce(
@@ -1141,16 +1139,8 @@ const getUserPayments = async (req, res) => {
       })
       .filter((user) => user.revenueAmount > 0); // Only users who are owed money
 
-    const count = await prisma.user.count({
-      where: {
-        userName: {
-          contains: search,
-          mode: "insensitive",
-        },
-      },
-    });
-
-    const pages = Math.ceil(count / limit);
+    const data = info.slice(skip, skip + limit);
+    const pages = Math.ceil(info.length / limit);
 
     return res.status(200).json({ message: "Fetch successful", data, pages });
   } catch (err) {
