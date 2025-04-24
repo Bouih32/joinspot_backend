@@ -63,6 +63,8 @@ const {
   getUserBank,
   seenNotifications,
   getUserPayments,
+  payUser,
+  bankAlert,
 } = require("../controllers/userControllers");
 const {
   loginValidation,
@@ -91,6 +93,13 @@ router.post("/login", loginValidation, validateData, loginUser);
 router.post("/logout", authenticateToken, logOut);
 router.post("/forgot", forgotPswrd);
 router.post("/reset", resetForgotenPswrd);
+router.post("/admin/payments", authenticateToken, checkRole("ADMIN"), payUser);
+router.post(
+  "/admin/bank-alert",
+  authenticateToken,
+  checkRole("ADMIN"),
+  bankAlert
+);
 // userTag
 router.post("/tags", authenticateToken, addTagsToUser);
 // userFollow

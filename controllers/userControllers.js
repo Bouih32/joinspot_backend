@@ -161,7 +161,16 @@ const getProfileData = async (req, res) => {
       const quantity = ticket.quantity ?? 0;
       const price = ticket.activity?.price ?? 0;
       return acc + quantity * price;
-    }, 0);
+    }, 0); // Get all payments made to this user
+
+    const payments = await prisma.payment.findMany({
+      where: { userId },
+      select: { amout: true },
+    }); // Sum the total amount already paid
+
+    const totalPaid = payments.reduce((sum, payment) => sum + payment.amout, 0); // Subtract total paid from user's 80% cut of the revenue
+
+    const revenueLeft = totalRevenue * 0.8 - totalPaid;
 
     const joinedNum = joinedActivitiesNum.reduce(
       (acc, ticket) => acc + (ticket.quantity ?? 0),
@@ -179,7 +188,7 @@ const getProfileData = async (req, res) => {
         activityNumber: activities,
         followersNum: followers,
         followingNum: following,
-        totalRevenue: totalRevenue,
+        totalRevenue: revenueLeft,
         activeActivities: activeActivities,
         joinedNum: joinedNum,
       },
@@ -1092,6 +1101,11 @@ const getUserPayments = async (req, res) => {
             },
           },
         },
+        payment: {
+          select: {
+            amout: true,
+          },
+        },
       },
       take: Number(limit),
       skip: Number(skip),
@@ -1109,6 +1123,10 @@ const getUserPayments = async (req, res) => {
 
         const userRevenue = rawRevenue * 0.8;
 
+        const totalPaid = user.payment.reduce((sum, p) => sum + p.amout, 0);
+
+        const remainingRevenue = userRevenue - totalPaid;
+
         return {
           userId: user.userId,
           userName: user.userName,
@@ -1116,10 +1134,12 @@ const getUserPayments = async (req, res) => {
           bankName: user.bank[0]?.bankName || null,
           fullName: user.bank[0]?.fullName || null,
           rib: user.bank[0]?.rib ? decrypt(user.bank[0].rib) : null,
-          revenueAmount: userRevenue,
+          revenueAmount: remainingRevenue,
+          totalPaid,
+          totalRevenue: userRevenue,
         };
       })
-      .filter((user) => user.revenueAmount > 0); // Keep only users with revenue
+      .filter((user) => user.revenueAmount > 0); // Only users who are owed money
 
     const count = await prisma.user.count({
       where: {
@@ -1139,6 +1159,60 @@ const getUserPayments = async (req, res) => {
       message: "Erreur serveur",
       error: err.message,
     });
+  }
+};
+
+const payUser = async (req, res) => {
+  try {
+    const { amout, userId } = req.body;
+    const user = await prisma.user.findUnique({
+      where: {
+        userId,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await prisma.payment.create({
+      data: { userId, amout },
+    });
+
+    await createNotification(
+      req.user.userId,
+      userId,
+      `${amout}$ has been paid`
+    );
+
+    return res.status(200).json({ message: "payment added successfully" });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
+const bankAlert = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await prisma.user.findUnique({
+      where: {
+        userId,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await createNotification(req.user.userId, userId, `Please add bank info`);
+
+    return res.status(200).json({ message: "alert successfully" });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "Erreur serveur", error: err.message });
   }
 };
 
@@ -2293,4 +2367,6 @@ module.exports = {
   getUserBank,
   seenNotifications,
   getUserPayments,
+  payUser,
+  bankAlert,
 };
