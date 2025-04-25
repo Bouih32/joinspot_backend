@@ -137,8 +137,9 @@ const getActivities = async (req, res) => {
 
     const activities = await prisma.activity.findMany({
       where: filters,
-      take: numberToTake,
-      skip: (parseInt(page) - 1) * numberToTake,
+      take: my !== "save" ? numberToTake : undefined,
+      skip: my !== "save" ? (parseInt(page) - 1) * numberToTake : undefined,
+
       include: {
         user: {
           select: {
