@@ -1084,7 +1084,6 @@ const joinActivity = async (req, res) => {
 
     const amount = activity.price * Number(quantity) * 100; // Convert to cents
 
-    // 💳 Create PaymentIntent (without confirming it)
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: "usd",

@@ -3,7 +3,7 @@ const { createNotification } = require("../utils/notification");
 
 const createPost = async (req, res) => {
   try {
-    const { bannerPic, description, categoryId } = req.body;
+    const { bannerPic, description, categoryId, tags } = req.body;
     const newPost = await prisma.post.create({
       data: {
         bannerPic,
@@ -12,9 +12,28 @@ const createPost = async (req, res) => {
         user: { connect: { userId: req.user.userId } },
       },
     });
-    return res
-      .status(201)
-      .json({ message: "Post created successfully", post: newPost });
+
+    const tagsArray = tags.split("-");
+
+    await Promise.all(
+      tagsArray.map((tag) =>
+        prisma.postTags.create({
+          data: {
+            post: {
+              connect: {
+                postId: newPost.postId,
+              },
+            },
+            tag: {
+              connect: {
+                tagId: tag,
+              },
+            },
+          },
+        })
+      )
+    );
+    return res.status(201).json({ message: "Post created successfully" });
   } catch (error) {
     console.error(error);
     return res
@@ -108,7 +127,7 @@ const getPosts = async (req, res) => {
     if (data.length === 0) {
       return res.status(404).json({ message: "No posts found" });
     }
-    return res.json({data});
+    return res.json({ data });
   } catch (error) {
     console.error(error);
     return res
@@ -769,9 +788,9 @@ const repportPost = async (req, res) => {
 const getrepportedPost = async (req, res) => {
   try {
     const repportsPost = await prisma.repportPost.findMany({
-      include:{
-        post:true
-      }
+      include: {
+        post: true,
+      },
     });
     if (repportsPost.length === 0) {
       return res.status(404).json({ message: "No reports found" });

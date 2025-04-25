@@ -93,6 +93,24 @@ const addValidation = [
     .withMessage("City ID must be at least 3 characters"),
 ];
 
+const addPostValidation = [
+  check("bannerPic").trim().notEmpty().withMessage("Cover picture is required"),
+  check("title")
+    .trim()
+    .notEmpty()
+    .withMessage("Title is required")
+    .isLength({ max: 50 })
+    .withMessage("That's too long"),
+  check("description")
+    .trim()
+    .notEmpty()
+    .withMessage("Description is required")
+    .isLength({ min: 10, max: 500 })
+    .withMessage("Description must be between 10 and 500 characters"),
+  check("tags").trim().notEmpty().withMessage("Tags are required"),
+  check("categoryId").trim().notEmpty().withMessage("Tags are required"),
+];
+
 const convertToISODate = (dateString) => {
   const [day, month, year] = dateString.split("/").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day)); // Ensure UTC time
@@ -270,6 +288,7 @@ module.exports = {
   editValidation,
   supportValidation,
   bankValidation,
+  addPostValidation,
   convertToISODate,
   validateData,
 };

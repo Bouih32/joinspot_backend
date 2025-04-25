@@ -38,7 +38,7 @@ const categoryRoutes = require("./routes/categoryRoutes");
 app.use(express.json());
 app.use("/activity", activityRoutes);
 app.use("/user", userRoutes);
-app.use("/posts", postsRoutes);
+app.use("/post", postsRoutes);
 app.use("/category", categoryRoutes);
 
 const swaggerUi = require("swagger-ui-express");
