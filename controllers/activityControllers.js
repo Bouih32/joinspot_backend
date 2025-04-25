@@ -1271,12 +1271,18 @@ const banActivity = async (req, res) => {
     if (!activity)
       return res.status(404).json({ message: "No activity found" });
 
-    await prisma.activity.update({
+    const edit = await prisma.activity.update({
       where: {
         activityId: activity.activityId,
       },
       data: { deletedAt: !activity.deletedAt ? new Date() : null },
     });
+
+    await createNotification(
+      req.user.userId,
+      activity.userId,
+      ` ${activity.title} ${!edit.deletedAt ? "Unsuspended" : "Suspended"}`
+    );
     return res.status(200).json({ message: "Activity baned seccessfully" });
   } catch (error) {
     return res.status(500).json({ message: "Error baning users", error });
