@@ -256,6 +256,15 @@ const editValidation = [
   check("tags").trim().notEmpty().withMessage("Please enter your tags"),
 ];
 
+const commentValidation = [
+  check("content")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter comment")
+    .isLength({ max: 300 })
+    .withMessage("Heey! that's too long"),
+];
+
 const followValidation = [
   check("following")
     .trim()
@@ -289,6 +298,7 @@ module.exports = {
   supportValidation,
   bankValidation,
   addPostValidation,
+  commentValidation,
   convertToISODate,
   validateData,
 };

@@ -26,7 +26,11 @@ const {
 } = require("../controllers/postsControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const { authenticateToken } = require("../middlewares/auth");
-const { validateData, addPostValidation } = require("../utils/validation");
+const {
+  validateData,
+  addPostValidation,
+  commentValidation,
+} = require("../utils/validation");
 
 // POST
 router.post(
@@ -45,8 +49,14 @@ router.post(
 router.post("/:postId/addTag", authenticateToken, validateData, addTagToPost);
 router.post("/:postId/save", authenticateToken, validateData, savePost);
 router.post("/:postId/repport", authenticateToken, validateData, repportPost);
-router.post("/:postId/like", authenticateToken, validateData, likePost);
-router.post("/:postId/comment", authenticateToken, validateData, addcomment);
+router.post("/:postId/like", authenticateToken, likePost);
+router.post(
+  "/:postId/comment",
+  authenticateToken,
+  commentValidation,
+  validateData,
+  addcomment
+);
 router.post(
   "repport/:postId/checkRepport",
   authenticateToken,

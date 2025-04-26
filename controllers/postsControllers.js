@@ -121,6 +121,7 @@ const getPosts = async (req, res) => {
           select: {
             userName: true,
             avatar: true,
+            userId: true,
           },
         },
         _count: {
@@ -138,6 +139,7 @@ const getPosts = async (req, res) => {
               select: {
                 userName: true,
                 avatar: true,
+                userId: true,
               },
             },
           },
@@ -522,15 +524,42 @@ const likePost = async (req, res) => {
         postId: req.params.postId,
       },
     });
-    if (like) {
-      return res
-        .status(400)
-        .json({ message: "You have already liked this post" });
+    if (!like) {
+      await prisma.likes.create({
+        data: { userId: req.user.userId, postId: req.params.postId },
+      });
+    } else {
+      await prisma.likes.delete({
+        where: { likesId: like.likesId },
+      });
     }
-    await prisma.likes.create({
-      data: { userId: req.user.userId, postId: req.params.postId },
-    });
+
     return res.status(200).json({ message: "Post liked successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Failed to like post",
+      error: error.message,
+    });
+  }
+};
+
+const getUserLikes = async (req, res) => {
+  try {
+    const likes = await prisma.likes.findMany({
+      where: {
+        userId: req.user.userId,
+      },
+    });
+    if (!likes) {
+      return res.status(404).json({ message: "No likes" });
+    }
+
+    const likeIds = likes.map((ele) => ele.likesId);
+
+    return res
+      .status(200)
+      .json({ message: "Post liked successfully", likeIds });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -568,17 +597,15 @@ const unlikePost = async (req, res) => {
 
 const addcomment = async (req, res) => {
   try {
-    const { comment } = req.body;
-    const comments = await prisma.comment.create({
+    const { content } = req.body;
+    await prisma.comment.create({
       data: {
         userId: req.user.userId,
         postId: req.params.postId,
-        content: comment,
+        content: content,
       },
     });
-    return res
-      .status(201)
-      .json({ message: "Comment added successfully", comments });
+    return res.status(201).json({ message: "Comment added successfully" });
   } catch (error) {
     console.error(error);
     return res
@@ -977,4 +1004,5 @@ module.exports = {
   getrepportedPost,
   checkrepportedPost,
   sharePost,
+  getUserLikes,
 };
