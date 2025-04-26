@@ -55,17 +55,17 @@ router.post(
   checkrepportedPost
 );
 // GET
-router.get("/", validateData, getPosts);
-router.get("/myPosts", authenticateToken, validateData, getMyPosts);
-router.get("/user/:userId", authenticateToken, validateData, getPostsByUser);
-router.get("/tags", authenticateToken, validateData, getPostBytags);
-router.get("/myPosts", authenticateToken, validateData, getMyPost);
-router.get("/savedPosts", authenticateToken, validateData, getSavedPost);
-router.get("/category/:id", authenticateToken, validateData, getPostByCategory);
+router.get("/", getPosts);
+router.get("/myPosts", authenticateToken, getMyPosts);
+router.get("/user/:userId", authenticateToken, getPostsByUser);
+router.get("/tags", authenticateToken, getPostBytags);
+router.get("/myPosts", authenticateToken, getMyPost);
+router.get("/savedPosts", authenticateToken, getSavedPost);
+router.get("/category/:id", authenticateToken, getPostByCategory);
 
 router.get("/:postId/share", authenticateToken, sharePost);
 router.get("/repport", authenticateToken, checkRole("ADMIN"), getrepportedPost);
-router.get("/:id", authenticateToken, validateData, getPostById);
+router.get("/:id", authenticateToken, getPostById);
 
 // DELETE
 router.delete("/:postId/tags", authenticateToken, validateData, deletePostTag);

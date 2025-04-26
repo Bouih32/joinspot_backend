@@ -290,12 +290,13 @@ model savePost {
 }
 
 model comment {
-  commentId String @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String @db.ObjectId
-  postId    String @db.ObjectId
+  commentId String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  postId    String   @db.ObjectId
   content   String
-  user      user   @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  post      post   @relation(fields: [postId], references: [postId], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  user      user     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  post      post     @relation(fields: [postId], references: [postId], onDelete: Cascade)
 }
 
 model activityTags {

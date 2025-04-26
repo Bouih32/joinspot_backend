@@ -92,9 +92,25 @@ const addTagToPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = "" } = req.query;
+    const { category, search = "", page = 1, my, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
+
+    const filters = {
+      ...(search && {
+        OR: [
+          { user: { userName: { contains: search, mode: "insensitive" } } },
+          { description: { contains: search, mode: "insensitive" } },
+        ],
+      }),
+      ...(category && { category: { categoryName: category } }),
+      ...(my === "own" ? { userId: req.user.userId } : {}),
+    };
+
     const data = await prisma.post.findMany({
+      take: my !== "save" ? limit : undefined,
+      skip: my !== "save" ? skip : undefined,
+      orderBy: { createdAt: "desc" },
+      where: filters,
       include: {
         category: {
           select: {
@@ -109,9 +125,24 @@ const getPosts = async (req, res) => {
         },
         _count: {
           select: {
-            likes: true,
             comment: true,
-            savePost: true,
+          },
+        },
+        comment: {
+          // <-- This gets the actual comments
+          select: {
+            content: true,
+            createdAt: true,
+            user: {
+              // Commenter's info
+              select: {
+                userName: true,
+                avatar: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc", // You can order comments oldest to newest
           },
         },
         postTags: {
@@ -124,11 +155,12 @@ const getPosts = async (req, res) => {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
     });
-    if (data.length === 0) {
+
+    if (!data) {
       return res.status(404).json({ message: "No posts found" });
     }
+
     return res.json({ data });
   } catch (error) {
     console.error(error);
