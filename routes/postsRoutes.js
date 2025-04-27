@@ -26,7 +26,10 @@ const {
   getUserLikes,
 } = require("../controllers/postsControllers");
 const { checkRole } = require("../middlewares/Autorization");
-const { authenticateToken } = require("../middlewares/auth");
+const {
+  authenticateToken,
+  optionalAuthenticateToken,
+} = require("../middlewares/auth");
 const {
   validateData,
   addPostValidation,
@@ -66,7 +69,7 @@ router.post(
   checkrepportedPost
 );
 // GET
-router.get("/", authenticateToken, getPosts);
+router.get("/", optionalAuthenticateToken, getPosts);
 router.get("/myPosts", authenticateToken, getMyPosts);
 router.get("/user/:userId", authenticateToken, getPostsByUser);
 router.get("/tags", authenticateToken, getPostBytags);
