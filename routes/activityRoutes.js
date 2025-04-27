@@ -29,9 +29,6 @@ const {
   getTicketsByActivity,
   banActivity,
   getLandingActivities,
-  joinActivityTest,
-  createTicket,
-  createTicketTest,
 } = require("../controllers/activityControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const {
@@ -57,28 +54,12 @@ router.post(
   createActivity
 );
 
-// router.post(
-//   "/:activityId/join",
-//   authenticateToken,
-//   joinValidation,
-//   validateData,
-//   joinActivity
-// );
-
 router.post(
   "/:activityId/join",
   authenticateToken,
   joinValidation,
   validateData,
-  joinActivityTest
-);
-
-router.post(
-  "/:activityId/createTicket",
-  authenticateToken,
-  joinValidation,
-  validateData,
-  createTicketTest
+  joinActivity
 );
 router.post("/paymentIntent/:paymentIntentId", paymentIntent);
 router.post("/:activityId/save", authenticateToken, saveActivity);

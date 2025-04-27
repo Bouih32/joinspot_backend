@@ -1119,61 +1119,6 @@ const joinActivity = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
-// actions/createTicket.ts
-const createTicketTest = async (req, res) => {
-  const { userId } = req.user;
-  const { activityId } = req.params;
-  const { fullName, quantity } = req.body;
-
-  try {
-    const activity = await prisma.activity.findUnique({
-      where: { activityId },
-      select: { title: true, user: { select: { userId: true } } },
-    });
-
-    if (!activity) {
-      return res.status(404).json({ message: "Activity not found" });
-    }
-
-    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-
-    const ticket = await prisma.ticket.create({
-      data: {
-        userId,
-        activityId,
-        quantity: Number(quantity),
-        code,
-      },
-    });
-
-    await createNotification(
-      userId,
-      activity.user.userId,
-      `${fullName} joined ${activity.title}`
-    );
-
-    return res.status(200).json({
-      message: "Ticket created successfully",
-      code,
-    });
-  } catch (error) {
-    console.error("Join error:", error);
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-// In your server action (joinActivity)
-async function joinActivityTest(formData, activityId) {
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: activity.price * Number(quantity) * 100,
-    currency: "usd",
-    metadata: { activityId, userEmail: formData.email },
-  });
-
-  return { clientSecret: paymentIntent.client_secret };
-}
-
 const payment = async (req, res) => {
   try {
     const { activityId } = req.params;
@@ -1375,6 +1320,4 @@ module.exports = {
   getTicketsByActivity,
   banActivity,
   getLandingActivities,
-  joinActivityTest,
-  createTicketTest,
 };
