@@ -512,26 +512,45 @@ const deletePostTag = async (req, res) => {
 
 const likePost = async (req, res) => {
   try {
-    const post = await prisma.post.findFirst({
-      where: { postId: req.params.postId },
-    });
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-    const like = await prisma.likes.findFirst({
-      where: {
-        userId: req.user.userId,
-        postId: req.params.postId,
+    const { postId } = req.params;
+    const userId = req.user.userId;
+
+    const postAndLike = await prisma.post.findFirst({
+      where: { postId },
+      include: {
+        likes: {
+          where: { userId },
+          select: { likesId: true },
+        },
       },
     });
-    if (!like) {
-      await prisma.likes.create({
-        data: { userId: req.user.userId, postId: req.params.postId },
-      });
+
+    if (!postAndLike) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const hasLiked = postAndLike.likes.length > 0;
+
+    if (hasLiked) {
+      await prisma.$transaction([
+        prisma.likes.delete({
+          where: { likesId: postAndLike.likes[0].likesId },
+        }),
+        prisma.post.update({
+          where: { postId },
+          data: { likesCount: { decrement: 1 } },
+        }),
+      ]);
     } else {
-      await prisma.likes.delete({
-        where: { likesId: like.likesId },
-      });
+      await prisma.$transaction([
+        prisma.likes.create({
+          data: { userId, postId },
+        }),
+        prisma.post.update({
+          where: { postId },
+          data: { likesCount: { increment: 1 } },
+        }),
+      ]);
     }
 
     return res.status(200).json({ message: "Post liked successfully" });
