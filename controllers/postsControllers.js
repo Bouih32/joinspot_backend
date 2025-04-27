@@ -163,7 +163,10 @@ const getPosts = async (req, res) => {
       return res.status(404).json({ message: "No posts found" });
     }
 
-    return res.json({ data });
+    const totalPosts = await prisma.post.count({ where: filters });
+    const totalPages = Math.ceil(totalPosts / numberToTake);
+
+    return res.json({ data, pages: totalPages });
   } catch (error) {
     console.error(error);
     return res

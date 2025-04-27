@@ -66,7 +66,7 @@ router.post(
   checkrepportedPost
 );
 // GET
-router.get("/", getPosts);
+router.get("/", authenticateToken, getPosts);
 router.get("/myPosts", authenticateToken, getMyPosts);
 router.get("/user/:userId", authenticateToken, getPostsByUser);
 router.get("/tags", authenticateToken, getPostBytags);
