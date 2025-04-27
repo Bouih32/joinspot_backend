@@ -92,7 +92,7 @@ const addTagToPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const { category, search = "", page = 1, my, limit = 10 } = req.query;
+    const { category, search = "", page = 1, my, limit = 10, id } = req.query;
     const skip = (page - 1) * limit;
 
     const filters = {
@@ -104,6 +104,7 @@ const getPosts = async (req, res) => {
       }),
       ...(category && { category: { categoryName: category } }),
       ...(my === "own" ? { userId: req.user.userId } : {}),
+      ...(id ? { postId: id } : {}),
     };
 
     const data = await prisma.post.findMany({
@@ -164,7 +165,8 @@ const getPosts = async (req, res) => {
     }
 
     const totalPosts = await prisma.post.count({ where: filters });
-    const totalPages = Math.ceil(totalPosts / numberToTake);
+    const totalPages = Math.ceil(totalPosts / limit);
+    console.log(totalPages);
 
     return res.json({ data, pages: totalPages });
   } catch (error) {
