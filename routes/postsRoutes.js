@@ -23,6 +23,7 @@ const {
   getrepportedPost,
   checkrepportedPost,
   sharePost,
+  getUserLikes,
 } = require("../controllers/postsControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const { authenticateToken } = require("../middlewares/auth");
@@ -70,6 +71,7 @@ router.get("/myPosts", authenticateToken, getMyPosts);
 router.get("/user/:userId", authenticateToken, getPostsByUser);
 router.get("/tags", authenticateToken, getPostBytags);
 router.get("/myPosts", authenticateToken, getMyPost);
+router.get("/likes", authenticateToken, getUserLikes);
 router.get("/savedPosts", authenticateToken, getSavedPost);
 router.get("/category/:id", authenticateToken, getPostByCategory);
 

@@ -1119,6 +1119,109 @@ const joinActivity = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+const validatePayment = async (req, res) => {
+  const { activityId } = req.params;
+  const { email, quantity } = req.body;
+
+  try {
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+      select: { price: true },
+    });
+
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+
+    const price = activity.price;
+    const numQuantity = Number(quantity);
+    const amountInCents = price * numQuantity * 100;
+
+    console.log("Activity Price:", price);
+    console.log("Quantity:", numQuantity);
+    console.log("Calculated amount (cents):", amountInCents);
+
+    if (amountInCents < 50) {
+      return res.status(400).json({
+        message: `The total amount must be at least $0.50. Current amount is $${
+          amountInCents / 100
+        }.`,
+      });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountInCents,
+      currency: "usd",
+      receipt_email: email,
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: "never",
+      },
+    });
+
+    return res.status(200).json({
+      message: "PaymentIntent created successfully",
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (error) {
+    console.error("Join & pay error:", error);
+
+    // Check if the error is the specific "test mode card required" error
+    if (
+      error.type === "StripeInvalidRequestError" &&
+      error.raw &&
+      error.raw.code === "invalid_test_clock" // This code might vary slightly, check the full error object
+    ) {
+      return res.status(400).json({
+        message:
+          "It looks like you're using a real card in test mode. Please use one of Stripe's test card numbers.",
+      });
+    }
+
+    // For other Stripe errors or general errors, send a generic message
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const createTicketTest = async (req, res) => {
+  const { userId } = req.user;
+  const { activityId } = req.params;
+  const { email, fullName, quantity, paymentMethodId } = req.body;
+
+  try {
+    const activity = await prisma.activity.findUnique({
+      where: { activityId },
+      select: { price: true, title: true, user: { select: { userId: true } } },
+    });
+
+    const amount = activity.price * Number(quantity) * 100; // Convert to cents
+
+    // 🧾 Create Ticket
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+    const ticket = await prisma.ticket.create({
+      data: { userId, activityId, quantity: Number(quantity), code },
+    });
+
+    await createNotification(
+      userId,
+      activity.user.userId,
+      `${fullName} joined ${activity.title}`
+    );
+
+    // Send clientSecret to frontend
+    return res.status(200).json({
+      message: "PaymentIntent created successfully",
+
+      code,
+    });
+  } catch (error) {
+    console.error("Join & pay error:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const payment = async (req, res) => {
   try {
     const { activityId } = req.params;
@@ -1320,4 +1423,6 @@ module.exports = {
   getTicketsByActivity,
   banActivity,
   getLandingActivities,
+  validatePayment,
+  createTicketTest,
 };
