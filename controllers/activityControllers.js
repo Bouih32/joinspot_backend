@@ -1138,10 +1138,6 @@ const validatePayment = async (req, res) => {
     const numQuantity = Number(quantity);
     const amountInCents = price * numQuantity * 100;
 
-    console.log("Activity Price:", price);
-    console.log("Quantity:", numQuantity);
-    console.log("Calculated amount (cents):", amountInCents);
-
     if (amountInCents < 50) {
       return res.status(400).json({
         message: `The total amount must be at least $0.50. Current amount is $${

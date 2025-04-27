@@ -574,7 +574,7 @@ const getUserLikes = async (req, res) => {
       return res.status(404).json({ message: "No likes" });
     }
 
-    const likeIds = likes.map((ele) => ele.likesId);
+    const likeIds = likes.map((ele) => ele.postId);
 
     return res
       .status(200)
