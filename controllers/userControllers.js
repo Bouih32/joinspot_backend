@@ -617,6 +617,7 @@ const getActiveActivities = async (req, res) => {
       take: limit,
       skip,
       select: {
+        activityId: true,
         deletedAt: true,
         title: true,
         price: true,
@@ -633,6 +634,7 @@ const getActiveActivities = async (req, res) => {
     const activeActivities = activities.map((activity) => ({
       deletedAt: activity.deletedAt,
       title: activity.title,
+      activityId: activity.activityId,
       endDay: activity.endDay,
       totalTickets: activity.ticket.reduce(
         (sum, ticket) => sum + ticket.quantity,
