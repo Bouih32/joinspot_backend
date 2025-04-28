@@ -24,6 +24,7 @@ const {
   checkrepportedPost,
   sharePost,
   getUserLikes,
+  deletePost,
 } = require("../controllers/postsControllers");
 const { checkRole } = require("../middlewares/Autorization");
 const {
@@ -83,9 +84,10 @@ router.get("/repport", authenticateToken, checkRole("ADMIN"), getrepportedPost);
 router.get("/:id", authenticateToken, getPostById);
 
 // DELETE
-router.delete("/:postId/tags", authenticateToken, validateData, deletePostTag);
-router.delete("/:postId/unsave", authenticateToken, validateData, unSavePost);
-router.delete("/:postId/unlike", authenticateToken, validateData, unlikePost);
+router.delete("/:postId/tags", authenticateToken, deletePostTag);
+router.delete("/:postId/delete", authenticateToken, deletePost);
+router.delete("/:postId/unsave", authenticateToken, unSavePost);
+router.delete("/:postId/unlike", authenticateToken, unlikePost);
 router.delete(
   "/:postId/comment/:commentId",
   authenticateToken,

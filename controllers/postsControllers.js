@@ -517,6 +517,27 @@ const deletePostTag = async (req, res) => {
   }
 };
 
+const deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    await prisma.post.findUnique({ where: { postId } });
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    await prisma.post.delete({ where: { postId } });
+
+    return res
+      .status(200)
+      .json({ message: "post deleted successfully", postTags });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Failed to delete tags from post",
+      error: error.message,
+    });
+  }
+};
 const likePost = async (req, res) => {
   try {
     const { postId } = req.params;
@@ -1047,4 +1068,5 @@ module.exports = {
   checkrepportedPost,
   sharePost,
   getUserLikes,
+  deletePost,
 };
