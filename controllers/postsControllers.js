@@ -558,6 +558,12 @@ const likePost = async (req, res) => {
           data: { likesCount: { increment: 1 } },
         }),
       ]);
+
+      await createNotification(
+        req.user.userId,
+        postAndLike.userId,
+        `Liked your post`
+      );
     }
 
     return res.status(200).json({ message: "Post liked successfully" });
