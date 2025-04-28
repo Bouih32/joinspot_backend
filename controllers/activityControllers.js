@@ -226,7 +226,7 @@ const getLandingActivities = async (req, res) => {
         ticket: { select: { quantity: true } },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: "asc",
       },
     });
 
