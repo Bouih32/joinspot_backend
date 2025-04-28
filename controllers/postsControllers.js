@@ -630,6 +630,10 @@ const unlikePost = async (req, res) => {
 const addcomment = async (req, res) => {
   try {
     const { content } = req.body;
+
+    const post = await prisma.post.findUnique({
+      where: { postId: req.params.postId },
+    });
     await prisma.comment.create({
       data: {
         userId: req.user.userId,
@@ -637,6 +641,12 @@ const addcomment = async (req, res) => {
         content: content,
       },
     });
+
+    await createNotification(
+      req.user.userId,
+      post.userId,
+      `commented  on your post`
+    );
     return res.status(201).json({ message: "Comment added successfully" });
   } catch (error) {
     console.error(error);
