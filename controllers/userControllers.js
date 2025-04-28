@@ -1979,7 +1979,7 @@ const getMessagesByUser = async (req, res) => {
         read: true,
       },
       orderBy: {
-        createdAt: "asc",
+        createdAt: "desc",
       },
     });
     const messages = [...receivedMessages, ...sentMessages];
