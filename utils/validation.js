@@ -95,12 +95,7 @@ const addValidation = [
 
 const addPostValidation = [
   check("bannerPic").trim().notEmpty().withMessage("Cover picture is required"),
-  check("title")
-    .trim()
-    .notEmpty()
-    .withMessage("Title is required")
-    .isLength({ max: 50 })
-    .withMessage("That's too long"),
+
   check("description")
     .trim()
     .notEmpty()
