@@ -1868,6 +1868,7 @@ const getMessages = async (req, res) => {
           select: {
             userName: true,
             avatar: true,
+            userId: true,
           },
         },
         content: true,
@@ -1877,7 +1878,7 @@ const getMessages = async (req, res) => {
         read: true,
       },
       orderBy: {
-        createdAt: "asc",
+        createdAt: "desc",
       },
     });
 
